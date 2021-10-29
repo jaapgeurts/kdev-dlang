@@ -1,0 +1,5 @@
+# KDebugSettings data file
+# Format:
+# logname<space>description
+
+kdevelop.plugins.dubbuilder KDevelop plugin: dubbuilder

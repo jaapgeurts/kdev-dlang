@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Description": "dubbuilder",
+        "Id": "dubbuilder",
+        "Name": "dubbuilder",
+        "ServiceTypes": [
+            "KDevelop/Plugin"
+        ]
+    },
+    "X-KDevelop-Category": "Global",
+    "X-KDevelop-Mode": "GUI"
+}
