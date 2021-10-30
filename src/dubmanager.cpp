@@ -8,8 +8,9 @@
 
 #include <interfaces/icore.h>
 #include <interfaces/iproject.h>
-
 #include <interfaces/iplugincontroller.h>
+
+#include <project/interfaces/iprojectbuilder.h>
 
 K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "dubmanager.json", registerPlugin<DUBProjectManager>(); )
 
@@ -46,16 +47,13 @@ ProjectFolderItem* DUBProjectManager::import( IProject* project )
 ProjectFolderItem* DUBProjectManager::createFolderItem( IProject* project, const Path& path,
                                                 ProjectBaseItem* parent )
 {
-        qCDebug(PLUGIN_DUBMANAGER) << "createFolderItem( IProject* , const Path& ,                                                ProjectBaseItem*)";
+    qCDebug(PLUGIN_DUBMANAGER) << "createFolderItem( IProject* , const Path& ,                                                ProjectBaseItem*)";
 
-    if (!parent) {
-        return projectRootItem(project, path);
-    } else if (ProjectFolderItem* buildFolder = buildFolderItem(project, path, parent)) {
-        // child folder in a dub folder
-        return buildFolder;
-    } else {
+//    if (!parent) {
+//        return projectRootItem(project, path);
+//    } else {
         return AbstractFileManagerPlugin::createFolderItem(project, path, parent);
-    }
+//    }
 }
 
 IProjectFileManager::Features DUBProjectManager::features() const
@@ -67,9 +65,9 @@ IProjectFileManager::Features DUBProjectManager::features() const
 
 bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject* project ) const
 {
-        qCDebug(PLUGIN_DUBMANAGER) << "isValid( const Path& , const bool , IProject*)";
+    qCDebug(PLUGIN_DUBMANAGER) << "isValid( const Path& , const bool , IProject*)";
 
-    return false;
+    return true;
 }
 
 //END AbstractFileManager
@@ -78,9 +76,15 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
 //TODO
 IProjectBuilder*  DUBProjectManager::builder() const
 {
-        qCDebug(PLUGIN_DUBMANAGER) << "builder()";
+    qCDebug(PLUGIN_DUBMANAGER) << "builder()";
 
-    return nullptr;
+    // Dynamically get the dub builder through the plugin system
+    IPlugin* i = core()->pluginController()->pluginForExtension( QStringLiteral("org.kdevelop.IProjectBuilder"), QStringLiteral("DUBBuilder"));
+    Q_ASSERT(i);
+    auto* _builder = i->extension<KDevelop::IProjectBuilder>();
+    Q_ASSERT(_builder );
+    return _builder;
+
 }
 
 Path DUBProjectManager::buildDirectory(ProjectBaseItem*) const
@@ -162,7 +166,7 @@ void DUBProjectManager::slotDirty(const QString& path)
 
 
 //END IBuildSystemManager
-
+/*
 ProjectFolderItem* DUBProjectManager::projectRootItem(IProject* project, const Path& path)
 {
     QDir dir(path.toLocalFile());
@@ -281,7 +285,7 @@ ProjectFolderItem* DUBProjectManager::buildFolderItem(IProject* project, const P
 
     return folderItem;
 }
-
+*/
 
 // needed for QObject class created from K_PLUGIN_FACTORY_WITH_JSON
 #include "dubmanager.moc"

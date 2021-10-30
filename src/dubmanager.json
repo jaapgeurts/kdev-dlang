@@ -21,6 +21,10 @@
         "org.kdevelop.IBuildSystemManager",
         "org.kdevelop.IProjectFileManager"
     ],
+    "X-KDevelop-IRequired": [
+        "org.kdevelop.IOutputView",
+        "org.kdevelop.IDUBBuilder"
+    ],
     "X-KDevelop-Mode": "GUI",
     "X-KDevelop-Language": "D",
     "X-KDevelop-ProjectBuilder": "DUB",

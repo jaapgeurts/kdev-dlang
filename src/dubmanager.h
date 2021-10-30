@@ -67,8 +67,8 @@ private Q_SLOTS:
     void slotDirty(const QString& path);
 
 private:
-    KDevelop::ProjectFolderItem* projectRootItem( KDevelop::IProject* project, const KDevelop::Path& path );
-    KDevelop::ProjectFolderItem* buildFolderItem( KDevelop::IProject* project, const KDevelop::Path& path, KDevelop::ProjectBaseItem* parent );
+//     KDevelop::ProjectFolderItem* projectRootItem( KDevelop::IProject* project, const KDevelop::Path& path );
+//     KDevelop::ProjectFolderItem* buildFolderItem( KDevelop::IProject* project, const KDevelop::Path& path, KDevelop::ProjectBaseItem* parent );
 };
 
 #endif // DUBMANAGER_H
