@@ -11,7 +11,9 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMQtDeclareLoggingCategory)
 include(FeatureSummary)
 
+#find_package(Qt5 COMPONENTS Core REQUIRED)
 find_package(KDevPlatform 5.2.40 REQUIRED)
+find_package(KF5 COMPONENTS CoreAddons REQUIRED)
 
 add_subdirectory(src)
 

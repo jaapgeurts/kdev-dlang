@@ -1,5 +1,6 @@
 set(dubbuilder_SRCS
     dubbuilder.cpp
+    dubjob.cpp
 )
 
 ecm_qt_declare_logging_category(dubbuilder_SRCS
@@ -15,4 +16,7 @@ kdevplatform_add_plugin(dubbuilder
 
 target_link_libraries(dubbuilder
     KDev::Interfaces
+    KDev::Project
+    KDev::Util
+#KDev::OutputView
 )

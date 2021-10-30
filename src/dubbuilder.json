@@ -1,12 +1,29 @@
 {
     "KPlugin": {
-        "Description": "dubbuilder",
-        "Id": "dubbuilder",
-        "Name": "dubbuilder",
+        "Category": "Project Management",
+        "Description": "Builds DUB Projects",
+        "Id": "DUBBuilder",
+        "Name": "DUB Project Builder",
+        "Authors": [
+            { "Name": "Jaap Geurts",
+            "Email": "jaap.geurts@fontys.nl"
+            }],
+        "Version": "0.1",
+        "License": "GPL",
+        "Icon": "dlang-dub",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]
     },
-    "X-KDevelop-Category": "Global",
-    "X-KDevelop-Mode": "GUI"
+    "X-KDevelop-Category": "Project",
+    "X-KDevelop-Interfaces": [
+        "org.kdevelop.IDUBBuilder",
+        "org.kdevelop.IProjectBuilder"
+    ],
+    "X-KDevelop-Mode": "GUI",
+    "X-KDevelop-Language": "D",
+    "X-KDevelop-ProjectBuilder": "DUB",
+    "X-KDevelop-SupportedMimeTypes": [
+        "text/x-dsrc"
+    ]
 }
