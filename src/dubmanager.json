@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Description": "dubmanager",
+        "Id": "dubmanager",
+        "Name": "dubmanager",
+        "ServiceTypes": [
+            "KDevelop/Plugin"
+        ]
+    },
+    "X-KDevelop-Category": "Global",
+    "X-KDevelop-Mode": "GUI"
+}
