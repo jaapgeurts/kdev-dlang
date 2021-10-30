@@ -15,7 +15,7 @@ DUBBuilder::DUBBuilder(QObject *parent, const QVariantList& args)
 {
     Q_UNUSED(args);
 
-    qCDebug(PLUGIN_DUBBUILDER) << "Hello world, my plugin is loaded!";
+    qCDebug(PLUGIN_DUBBUILDER) << "DUBBuilder(QObject *, const QVariantList&)";
 }
 
 DUBBuilder::~DUBBuilder() {
@@ -29,6 +29,7 @@ DUBBuilder::~DUBBuilder() {
     */
 KJob* DUBBuilder::install(KDevelop::ProjectBaseItem* item, const QUrl &specificPrefix) {
 
+    qCDebug(PLUGIN_DUBBUILDER) << "install(KDevelop::ProjectBaseItem*, const QUrl &)";
     return new DUBJob(this,item,DUBJob::CommandType::InstallCommand);
 };
 
@@ -37,6 +38,8 @@ KJob* DUBBuilder::install(KDevelop::ProjectBaseItem* item, const QUrl &specificP
     * on the implementation
     */
 KJob* DUBBuilder::build(KDevelop::ProjectBaseItem *item) {
+        qCDebug(PLUGIN_DUBBUILDER) << "build(KDevelop::ProjectBaseItem *)";
+
         return new DUBJob(this,item,DUBJob::CommandType::BuildCommand);
 
 }
@@ -48,6 +51,8 @@ KJob* DUBBuilder::build(KDevelop::ProjectBaseItem *item) {
     * that the builder needs shouldn't be removed.
     */
 KJob* DUBBuilder::clean(KDevelop::ProjectBaseItem *item) {
+        qCDebug(PLUGIN_DUBBUILDER) << "clean(KDevelop::ProjectBaseItem *)";
+
     return new DUBJob(this,item,DUBJob::CommandType::CleanCommand);
 }
 

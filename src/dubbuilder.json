@@ -20,7 +20,7 @@
         "org.kdevelop.IDUBBuilder",
         "org.kdevelop.IProjectBuilder"
     ],
-    "X-KDevelop-Mode": "GUI",
+    "X-KDevelop-Mode": "NoGUI",
     "X-KDevelop-Language": "D",
     "X-KDevelop-ProjectBuilder": "DUB",
     "X-KDevelop-SupportedMimeTypes": [

@@ -19,6 +19,7 @@
 #include <interfaces/icore.h>
 #include <interfaces/iprojectcontroller.h>
 #include <KLocalizedString>
+#include <util/path.h>
 
 using namespace KDevelop;
 
@@ -62,6 +63,8 @@ void DUBJob::start()
     setStandardToolView(IOutputView::BuildView);
     setBehaviours(KDevelop::IOutputView::AllowUserClose | KDevelop::IOutputView::AutoScroll);
 
+    OutputExecuteJob::setWorkingDirectory(it->path().toUrl());
+
     OutputExecuteJob::start();
 }
 
@@ -69,6 +72,7 @@ QStringList DUBJob::commandLine() const
 {
     QStringList cmdLine;
     cmdLine << "dub";
+    cmdLine << "build";
     return cmdLine;
 }
 
