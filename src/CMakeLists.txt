@@ -15,4 +15,6 @@ kdevplatform_add_plugin(dubmanager
 
 target_link_libraries(dubmanager
     KDev::Interfaces
+    KDev::Project
+    KDev::Util
 )
