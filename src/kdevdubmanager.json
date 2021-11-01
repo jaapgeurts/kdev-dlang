@@ -2,7 +2,7 @@
     "KPlugin": {
         "Category": "Project Management",
         "Description": "DUB Project Manager",
-        "Id": "DUBManager",
+        "Id": "KDevDUBManager",
         "Name": "DUB Project Manager",
         "Authors": [
             { "Name": "Jaap Geurts",
@@ -10,7 +10,7 @@
             }],
         "Version": "0.1",
         "License": "GPL",
-        "Icon": "dlang-dub",
+        "Icon": "dub",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]
@@ -26,7 +26,7 @@
         "org.kdevelop.IDUBBuilder"
     ],
     "X-KDevelop-Mode": "GUI",
-    "X-KDevelop-Language": "D",
+    "X-KDevelop-Languages": [ "D" ],
     "X-KDevelop-ProjectBuilder": "DUB",
     "X-KDevelop-ProjectFilesFilter": [
         "*.json",
