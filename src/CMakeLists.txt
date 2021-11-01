@@ -1,20 +1,20 @@
-set(dubbuilder_SRCS
+set(kdevdubbuilder_SRCS
     dubbuilder.cpp
     dubjob.cpp
 )
 
-ecm_qt_declare_logging_category(dubbuilder_SRCS
+ecm_qt_declare_logging_category(kdevdubbuilder_SRCS
     HEADER debug.h
-    IDENTIFIER PLUGIN_DUBBUILDER
-    CATEGORY_NAME "kdevelop.plugins.dubbuilder"
+    IDENTIFIER PLUGIN_KDEVDUBBUILDER
+    CATEGORY_NAME "kdevelop.plugins.kdevdubbuilder"
 )
 
-kdevplatform_add_plugin(dubbuilder
-    JSON dubbuilder.json
-    SOURCES ${dubbuilder_SRCS}
+kdevplatform_add_plugin(kdevdubbuilder
+    JSON kdevdubbuilder.json
+    SOURCES ${kdevdubbuilder_SRCS}
 )
 
-target_link_libraries(dubbuilder
+target_link_libraries(kdevdubbuilder
     KDev::Interfaces
     KDev::Project
     KDev::Util

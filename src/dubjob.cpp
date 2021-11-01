@@ -44,7 +44,7 @@ DUBJob::~DUBJob()
 void DUBJob::start()
 {
     ProjectBaseItem* it = item();
-    qCDebug(PLUGIN_DUBBUILDER) << "Building with dub" << m_Command;
+    qCDebug(PLUGIN_KDEVDUBBUILDER) << "Building with dub" << m_Command;
     if (!it)
     {
         setError(ItemNoLongerValidError);

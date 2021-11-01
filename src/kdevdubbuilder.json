@@ -2,7 +2,7 @@
     "KPlugin": {
         "Category": "Project Management",
         "Description": "Builds DUB Projects",
-        "Id": "DUBBuilder",
+        "Id": "KDevDUBBuilder",
         "Name": "DUB Project Builder",
         "Authors": [
             { "Name": "Jaap Geurts",
@@ -10,7 +10,7 @@
             }],
         "Version": "0.1",
         "License": "GPL",
-        "Icon": "dlang-dub",
+        "Icon": "dub",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]
@@ -21,7 +21,7 @@
         "org.kdevelop.IProjectBuilder"
     ],
     "X-KDevelop-Mode": "NoGUI",
-    "X-KDevelop-Language": "D",
+    "X-KDevelop-Languages": [ "D" ],
     "X-KDevelop-ProjectBuilder": "DUB",
     "X-KDevelop-SupportedMimeTypes": [
         "text/x-dsrc"
