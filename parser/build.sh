@@ -1,9 +1,18 @@
 #!/bin/bash
 
 pushd libdparse
-dub build --compiler=ldc
+dub build --compiler=ldc2
+test $? -eq 0 || exit
 popd
-ldc -g -Ilibdparse/src -Ilibdparse/experimental_allocator/src/ cppwrappergenerator.d libdparse/libdparse.a
+# parser wrapper generator
+ldc2 -g -Ilibdparse/src -Ilibdparse/stdx-allocator/source/ cppwrappergenerator.d libdparse/libdparse.a libdparse/stdx-allocator/libstdx-allocator.a
+test $? -eq 0 || exit
+
 ./cppwrappergenerator libdparse/src/dparse/ast.d > src/astWrapper.d
+test $? -eq 0 || exit
 ./cppwrappergenerator libdparse/src/dparse/ast.d -h > dparser.h
-ldc -g -Ilibdparse/src/ -Ilibdparse/experimental_allocator/src/ -shared src/dparse.d src/astWrapper.d libdparse/libdparse.a
+test $? -eq 0 || exit
+
+#end parser wrapper generator
+ldc2 -g -Ilibdparse/src/ -Ilibdparse/stdx-allocator/source/ -shared src/dparse.d src/astWrapper.d libdparse/libdparse.a libdparse/stdx-allocator/libstdx-allocator.a
+test $? -eq 0 || exit

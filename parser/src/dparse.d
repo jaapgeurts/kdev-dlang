@@ -6,6 +6,7 @@ import std.stdio;
 import dparse.lexer;
 import dparse.parser;
 import dparse.ast;
+import dparse.rollback_allocator;
 
 import astWrapper;
 
@@ -49,7 +50,8 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const AttributeDeclaration attributeDeclaration) { file.writefln("%sAttributeDeclaration", indentationLevel()); if(traverse) { indentation++; attributeDeclaration.accept(this); indentation--; } }
     /** */ override void visit(const AutoDeclaration autoDeclaration) { file.writefln("%sAutoDeclaration", indentationLevel()); if(traverse) { indentation++; autoDeclaration.accept(this); indentation--; } }
     /** */ override void visit(const BlockStatement blockStatement) { file.writefln("%sBlockStatement", indentationLevel()); if(traverse) { indentation++; blockStatement.accept(this); indentation--; } }
-    /** */ override void visit(const BodyStatement bodyStatement) { file.writefln("%sBodyStatement", indentationLevel()); if(traverse) { indentation++; bodyStatement.accept(this); indentation--; } }
+// FIXME:
+//    /** */ override void visit(const BodyStatement bodyStatement) { file.writefln("%sBodyStatement", indentationLevel()); if(traverse) { indentation++; bodyStatement.accept(this); indentation--; } }
     /** */ override void visit(const BreakStatement breakStatement) { file.writefln("%sBreakStatement", indentationLevel()); if(traverse) { indentation++; breakStatement.accept(this); indentation--; } }
     /** */ override void visit(const BaseClass baseClass) { file.writefln("%sBaseClass", indentationLevel()); if(traverse) { indentation++; baseClass.accept(this); indentation--; } }
     /** */ override void visit(const BaseClassList baseClassList) { file.writefln("%sBaseClassList", indentationLevel()); if(traverse) { indentation++; baseClassList.accept(this); indentation--; } }
@@ -99,7 +101,8 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const FunctionLiteralExpression functionLiteralExpression) { file.writefln("%sFunctionLiteralExpression", indentationLevel()); if(traverse) { indentation++; functionLiteralExpression.accept(this); indentation--; } }
     /** */ override void visit(const GotoStatement gotoStatement) { file.writefln("%sGotoStatement", indentationLevel()); if(traverse) { indentation++; gotoStatement.accept(this); indentation--; } }
     /** */ override void visit(const IdentifierChain identifierChain) { file.writefln("%sIdentifierChain", indentationLevel()); if(traverse) { indentation++; identifierChain.accept(this); indentation--; } }
-    /** */ override void visit(const IdentifierList identifierList) { file.writefln("%sIdentifierList", indentationLevel()); if(traverse) { indentation++; identifierList.accept(this); indentation--; } }
+// FIXME:
+//    /** */ override void visit(const IdentifierList identifierList) { file.writefln("%sIdentifierList", indentationLevel()); if(traverse) { indentation++; identifierList.accept(this); indentation--; } }
     /** */ override void visit(const IdentifierOrTemplateChain identifierOrTemplateChain) { file.writefln("%sIdentifierOrTemplateChain", indentationLevel()); if(traverse) { indentation++; identifierOrTemplateChain.accept(this); indentation--; } }
     /** */ override void visit(const IdentifierOrTemplateInstance identifierOrTemplateInstance) { file.writefln("%sIdentifierOrTemplateInstance", indentationLevel()); if(traverse) { indentation++; identifierOrTemplateInstance.accept(this); indentation--; } }
     /** */ override void visit(const IdentityExpression identityExpression) { file.writefln("%sIdentityExpression", indentationLevel()); if(traverse) { indentation++; identityExpression.accept(this); indentation--; } }
@@ -119,7 +122,8 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const KeyValuePair keyValuePair) { file.writefln("%sKeyValuePair", indentationLevel()); if(traverse) { indentation++; keyValuePair.accept(this); indentation--; } }
     /** */ override void visit(const KeyValuePairs keyValuePairs) { file.writefln("%sKeyValuePairs", indentationLevel()); if(traverse) { indentation++; keyValuePairs.accept(this); indentation--; } }
     /** */ override void visit(const LabeledStatement labeledStatement) { file.writefln("%sLabeledStatement", indentationLevel()); if(traverse) { indentation++; labeledStatement.accept(this); indentation--; } }
-    /** */ override void visit(const LambdaExpression lambdaExpression) { file.writefln("%sLambdaExpression", indentationLevel()); if(traverse) { indentation++; lambdaExpression.accept(this); indentation--; } }
+// FIXME:
+//    /** */ override void visit(const LambdaExpression lambdaExpression) { file.writefln("%sLambdaExpression", indentationLevel()); if(traverse) { indentation++; lambdaExpression.accept(this); indentation--; } }
     /** */ override void visit(const LastCatch lastCatch) { file.writefln("%sLastCatch", indentationLevel()); if(traverse) { indentation++; lastCatch.accept(this); indentation--; } }
     /** */ override void visit(const LinkageAttribute linkageAttribute) { file.writefln("%sLinkageAttribute", indentationLevel()); if(traverse) { indentation++; linkageAttribute.accept(this); indentation--; } }
     /** */ override void visit(const MemberFunctionAttribute memberFunctionAttribute) { file.writefln("%sMemberFunctionAttribute", indentationLevel()); if(traverse) { indentation++; memberFunctionAttribute.accept(this); indentation--; } }
@@ -222,7 +226,7 @@ extern(C++) void deinitDParser()
 	Runtime.terminate();
 }
 
-extern(C++) IModule parseSourceFile(char* sourceFile, char* sourceData)
+extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 {
 	try
 	{
@@ -242,7 +246,8 @@ extern(C++) IModule parseSourceFile(char* sourceFile, char* sourceData)
 		config.fileName = fromStringz(sourceFile).idup;
 		auto source = cast(ubyte[])fromStringz(sourceData);
 		auto tokens = getTokensForParser(source, config, new StringCache(StringCache.defaultBucketCount));
-		auto mod = parseModule(tokens, config.fileName);
+        RollbackAllocator allocator;
+		auto mod = parseModule(tokens, config.fileName,&allocator);
 		//new ASTPrinter(file, true).visit(mod);
 		keepAlive[config.fileName] = new CModule(mod);
 		return keepAlive[config.fileName];
