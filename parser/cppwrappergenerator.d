@@ -5,6 +5,8 @@ import std.uni;
 import std.string;
 import std.algorithm.searching;
 
+import std.typecons;
+
 import dparse.lexer;
 import dparse.parser;
 import dparse.ast;
@@ -45,7 +47,7 @@ struct Class {
 
 ClassVariable[][Class] classes;
 
-Declaration[string] templatedClasses;
+ClassDeclaration[string] templatedClasses;
 
 struct Alias {
     string name;
@@ -122,9 +124,16 @@ void main(string[] args) {
 
     writeExtras();
 
-    mod.accept(new WrapperGenVisitor(WrapperGenVisitor.GenType.GenInterfaces));
+    WrapperGenVisitor visitor = new WrapperGenVisitor(WrapperGenVisitor.GenType.GenInterfaces);
+    mod.accept(visitor);
 
-    mod.accept(new WrapperGenVisitor(WrapperGenVisitor.GenType.GenClasses));
+    writeInterfaceForTemplate(visitor);
+
+    WrapperGenVisitor visitor2 = new WrapperGenVisitor(WrapperGenVisitor.GenType.GenClasses);
+
+    mod.accept(visitor2); // TODO: reset visitor
+
+    writeClassForTemplate(visitor2);
 
 }
 
@@ -180,19 +189,53 @@ void writeExtras() {
 
     // Token
     writeln("extern(C++) interface IToken : INode {}");
-    /*        writeln(
-                newClassType.name = "Token";
-        ClassVariable cv;
-        
-        cv.type = "string";
-        cv.name = "text";
-        classes[newClassType] ~= cv;
-        cv.type = "size_t";
-        cv.name = "line";
-        classes[newClassType] ~= cv;
-        cv.type = "size_t";
-        cv.name = "column";
-        classes[newClassType] ~= cv;*/
+
+}
+
+void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
+    foreach (aliasclass; aliasses) {
+
+        ClassDeclaration cd = templatedClasses[aliasclass.templatename];
+
+        writefln("extern(C++) interface I%s : INode", aliasclass.name);
+        writeln("{");
+
+        classvars.length = 0;
+        cd.accept(visitor);
+
+        foreach (cv; classvars) {
+
+            visitor.writeInterfaceMethods(cv);
+        }
+
+        writeln("}");
+        writeln();
+
+    }
+}
+
+void writeClassForTemplate(WrapperGenVisitor visitor) {
+    foreach (aliasclass; aliasses) {
+        ClassDeclaration cd = templatedClasses[aliasclass.templatename];
+
+        writefln("class C%s : I%s", aliasclass.name, aliasclass.name);
+        writeln("{");
+
+        visitor.writeClassConstructor(cd, aliasclass.nullable);
+
+        classvars.length = 0;
+        cd.accept(visitor);
+
+        foreach (cv; classvars) {
+
+            visitor.writeClassMethods(cv);
+        }
+
+        visitor.writeClassVariables(cd, aliasclass.nullable);
+
+        writeln("}");
+        writeln();
+    }
 }
 
 class pass1Visitor : ASTVisitor {
@@ -207,7 +250,13 @@ class pass1Visitor : ASTVisitor {
         // collect all class names
         if (cd.name.text == "ASTVisitor")
             return;
+
         allclasses[cd.name.text] = cd.name.text;
+
+        if (cd.templateParameters !is null) {
+            // store templated classes for later 
+            templatedClasses[cd.name.text] = cast(ClassDeclaration) cd;
+        }
     }
 
     override void visit(const Unittest ut) {
@@ -241,98 +290,44 @@ class WrapperGenVisitor : ASTVisitor {
         if (cd.name.text == "ASTVisitor")
             return;
 
+        //        stderr.writeln("=>"  , templateArgs,"<=");
+
+        if (cd.name.text in templatedClasses) {
+            // writeln("/* ",cd.name.text, " moved to bottom is a template class. See at bottom */");
+            // writeln();
+            return;
+        }
+
+        //stderr.writeln("=>"  , templateArgs,"<=");
+
         if (genType == GenType.GenInterfaces) {
             writefln("extern(C++) interface I%s : INode", cd.name.text);
             writeln("{");
+
         }
         else {
-            writefln("extern(C++) class C%s : INode", cd.name.text);
+            writefln("class C%s : I%s", cd.name.text, cd.name.text);
             writeln("{");
-            writeln("public: //Methods.");
-            writefln("\tthis(const %s dclass)", cd.name.text);
-            writeln("\t{");
-            writeln("\t\tthis.dclass = dclass;");
-            writeln("\t}");
-            writeln("\t");
-            writeln("\textern(C++) Kind getKind()");
-            writeln("\t{");
-            writefln("\t\treturn Kind.%s;", escapeAndLowerName(cd.name.text));
-            writeln("\t}");
-            writeln("\t");
-            writeln("\tmixin ContextMethods;");
-            writeln();
+
+            writeClassConstructor(cd, Nullable!Alias.init);
         }
+
+        if (cd.name.text == "Declaration") {
+            writeDeclarationMembers();
+        }
+
         classvars.length = 0;
         super.visit(cd);
 
         foreach (cv; classvars) {
-            if (cv.type == "string")
-                cv.type = "const(char)*";
-
-            string typeorname = cv.type;
-            if (cv.type in allclasses)
-                typeorname = "I" ~ cv.type;
-
-            if (cv.isArray) {
-                writefln("\tsize_t num%s%s();", cv.name[0].toUpper(),
-                        cv.name[1 .. $].replace("_", ""));
-                string name = format("%s%s", cv.name[0].toUpper(),
-                        cv.name[1 .. $].replace("_", ""));
-                if (name.endsWith("ses"))
-                    name = name[0 .. $ - 3];
-                else if (name.endsWith("xes"))
-                    name = name[0 .. $ - 2];
-                else if (name.endsWith("s"))
-                    name = name[0 .. $ - 1];
-                writef("\t%s get%s(size_t index", typeorname, name);
-            }
-            else {
-                writef("\t%s get%s%s(", typeorname, cv.name[0].toUpper,
-                        cv.name[1 .. $].replace("_", ""));
-            }
-
-            if (genType == GenType.GenClasses) {
-                writeln(")");
-                writeln("\t{");
-                writefln("\t\tif(!%s%s)", escapeName(cv.name), cv.type == "Token"
-                        || cv.type == "string" ? "" : format(" && dclass.%s", cv.name));
-                if (cv.type == "IdType")
-                    writefln("\t\t\t%s%s = toStringz(str(dclass.%s%s));",
-                            escapeName(cv.name), "", cv.name, "");
-                else if (cv.type == "string")
-                    writefln("\t\t\t%s%s = toStringz(dclass.%s%s);",
-                            escapeName(cv.name), "", cv.name, "");
-                else if (cv.type[0].isUpper) /* is class */
-                    writefln("\t\t\t%s%s = new C%s(dclass.%s%s);",
-                            escapeName(cv.name), "", cv.type, cv.name, "");
-                else
-                    writefln("\t\t\t%s%s = dclass.%s%s;", escapeName(cv.name), "", cv.name, "");
-                writefln("\t\treturn %s%s;", escapeName(cv.name), "");
-                writeln("\t}");
-            }
-            else {
-                writeln(");");
-            }
+            if (genType == GenType.GenInterfaces)
+                writeInterfaceMethods(cv);
+            else
+                writeClassMethods(cv);
         }
 
         if (genType == GenType.GenClasses) {
-            writeln();
-            writeln("private: //Variables.");
-            writefln("\tconst %s dclass;", cd.name.text);
-            foreach (cv; classvars) {
-                if (cv.type == "string")
-                    cv.type = "const(char)*";
-
-                string typeorname = cv.type;
-                if (cv.type in allclasses)
-                    typeorname = "I" ~ cv.type;
-
-                writefln("\t%s%s %s;", typeorname, "", escapeName(cv.name));
-                // // else
-                //     writefln("\t%s%s %s;", declaration.type == "string"
-                //             ? "const(char)*" : declaration.type, typePostfix,
-                //             escapeName(declaration.name));
-            }
+            writeClassVariables(cd, Nullable!Alias.init);
         }
 
         writeln("}");
@@ -364,11 +359,6 @@ class WrapperGenVisitor : ASTVisitor {
         inVariable = false;
     }
 
-    override void visit(const Unittest ut) {
-        // skip unittests
-        return;
-    }
-
     override void visit(const Declarator d) {
         classvars ~= ClassVariable(typename, d.name.text, "", isArray, false, false);
         super.visit(d);
@@ -380,6 +370,17 @@ class WrapperGenVisitor : ASTVisitor {
         inFunction = false;
     }
 
+    override void visit(const AliasDeclaration ad) {
+        if (inStruct)
+            return;
+        const AliasInitializer init = ad.initializers[0];
+        string name = init.name.text;
+        aliasses[name] = Alias(name,
+                getString(init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance.identifier),
+                init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance
+                .templateArguments.templateSingleArgument.token == tok!"true" ? "true" : "false");
+    }
+
     override void visit(const MixinTemplateName mtn) {
 
         auto mixinSymbol = mtn.symbol;
@@ -388,7 +389,6 @@ class WrapperGenVisitor : ASTVisitor {
             mtd.accept(this);
         }
         super.visit(mtn);
-
     }
 
     override void visit(const MixinTemplateDeclaration mtd) {
@@ -397,7 +397,7 @@ class WrapperGenVisitor : ASTVisitor {
     }
 
     override void visit(const Type t) {
-        isArray = isArray || t.typeSuffixes.any!(x=>x.array);
+        isArray = isArray || t.typeSuffixes.any!(x => x.array);
         super.visit(t);
     }
 
@@ -423,11 +423,185 @@ class WrapperGenVisitor : ASTVisitor {
         super.visit(t2);
     }
 
+    override void visit(const Unittest ut) {
+        // skip unittests
+        return;
+    }
+
+    void writeClassConstructor(const ClassDeclaration cd, Nullable!Alias aliasclass) {
+
+        writeln("public: //Methods.");
+        string classname = cd.name.text;
+        if (!aliasclass.isNull)
+            classname = aliasclass.get.templatename ~ "!" ~ aliasclass.get.templateargs;
+        writefln("\tthis(const %s dclass)", classname);
+        writeln("\t{");
+        writeln("\t\tthis.dclass = dclass;");
+        writeln("\t}");
+        writeln("\t");
+        writeln("\textern(C++) Kind getKind()");
+        writeln("\t{");
+        writefln("\t\treturn Kind.%s;", escapeAndLowerName(cd.name.text));
+        writeln("\t}");
+        writeln("\t");
+        writeln("\tmixin ContextMethods;");
+        writeln();
+
+    }
+
+    void writeInterfaceMethods(ClassVariable cv) {
+
+        string[] signatures = getSignatures(cv);
+
+        foreach (signature; signatures) {
+            writeln("\t", signature, ";");
+        }
+
+    }
+
+    void writeClassMethods(ClassVariable cv) {
+
+        string[] signatures = getSignatures(cv);
+        string typePostfix = cv.isArray ? "[index]" : "";
+
+        if (cv.isArray) {
+            writeln("\textern(C++) ", signatures[0]);
+            writeln("\t{");
+            writefln("\t\tif(!dclass.%s)", escapeName(cv.name));
+            writeln("\t\t\treturn 0;");
+            writefln("\t\treturn dclass.%s.length;", cv.name);
+            writeln("\t}");
+            writeln();
+
+            writeln("\textern(C++) ", signatures[1]);
+            writeln("\t{");
+            writefln("\t\tif(index !in %s)", escapeName(cv.name));
+        }
+        else {
+            writeln("\textern(C++) ", signatures[0]);
+            writeln("\t{");
+            writefln("\t\tif(!%s%s)", escapeName(cv.name), cv.type == "Token"
+                    || cv.type == "string" ? "" : format(" && dclass.%s", cv.name));
+        }
+        if (cv.type == "IdType")
+            writefln("\t\t\t%s%s = toStringz(str(dclass.%s%s));",
+                    escapeName(cv.name), typePostfix, cv.name, typePostfix);
+        else if (cv.type == "string")
+            writefln("\t\t\t%s%s = toStringz(dclass.%s%s);",
+                    escapeName(cv.name), typePostfix, cv.name, typePostfix);
+        else if (cv.type[0].isUpper) /* is class */
+            writefln("\t\t\t%s%s = new C%s(dclass.%s%s);", escapeName(cv.name),
+                    typePostfix, cv.type, cv.name, typePostfix);
+        else
+            writefln("\t\t\t%s%s = dclass.%s%s;", escapeName(cv.name),
+                    typePostfix, cv.name, typePostfix);
+        writefln("\t\treturn %s%s;", escapeName(cv.name), "");
+        writeln("\t}");
+        writeln();
+
+    }
+
+    string[] getSignatures(ClassVariable cv) {
+
+        string[] result;
+
+        if (cv.type == "string")
+            cv.type = "const(char)*";
+
+        string typeorname = cv.type;
+        if (cv.type in allclasses)
+            typeorname = "I" ~ cv.type;
+
+        if (cv.isArray) {
+            // signature 0
+            result ~= format("size_t num%s%s()", cv.name[0].toUpper(),
+                    cv.name[1 .. $].replace("_", ""));
+            // signature 1
+            string name = format("%s%s", cv.name[0].toUpper(), cv.name[1 .. $].replace("_", ""));
+            if (name.endsWith("ses"))
+                name = name[0 .. $ - 3];
+            else if (name.endsWith("xes"))
+                name = name[0 .. $ - 2];
+            else if (name.endsWith("s"))
+                name = name[0 .. $ - 1];
+            result ~= format("%s get%s(size_t index)", typeorname, name);
+        }
+        else {
+            // signature 0
+            result ~= format("%s get%s%s(%s)", typeorname, cv.name[0].toUpper,
+                    cv.name[1 .. $].replace("_", ""), cv.args);
+        }
+        return result;
+    }
+
+    void writeDeclarationMembers() {
+
+        foreach (member; declarationMembers) {
+            if (genType == genType.GenInterfaces)
+                writeInterfaceMethods(ClassVariable(member,
+                        cast(char)(member[0].toLower) ~ member[1 .. $], "", false, true, false));
+            else
+                writeClassMethods(ClassVariable(member,
+                        cast(char)(member[0].toLower) ~ member[1 .. $], "", false, true, false));
+        }
+    }
+
+    void writeClassVariables(const ClassDeclaration cd, Nullable!Alias aliasclass) {
+        writeln();
+        writeln("private: // Variables.");
+        string classname = cd.name.text;
+        if (!aliasclass.isNull) {
+            if (classname == aliasclass.get.templatename)
+                classname = aliasclass.get.templatename ~ "!" ~ aliasclass.get.templateargs;
+        }
+        writefln("\tconst %s dclass;", classname);
+        foreach (cv; classvars) {
+
+            string typePostfix = cv.isArray ? "[size_t]" : "";
+
+            if (cv.type == "string")
+                cv.type = "const(char)*";
+
+            string typeorname = cv.type;
+            if (cv.type in allclasses || cv.type == "Token")
+                typeorname = "I" ~ cv.type;
+
+            writefln("\t%s%s %s;", typeorname, typePostfix, escapeName(cv.name));
+            // // else
+            //     writefln("\t%s%s %s;", declaration.type == "string"
+            //             ? "const(char)*" : declaration.type, typePostfix,
+            //             escapeName(declaration.name));
+        }
+        if (cd.name.text == "Declaration") {
+            foreach (member; declarationMembers) {
+                writefln("\tI%s %s;", member, cast(char)(member[0].toLower) ~ member[1 .. $]);
+            }
+        }
+    }
+
     private bool inStruct = false;
     private bool inVariable = false;
     private bool inFunction = false;
     private bool isArray = false;
     private string typename;
+
+    private string[] declarationMembers = [
+        "AliasDeclaration", "AliasAssign", "AliasThisDeclaration",
+        "AnonymousEnumDeclaration", "AttributeDeclaration",
+        "ClassDeclaration", "ConditionalDeclaration", "Constructor",
+        "DebugSpecification", "Destructor", "EnumDeclaration",
+        "EponymousTemplateDeclaration", "FunctionDeclaration",
+        "ImportDeclaration", "InterfaceDeclaration",
+        // TODO: FIXME needs to be added
+        //"Invariant",
+        "MixinDeclaration", "MixinTemplateDeclaration", "Postblit",
+        "PragmaDeclaration", "SharedStaticConstructor", "SharedStaticDestructor",
+        "StaticAssertDeclaration", "StaticConstructor", "StaticDestructor",
+        "StructDeclaration", "TemplateDeclaration", "UnionDeclaration",
+        // TODO: FIXME needs to be added
+        // "Unittest",
+        "VariableDeclaration", "VersionSpecification", "StaticForeachDeclaration"
+    ];
 }
 
 void old(Module mod, string[] args) {
@@ -471,7 +645,8 @@ void old(Module mod, string[] args) {
 
         if (declaration.classDeclaration.templateParameters !is null) {
             // store templated classes for later 
-            templatedClasses[classType.name] = declaration;
+            ClassDeclaration decl = cast(ClassDeclaration) declaration.classDeclaration();
+            templatedClasses[classType.name] = decl;
             continue;
         }
         if (declaration.classDeclaration.baseClassList) {
