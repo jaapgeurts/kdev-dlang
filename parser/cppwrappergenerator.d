@@ -4,6 +4,7 @@ import std.stdio;
 import std.uni;
 import std.string;
 import std.algorithm.searching;
+import std.algorithm.mutation;
 
 import std.typecons;
 
@@ -58,11 +59,11 @@ struct Alias {
 Alias[string] aliasses;
 
 struct Enum {
-    string name;
-    string[] values;
+        string name;
+        string[] values;
 }
 
-Enum[] enums;
+Enum[string] enumTable;
 
 ClassVariable[] classvars;
 string[string] allclasses;
@@ -117,6 +118,16 @@ void main(string[] args) {
     auto mod = parseModule(tokens, config.fileName, &allocator);
 
     // old(mod,args);
+    // add Token class
+    Declaration d = new Declaration();
+    ClassDeclaration cd = new ClassDeclaration();
+    cd.name = Token(tok!"identifier", "Token", 0, 0, 0);
+    cd.structBody = new StructBody();
+    cd.structBody.declarations ~= newVariableDecl("string", "text");
+    cd.structBody.declarations ~= newVariableDecl("size_t", "line");
+    cd.structBody.declarations ~= newVariableDecl("size_t", "column");
+    d.classDeclaration = cd;
+    mod.declarations ~= d;
 
     mod.accept(new pass1Visitor());
 
@@ -187,9 +198,6 @@ void writeHeader() {
 
 void writeExtras() {
 
-    // Token
-    writeln("extern(C++) interface IToken : INode {}");
-
 }
 
 void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
@@ -202,6 +210,15 @@ void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
 
         classvars.length = 0;
         cd.accept(visitor);
+
+        if (aliasclass.templateargs == "true") {
+            // TODO: quick fix. instead of evaluating the static if in the template
+            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarationOrStatement"));
+            // remove the variables instead
+        } else {
+            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarations"));
+            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "style"));
+        }
 
         foreach (cv; classvars) {
 
@@ -225,6 +242,16 @@ void writeClassForTemplate(WrapperGenVisitor visitor) {
 
         classvars.length = 0;
         cd.accept(visitor);
+        
+
+        if (aliasclass.templateargs == "true") {
+            // TODO: quick fix. instead of evaluating the static if in the template
+            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarationOrStatement"));
+            // remove the variables instead
+        } else {
+            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarations"));
+            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "style"));
+        }
 
         foreach (cv; classvars) {
 
@@ -236,6 +263,23 @@ void writeClassForTemplate(WrapperGenVisitor visitor) {
         writeln("}");
         writeln();
     }
+}
+
+Declaration newVariableDecl(string tname, string vname) {
+    Declaration d = new Declaration();
+    VariableDeclaration vd = new VariableDeclaration();
+    Type t = new Type();
+    t.type2 = new Type2();
+    t.type2.typeIdentifierPart = new TypeIdentifierPart();
+    t.type2.typeIdentifierPart.identifierOrTemplateInstance = new IdentifierOrTemplateInstance();
+    t.type2.typeIdentifierPart.identifierOrTemplateInstance.identifier = Token(
+            tok!"identifier", tname, 0, 0, 0);
+    vd.type = t;
+    Declarator dc = new Declarator();
+    dc.name = Token(tok!"identifier", vname, 0, 0, 0);
+    vd.declarators ~= dc;
+    d.variableDeclaration = vd;
+    return d;
 }
 
 class pass1Visitor : ASTVisitor {
@@ -257,6 +301,20 @@ class pass1Visitor : ASTVisitor {
             // store templated classes for later 
             templatedClasses[cd.name.text] = cast(ClassDeclaration) cd;
         }
+    }
+
+    override void visit(const AliasDeclaration ad) {
+
+        const AliasInitializer init = ad.initializers[0];
+        string name = init.name.text;
+        aliasses[name] = Alias(name,
+                getString(init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance.identifier),
+                init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance
+                .templateArguments.templateSingleArgument.token == tok!"true" ? "true" : "false");
+    }
+
+    override void visit(const EnumDeclaration ed) {
+        enumTable[ed.name.text] = Enum(ed.name.text);
     }
 
     override void visit(const Unittest ut) {
@@ -344,11 +402,9 @@ class WrapperGenVisitor : ASTVisitor {
         if (d.attributes.any!(x => x.attribute == tok!"private" || x.attribute == tok!"protected")) {
             return;
         }
-        // foreach (ref declaration ; d.declarations) {
-        //     if (declaration.mixinDeclaration) {
-        //         declaration = null;
-        //     }
-        // }
+        // don't care what's inside functions
+        if (inFunction)
+          return;
         super.visit(d);
     }
 
@@ -360,6 +416,7 @@ class WrapperGenVisitor : ASTVisitor {
     }
 
     override void visit(const Declarator d) {
+        // TODO: move the variables. Fill ClassVariable as we visit
         classvars ~= ClassVariable(typename, d.name.text, "", isArray, false, false);
         super.visit(d);
     }
@@ -370,16 +427,9 @@ class WrapperGenVisitor : ASTVisitor {
         inFunction = false;
     }
 
-    override void visit(const AliasDeclaration ad) {
-        if (inStruct)
-            return;
-        const AliasInitializer init = ad.initializers[0];
-        string name = init.name.text;
-        aliasses[name] = Alias(name,
-                getString(init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance.identifier),
-                init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance
-                .templateArguments.templateSingleArgument.token == tok!"true" ? "true" : "false");
-    }
+    // override void visit(const StaticIfCondition sic) {
+    //     stderr.writeln("yes");
+    // }
 
     override void visit(const MixinTemplateName mtn) {
 
@@ -409,11 +459,12 @@ class WrapperGenVisitor : ASTVisitor {
                 //    // skip variables that are templates
                 //    continue;
                 // }
-                if (typename == "IdType") {
-                    typename = "string";
-                    return;
-                }
-                else if (typename == "size_t" || typename == "string")
+                // if (typename == "IdType") {
+                //     typename = "string";
+                //     return;
+                // }
+                // else 
+                if (typename == "size_t" || typename == "string")
                     return;
             }
             else {
@@ -489,13 +540,16 @@ class WrapperGenVisitor : ASTVisitor {
         else if (cv.type == "string")
             writefln("\t\t\t%s%s = toStringz(dclass.%s%s);",
                     escapeName(cv.name), typePostfix, cv.name, typePostfix);
+        else if (cv.type in enumTable)
+            writefln("\t\t\t%s%s = dclass.%s%s;", escapeName(cv.name),
+                    typePostfix, cv.name, typePostfix);
         else if (cv.type[0].isUpper) /* is class */
             writefln("\t\t\t%s%s = new C%s(dclass.%s%s);", escapeName(cv.name),
                     typePostfix, cv.type, cv.name, typePostfix);
         else
             writefln("\t\t\t%s%s = dclass.%s%s;", escapeName(cv.name),
                     typePostfix, cv.name, typePostfix);
-        writefln("\t\treturn %s%s;", escapeName(cv.name), "");
+        writefln("\t\treturn %s%s;", escapeName(cv.name), typePostfix);
         writeln("\t}");
         writeln();
 
@@ -505,11 +559,11 @@ class WrapperGenVisitor : ASTVisitor {
 
         string[] result;
 
-        if (cv.type == "string")
+        if (cv.type == "string" || cv.type == "IdType")
             cv.type = "const(char)*";
 
         string typeorname = cv.type;
-        if (cv.type in allclasses)
+        if (cv.type in allclasses || cv.type in aliasses)
             typeorname = "I" ~ cv.type;
 
         if (cv.isArray) {
@@ -559,18 +613,15 @@ class WrapperGenVisitor : ASTVisitor {
 
             string typePostfix = cv.isArray ? "[size_t]" : "";
 
-            if (cv.type == "string")
+            if (cv.type == "string" || cv.type == "IdType")
                 cv.type = "const(char)*";
 
             string typeorname = cv.type;
-            if (cv.type in allclasses || cv.type == "Token")
+            if (cv.type in allclasses || cv.type == "Token" || cv.type in aliasses)
                 typeorname = "I" ~ cv.type;
 
             writefln("\t%s%s %s;", typeorname, typePostfix, escapeName(cv.name));
-            // // else
-            //     writefln("\t%s%s %s;", declaration.type == "string"
-            //             ? "const(char)*" : declaration.type, typePostfix,
-            //             escapeName(declaration.name));
+
         }
         if (cd.name.text == "Declaration") {
             foreach (member; declarationMembers) {
@@ -633,7 +684,7 @@ void old(Module mod, string[] args) {
             foreach (member; declaration.enumDeclaration.enumBody.enumMembers) {
                 en.values ~= member.name.text;
             }
-            enums ~= en;
+            enumTable[en.name] = en;
         }
 
         if (!declaration.classDeclaration)
@@ -864,7 +915,7 @@ void old(Module mod, string[] args) {
     foreach (ref key, ref val; classes) {
         foreach (ref cv; val) {
             cv.isClass = classes.keys.any!(x => x.name == cv.type);
-            cv.isEnum = enums.any!(x => x.name == cv.type);
+            cv.isEnum =  (cv.type in enumTable) !is null;
         }
     }
 
@@ -964,7 +1015,9 @@ void old(Module mod, string[] args) {
         return;
     }
 
+    // ************************************
     // generate D Wrapper
+    // ************************************
     writeln("module astWrapper;");
     writeln();
     writeln("import std.string;");
