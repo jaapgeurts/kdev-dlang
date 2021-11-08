@@ -14,24 +14,23 @@ import dparse.ast;
 import dparse.rollback_allocator;
 
 private enum keywords = [
-        "abstract", "alias", "align", "asm", "assert", "auto", "body", "bool",
-        "break", "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat",
-        "char", "class", "const", "continue", "creal", "dchar", "debug", "default",
+        "abstract", "alias", "align", "asm", "assert", "auto", "bool", "break",
+        "byte", "case", "cast", "catch", "cdouble", "cent", "cfloat", "char",
+        "class", "const", "continue", "creal", "dchar", "debug", "default",
         "delegate", "delete", "deprecated", "do", "double", "else", "enum",
         "export", "extern", "false", "final", "finally", "float", "for", "foreach",
         "foreach_reverse", "function", "goto", "idouble", "if", "ifloat",
         "immutable", "import", "in", "inout", "int", "interface", "invariant",
         "ireal", "is", "lazy", "long", "macro", "mixin", "module", "new",
         "nothrow", "null", "out", "override", "package", "pragma", "private",
-        "protected", "public", "pure", "real", "ref", "register", "return",
-        "scope", "shared", "short", "static", "struct", "super", "switch",
-        "synchronized", "template", "this", "throw", "true", "try", "typedef",
-        "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union", "unittest",
-        "ushort", "version", "void", "volatile", "wchar", "while", "with",
-        "__DATE__", "__EOF__", "__FILE__", "__FUNCTION__", "__gshared",
-        "__LINE__", "__MODULE__", "__parameters", "__PRETTY_FUNCTION__",
-        "__TIME__", "__TIMESTAMP__", "__traits", "__vector", "__VENDOR__",
-        "__VERSION__"
+        "protected", "public", "pure", "real", "ref", "return", "scope", "shared",
+        "short", "static", "struct", "super", "switch", "synchronized", "template",
+        "this", "throw", "true", "try", "typedef", "typeid", "typeof", "ubyte",
+        "ucent", "uint", "ulong", "union", "unittest", "ushort", "version", "void",
+        "wchar", "while", "with", "__DATE__", "__EOF__", "__FILE__",
+        "__FILE_FULL_PATH__", "__FUNCTION__", "__gshared", "__LINE__",
+        "__MODULE__", "__parameters", "__PRETTY_FUNCTION__", "__TIME__",
+        "__TIMESTAMP__", "__traits", "__vector", "__VENDOR__", "__VERSION__"
     ];
 
 struct ClassVariable {
@@ -59,14 +58,15 @@ struct Alias {
 Alias[string] aliasses;
 
 struct Enum {
-        string name;
-        string[] values;
+    string name;
+    string[] values;
 }
 
 Enum[string] enumTable;
 
 ClassVariable[] classvars;
 string[string] allclasses;
+string[] allexpressionclasses;
 
 string escapeName(string name) {
     import std.algorithm;
@@ -117,24 +117,30 @@ void main(string[] args) {
 
     auto mod = parseModule(tokens, config.fileName, &allocator);
 
-    // old(mod,args);
     // add Token class
     Declaration d = new Declaration();
-    ClassDeclaration cd = new ClassDeclaration();
-    cd.name = Token(tok!"identifier", "Token", 0, 0, 0);
-    cd.structBody = new StructBody();
-    cd.structBody.declarations ~= newVariableDecl("string", "text");
-    cd.structBody.declarations ~= newVariableDecl("size_t", "line");
-    cd.structBody.declarations ~= newVariableDecl("size_t", "column");
+    d.classDeclaration = makeClassDeclaration("Token", makeVariableDecl("string", "text"),
+            makeVariableDecl("size_t", "line"), makeVariableDecl("size_t", "column"));
+    mod.declarations ~= d;
+
+    // First pass
+    mod.accept(new pass1Visitor());
+
+    // Add ExpressionNode
+    d = new Declaration();
+    ClassDeclaration cd = makeClassDeclaration("ExpressionNode");
+    foreach (expr; allexpressionclasses) {
+        cd.structBody.declarations ~= makeVariableDecl(expr, escapeAndLowerName(expr));
+    }
     d.classDeclaration = cd;
     mod.declarations ~= d;
 
-    mod.accept(new pass1Visitor());
-
+    // Output header
     writeHeader();
 
     writeExtras();
 
+    // Second pass
     WrapperGenVisitor visitor = new WrapperGenVisitor(WrapperGenVisitor.GenType.GenInterfaces);
     mod.accept(visitor);
 
@@ -142,7 +148,7 @@ void main(string[] args) {
 
     WrapperGenVisitor visitor2 = new WrapperGenVisitor(WrapperGenVisitor.GenType.GenClasses);
 
-    mod.accept(visitor2); // TODO: reset visitor
+    mod.accept(visitor2); // TODO: reset and re-use visitor instead of creating new one
 
     writeClassForTemplate(visitor2);
 
@@ -160,8 +166,9 @@ void writeHeader() {
     writeln("import dparse.ast;");
     writeln();
 
-    // writeln("import std.variant : Algebraic;");
-    // writeln(); 
+}
+
+void writeExtras() {
 
     writeln("template ContextMethods()");
     writeln("{");
@@ -194,12 +201,10 @@ void writeHeader() {
     writeln("	void setContext(void* context);");
     writeln("}");
     writeln();
-}
-
-void writeExtras() {
 
 }
 
+/** this function produces interfaces for two foreach aliases which expand to template class ForEach */
 void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
     foreach (aliasclass; aliasses) {
 
@@ -213,11 +218,13 @@ void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
 
         if (aliasclass.templateargs == "true") {
             // TODO: quick fix. instead of evaluating the static if in the template
-            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarationOrStatement"));
+            classvars = classvars.remove(
+                    classvars.countUntil!(c => c.name == "declarationOrStatement"));
             // remove the variables instead
-        } else {
-            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarations"));
-            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "style"));
+        }
+        else {
+            classvars = classvars.remove(classvars.countUntil!(c => c.name == "declarations"));
+            classvars = classvars.remove(classvars.countUntil!(c => c.name == "style"));
         }
 
         foreach (cv; classvars) {
@@ -231,6 +238,7 @@ void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
     }
 }
 
+/** this function produces classes for two foreach aliases which expand to template class ForEach */
 void writeClassForTemplate(WrapperGenVisitor visitor) {
     foreach (aliasclass; aliasses) {
         ClassDeclaration cd = templatedClasses[aliasclass.templatename];
@@ -242,20 +250,21 @@ void writeClassForTemplate(WrapperGenVisitor visitor) {
 
         classvars.length = 0;
         cd.accept(visitor);
-        
 
         if (aliasclass.templateargs == "true") {
             // TODO: quick fix. instead of evaluating the static if in the template
-            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarationOrStatement"));
+            classvars = classvars.remove(
+                    classvars.countUntil!(c => c.name == "declarationOrStatement"));
             // remove the variables instead
-        } else {
-            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "declarations"));
-            classvars = classvars.remove(classvars.countUntil!(c=>c.name == "style"));
+        }
+        else {
+            classvars = classvars.remove(classvars.countUntil!(c => c.name == "declarations"));
+            classvars = classvars.remove(classvars.countUntil!(c => c.name == "style"));
         }
 
         foreach (cv; classvars) {
 
-            visitor.writeClassMethods(cv);
+            visitor.writeClassMethods(cv, false);
         }
 
         visitor.writeClassVariables(cd, aliasclass.nullable);
@@ -265,7 +274,17 @@ void writeClassForTemplate(WrapperGenVisitor visitor) {
     }
 }
 
-Declaration newVariableDecl(string tname, string vname) {
+ClassDeclaration makeClassDeclaration(string className, Declaration[] decls...) {
+    ClassDeclaration cd = new ClassDeclaration();
+    cd.name = Token(tok!"identifier", className, 0, 0, 0);
+    cd.structBody = new StructBody();
+    foreach (decl; decls) {
+        cd.structBody.declarations ~= decl;
+    }
+    return cd;
+}
+
+Declaration makeVariableDecl(string tname, string vname) {
     Declaration d = new Declaration();
     VariableDeclaration vd = new VariableDeclaration();
     Type t = new Type();
@@ -300,6 +319,15 @@ class pass1Visitor : ASTVisitor {
         if (cd.templateParameters !is null) {
             // store templated classes for later 
             templatedClasses[cd.name.text] = cast(ClassDeclaration) cd;
+        }
+
+        if (cd.baseClassList) {
+            foreach (baseClass; cd.baseClassList.items) {
+                if (getString(
+                        baseClass.type2.typeIdentifierPart.identifierOrTemplateInstance.identifier) == "ExpressionNode") {
+                    allexpressionclasses ~= cd.name.text;
+                }
+            }
         }
     }
 
@@ -381,7 +409,7 @@ class WrapperGenVisitor : ASTVisitor {
             if (genType == GenType.GenInterfaces)
                 writeInterfaceMethods(cv);
             else
-                writeClassMethods(cv);
+                writeClassMethods(cv, cd.name.text == "ExpressionNode");
         }
 
         if (genType == GenType.GenClasses) {
@@ -399,12 +427,14 @@ class WrapperGenVisitor : ASTVisitor {
     }
 
     override void visit(const Declaration d) {
-        if (d.attributes.any!(x => x.attribute == tok!"private" || x.attribute == tok!"protected")) {
+        if (d.attributes.any!(x => x.attribute == tok!"private"
+                || x.attribute == tok!"protected" || x.attribute == tok!"abstract")) {
             return;
         }
+
         // don't care what's inside functions
         if (inFunction)
-          return;
+            return;
         super.visit(d);
     }
 
@@ -455,6 +485,7 @@ class WrapperGenVisitor : ASTVisitor {
         if (inStruct && (inVariable || inFunction)) {
             if (t2.typeIdentifierPart !is null) {
                 typename = getString(t2.typeIdentifierPart.identifierOrTemplateInstance.identifier);
+
                 // if (var.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance !is null) {
                 //    // skip variables that are templates
                 //    continue;
@@ -510,7 +541,7 @@ class WrapperGenVisitor : ASTVisitor {
 
     }
 
-    void writeClassMethods(ClassVariable cv) {
+    void writeClassMethods(ClassVariable cv, bool isExpressionNode) {
 
         string[] signatures = getSignatures(cv);
         string typePostfix = cv.isArray ? "[index]" : "";
@@ -520,7 +551,7 @@ class WrapperGenVisitor : ASTVisitor {
             writeln("\t{");
             writefln("\t\tif(!dclass.%s)", escapeName(cv.name));
             writeln("\t\t\treturn 0;");
-            writefln("\t\treturn dclass.%s.length;", cv.name);
+            writefln("\t\treturn dclass.%s.length;", escapeName(cv.name));
             writeln("\t}");
             writeln();
 
@@ -529,26 +560,34 @@ class WrapperGenVisitor : ASTVisitor {
             writefln("\t\tif(index !in %s)", escapeName(cv.name));
         }
         else {
+
             writeln("\textern(C++) ", signatures[0]);
             writeln("\t{");
-            writefln("\t\tif(!%s%s)", escapeName(cv.name), cv.type == "Token"
-                    || cv.type == "string" ? "" : format(" && dclass.%s", cv.name));
+            if (isExpressionNode)
+                writefln("\t\tif(!%s && cast(%s)dclass)", escapeName(cv.name), cv.type);
+            else
+                writefln("\t\tif(!%s%s)", escapeName(cv.name), cv.type == "Token"
+                        || cv.type == "string" ? "" : format(" && dclass.%s", escapeName(cv.name)));
         }
-        if (cv.type == "IdType")
+
+        if (isExpressionNode)
+            writefln("\t\t\t%s = new C%s(cast(%s)dclass);", escapeName(cv.name), cv.type, cv.type);
+        else if (cv.type == "IdType")
             writefln("\t\t\t%s%s = toStringz(str(dclass.%s%s));",
-                    escapeName(cv.name), typePostfix, cv.name, typePostfix);
+                    escapeName(cv.name), typePostfix, escapeName(cv.name), typePostfix);
         else if (cv.type == "string")
-            writefln("\t\t\t%s%s = toStringz(dclass.%s%s);",
-                    escapeName(cv.name), typePostfix, cv.name, typePostfix);
+            writefln("\t\t\t%s%s = toStringz(dclass.%s%s);", escapeName(cv.name),
+                    typePostfix, escapeName(cv.name), typePostfix);
         else if (cv.type in enumTable)
             writefln("\t\t\t%s%s = dclass.%s%s;", escapeName(cv.name),
-                    typePostfix, cv.name, typePostfix);
+                    typePostfix, escapeName(cv.name), typePostfix);
         else if (cv.type[0].isUpper) /* is class */
             writefln("\t\t\t%s%s = new C%s(dclass.%s%s);", escapeName(cv.name),
-                    typePostfix, cv.type, cv.name, typePostfix);
+                    typePostfix, cv.type, escapeName(cv.name), typePostfix);
         else
             writefln("\t\t\t%s%s = dclass.%s%s;", escapeName(cv.name),
-                    typePostfix, cv.name, typePostfix);
+                    typePostfix, escapeName(cv.name), typePostfix);
+
         writefln("\t\treturn %s%s;", escapeName(cv.name), typePostfix);
         writeln("\t}");
         writeln();
@@ -596,7 +635,8 @@ class WrapperGenVisitor : ASTVisitor {
                         cast(char)(member[0].toLower) ~ member[1 .. $], "", false, true, false));
             else
                 writeClassMethods(ClassVariable(member,
-                        cast(char)(member[0].toLower) ~ member[1 .. $], "", false, true, false));
+                        cast(char)(member[0].toLower) ~ member[1 .. $], "", false, true, false),
+                        false);
         }
     }
 
@@ -625,7 +665,7 @@ class WrapperGenVisitor : ASTVisitor {
         }
         if (cd.name.text == "Declaration") {
             foreach (member; declarationMembers) {
-                writefln("\tI%s %s;", member, cast(char)(member[0].toLower) ~ member[1 .. $]);
+                writefln("\tI%s %s;", member, escapeName(cast(char)(member[0].toLower) ~ member[1 .. $]));
             }
         }
     }
@@ -641,16 +681,12 @@ class WrapperGenVisitor : ASTVisitor {
         "AnonymousEnumDeclaration", "AttributeDeclaration",
         "ClassDeclaration", "ConditionalDeclaration", "Constructor",
         "DebugSpecification", "Destructor", "EnumDeclaration",
-        "EponymousTemplateDeclaration", "FunctionDeclaration",
-        "ImportDeclaration", "InterfaceDeclaration",
-        // TODO: FIXME needs to be added
-        //"Invariant",
-        "MixinDeclaration", "MixinTemplateDeclaration", "Postblit",
-        "PragmaDeclaration", "SharedStaticConstructor", "SharedStaticDestructor",
+        "EponymousTemplateDeclaration", "FunctionDeclaration", "ImportDeclaration",
+        "InterfaceDeclaration", "Invariant", "MixinDeclaration",
+        "MixinTemplateDeclaration", "Postblit", "PragmaDeclaration",
+        "SharedStaticConstructor", "SharedStaticDestructor",
         "StaticAssertDeclaration", "StaticConstructor", "StaticDestructor",
-        "StructDeclaration", "TemplateDeclaration", "UnionDeclaration",
-        // TODO: FIXME needs to be added
-        // "Unittest",
+        "StructDeclaration", "TemplateDeclaration", "UnionDeclaration", "Unittest",
         "VariableDeclaration", "VersionSpecification", "StaticForeachDeclaration"
     ];
 }
@@ -915,7 +951,7 @@ void old(Module mod, string[] args) {
     foreach (ref key, ref val; classes) {
         foreach (ref cv; val) {
             cv.isClass = classes.keys.any!(x => x.name == cv.type);
-            cv.isEnum =  (cv.type in enumTable) !is null;
+            cv.isEnum = (cv.type in enumTable) !is null;
         }
     }
 
