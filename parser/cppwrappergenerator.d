@@ -101,11 +101,21 @@ string getString(const Symbol symbol) {
 
 private MixinTemplateDeclaration[string] mixins;
 
+private enum OutputFormat {
+    DModule,
+    CHeader
+}
+
+private OutputFormat outFormat = OutputFormat.DModule;
+
 // rewrite using visitor pattern
 void main(string[] args) {
 
     LexerConfig config;
     config.fileName = args[1];
+
+    if (args.length == 3 && args[2] == "-h")
+        outFormat = OutputFormat.CHeader;
 
     RollbackAllocator allocator;
 
@@ -146,61 +156,117 @@ void main(string[] args) {
 
     writeInterfaceForTemplate(visitor);
 
-    WrapperGenVisitor visitor2 = new WrapperGenVisitor(WrapperGenVisitor.GenType.GenClasses);
+    if (outFormat == OutputFormat.DModule) {
+        WrapperGenVisitor visitor2 = new WrapperGenVisitor(WrapperGenVisitor.GenType.GenClasses);
 
-    mod.accept(visitor2); // TODO: reset and re-use visitor instead of creating new one
-
-    writeClassForTemplate(visitor2);
+        mod.accept(visitor2); // TODO: reset and re-use visitor instead of creating new one
+        writeClassForTemplate(visitor2);
+    }
 
 }
 
 void writeHeader() {
 
-    // generate D Wrapper
-    writeln("module astWrapper;");
-    writeln();
-    writeln("import std.string;");
-    writeln();
-    writeln("import dparse.lexer;");
-    writeln("import dparse.parser;");
-    writeln("import dparse.ast;");
-    writeln();
+    if (outFormat == OutputFormat.DModule) {
+        // generate D Wrapper
+        writeln("module astWrapper;");
+        writeln();
+        writeln("import std.string;");
+        writeln();
+        writeln("import dparse.lexer;");
+        writeln("import dparse.parser;");
+        writeln("import dparse.ast;");
+        writeln();
+    }
+    else {
+        writeln("#pragma once");
+        writeln();
+    }
 
 }
 
 void writeExtras() {
 
-    writeln("template ContextMethods()");
-    writeln("{");
-    writeln("	extern(C++) void* getContext()");
-    writeln("	{");
-    writeln("		return context;");
-    writeln("	}");
-    writeln("	extern(C++) void setContext(void* context)");
-    writeln("	{");
-    writeln("		this.context = context;");
-    writeln("	}");
-    writeln("	__gshared void* context;");
-    writeln("}");
-    writeln();
+    if (outFormat == OutputFormat.DModule) {
 
-    // Enum kind
-    writeln("enum Kind");
-    writeln("{");
-    foreach (cv; allclasses) {
-        writefln("\t%s,", escapeAndLowerName(cv));
+        writeln("template ContextMethods()");
+        writeln("{");
+        writeln("	extern(C++) void* getContext()");
+        writeln("	{");
+        writeln("		return context;");
+        writeln("	}");
+        writeln("	extern(C++) void setContext(void* context)");
+        writeln("	{");
+        writeln("		this.context = context;");
+        writeln("	}");
+        writeln("	__gshared void* context;");
+        writeln("}");
+        writeln();
+
+        // Enum kind
+        writeln("enum Kind");
+        writeln("{");
+        foreach (cv; allclasses) {
+            writefln("\t%s,", escapeAndLowerName(cv));
+        }
+        writeln("}");
+        writeln();
+
+        //INode.
+        writeln("extern(C++) interface INode");
+        writeln("{");
+        writeln("	Kind getKind();");
+        writeln("	void* getContext();");
+        writeln("	void setContext(void* context);");
+        writeln("}");
+        writeln();
+
     }
-    writeln("}");
-    writeln();
+    else {
 
-    //INode.
-    writeln("extern(C++) interface INode");
-    writeln("{");
-    writeln("	Kind getKind();");
-    writeln("	void* getContext();");
-    writeln("	void setContext(void* context);");
-    writeln("}");
-    writeln();
+        //Forward declarations.
+        foreach (classname; allclasses)
+            writefln("class I%s;", classname);
+        writeln();
+
+        //Functions.
+        // writeln("void initDParser();");
+        // writeln("void deinitDParser();");
+        // writeln();
+
+        writeln("IModule *parseSourceFile(char *sourceFile, char *sourceData);");
+        writeln();
+
+        //Kind enum.
+        writeln("enum class Kind");
+        writeln("{");
+        foreach (classname; allclasses)
+            writefln("\t%s,", escapeAndLowerName(classname));
+        writeln("};");
+        writeln();
+
+        // all collected enum
+        foreach (en; enumTable) {
+            writeln("enum class ", en.name, " : int8_t {");
+            foreach (val; en.values)
+                writeln(val, ",");
+            writeln("};");
+            writeln();
+        }
+
+        //INode.
+        writeln("class INode");
+        writeln("{");
+        writeln("public: //Methods.");
+        writeln("	virtual Kind getKind();");
+        writeln("	virtual void *getContext();");
+        writeln("	virtual void setContext(void *context);");
+        writeln("\t");
+        writeln("protected: //Methods.");
+        writeln("	~INode() {}");
+        writeln("};");
+        writeln();
+    }
 
 }
 
@@ -210,7 +276,10 @@ void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
 
         ClassDeclaration cd = templatedClasses[aliasclass.templatename];
 
-        writefln("extern(C++) interface I%s : INode", aliasclass.name);
+        if (outFormat == OutputFormat.DModule)
+            writefln("extern(C++) interface I%s : INode", aliasclass.name);
+        else
+            writefln("class I%s : public INode", aliasclass.name);
         writeln("{");
 
         classvars.length = 0;
@@ -342,7 +411,11 @@ class pass1Visitor : ASTVisitor {
     }
 
     override void visit(const EnumDeclaration ed) {
-        enumTable[ed.name.text] = Enum(ed.name.text);
+        Enum en = Enum(ed.name.text);
+        foreach (val; ed.enumBody.enumMembers) {
+            en.values ~= val.name.text;
+        }
+        enumTable[ed.name.text] = en;
     }
 
     override void visit(const Unittest ut) {
@@ -387,7 +460,10 @@ class WrapperGenVisitor : ASTVisitor {
         //stderr.writeln("=>"  , templateArgs,"<=");
 
         if (genType == GenType.GenInterfaces) {
-            writefln("extern(C++) interface I%s : INode", cd.name.text);
+            if (outFormat == OutputFormat.DModule)
+                writefln("extern(C++) interface I%s : INode", cd.name.text);
+            else
+                writefln("class I%s : public INode", cd.name.text);
             writeln("{");
 
         }
@@ -416,6 +492,10 @@ class WrapperGenVisitor : ASTVisitor {
             writeClassVariables(cd, Nullable!Alias.init);
         }
 
+        if (outFormat == OutputFormat.CHeader) {
+            writeln("protected: //Methods.");
+            writefln("	~I%s() {}", cd.name.text);
+        }
         writeln("}");
         writeln();
     }
@@ -536,7 +616,7 @@ class WrapperGenVisitor : ASTVisitor {
         string[] signatures = getSignatures(cv);
 
         foreach (signature; signatures) {
-            writeln("\t", signature, ";");
+            writeln("\t", outFormat == OutputFormat.CHeader ? "virtual " : "", signature, ";");
         }
 
     }
@@ -598,12 +678,19 @@ class WrapperGenVisitor : ASTVisitor {
 
         string[] result;
 
-        if (cv.type == "string" || cv.type == "IdType")
-            cv.type = "const(char)*";
+        if (cv.type == "string" || cv.type == "IdType") {
+            if (outFormat == OutputFormat.DModule)
+                cv.type = "const(char)*";
+            else
+                cv.type = "const char*";
+        }
 
         string typeorname = cv.type;
-        if (cv.type in allclasses || cv.type in aliasses)
+        if (cv.type in allclasses || cv.type in aliasses) {
             typeorname = "I" ~ cv.type;
+            if (outFormat == OutputFormat.CHeader)
+                typeorname ~= "*";
+        }
 
         if (cv.isArray) {
             // signature 0
@@ -665,7 +752,8 @@ class WrapperGenVisitor : ASTVisitor {
         }
         if (cd.name.text == "Declaration") {
             foreach (member; declarationMembers) {
-                writefln("\tI%s %s;", member, escapeName(cast(char)(member[0].toLower) ~ member[1 .. $]));
+                writefln("\tI%s %s;", member,
+                        escapeName(cast(char)(member[0].toLower) ~ member[1 .. $]));
             }
         }
     }
