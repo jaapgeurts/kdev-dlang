@@ -31,9 +31,9 @@ class Editor
 public:
 	Editor(ParseSession **session) : m_session(session)
 	{
-		
+
 	}
-	
+
 	ParseSession *parseSession() const
 	{
 		return *m_session;
@@ -49,9 +49,9 @@ class KDEVDDUCHAIN_EXPORT ContextBuilder : public ContextBuilderBase
 public:
 	ContextBuilder();
 	virtual ~ContextBuilder();
-	
-	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext()) override;
-	
+
+	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node,const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
+
 	virtual void startVisiting(INode *node) override;
 	virtual void visitBlock(IBlockStatement *node, bool openContext);
 	virtual void visitBody(IFunctionBody *node);
@@ -128,32 +128,33 @@ public:
 	virtual void visitSynchronizedStatement(ISynchronizedStatement *node);
 	virtual void visitStaticAssertStatement(IStaticAssertStatement *node);
 	virtual void visitAssertExpression(IAssertExpression *node);
+    virtual void visitAssertArguments(IAssertArguments *node); // TODO: added
 	virtual void visitAsmStatement(IAsmStatement *node);
 	virtual void visitToken(IToken *node);
 	virtual void visitSymbol(ISymbol *node);
 	virtual KDevelop::DUContext *contextFromNode(INode *node) override;
-	
+
 	virtual void setContextOnNode(INode *node, KDevelop::DUContext *context) override;
-	
+
 	virtual KDevelop::RangeInRevision editorFindRange(INode *fromNode, INode *toNode) override;
-	
+
 	virtual KDevelop::QualifiedIdentifier identifierForNode(IToken *node) override;
 	virtual KDevelop::QualifiedIdentifier identifierForNode(IIdentifierChain *node);
 	virtual KDevelop::QualifiedIdentifier identifierForNode(IIdentifierOrTemplateChain *node);
 	virtual KDevelop::QualifiedIdentifier identifierForNode(ISymbol *node);
-	
+
 	KDevelop::QualifiedIdentifier identifierForIndex(qint64 index);
-	
+
 	void setParseSession(ParseSession *session);
-	
+
 	virtual KDevelop::TopDUContext *newTopContext(const KDevelop::RangeInRevision &range, KDevelop::ParsingEnvironmentFile *file=0) override;
-	
+
 	virtual KDevelop::DUContext *newContext(const KDevelop::RangeInRevision &range) override;
-	
+
 	KDevelop::QualifiedIdentifier createFullName(IToken *package, IToken *typeName);
-	
+
 	ParseSession *parseSession();
-	
+
 	Editor *editor() const
 	{
 		return m_editor.data();
@@ -162,7 +163,7 @@ public:
 protected:
 	ParseSession *m_session;
 	QStringList identifierChain;
-	
+
 	bool m_mapAst; //Make KDevelop::AbstractContextBuilder happy.
 	QScopedPointer<Editor> m_editor; //Make KDevelop::AbstractUseBuilder happy.
 };

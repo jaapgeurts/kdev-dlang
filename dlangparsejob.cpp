@@ -27,6 +27,8 @@
 #include <language/duchain/parsingenvironment.h>
 #include <language/duchain/problem.h>
 #include <language/duchain/duchaindumper.h>
+#include <language/interfaces/ilanguagesupport.h>
+
 
 #include <QReadLocker>
 #include <QProcess>
@@ -44,81 +46,81 @@ using namespace KDevelop;
 
 DParseJob::DParseJob(const KDevelop::IndexedString &url, KDevelop::ILanguageSupport *languageSupport) : ParseJob(url, languageSupport)
 {
-	
+    
 }
 
 void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
 	qCDebug(D) << "DParseJob succesfully created for document " << document();
-	
+
 	UrlParseLock urlLock(document());
 	if(abortRequested())
 		return;
-	
+
 	ProblemPointer p = readContents();
 	if(p)
 		return abortJob();
-	
+
 	QByteArray code = contents().contents;
 	while(code.endsWith('\0'))
 		code.chop(1);
-	
+
 	ParseSession session(code, parsePriority());
 	session.setCurrentDocument(document());
 	session.setFeatures(minimumFeatures());
-	
+
 	if(abortRequested())
 		return;
-	
+
 	ReferencedTopDUContext context;
 	{
 		DUChainReadLocker lock;
 		context = DUChainUtils::standardContextForUrl(document().toUrl());
 	}
-	
+
 	if(context)
 	{
 		translateDUChainToRevision(context);
 		context->setRange(RangeInRevision(0, 0, INT_MAX, INT_MAX));
 	}
-	
+
 	TopDUContext::Features newFeatures = minimumFeatures();
 	if(context)
 		newFeatures = (TopDUContext::Features)(newFeatures | context->features());
 	newFeatures = (TopDUContext::Features)(newFeatures & TopDUContext::AllDeclarationsContextsAndUses);
-	
+
 	if(newFeatures & TopDUContext::ForceUpdate)
 		qCDebug(D) << "update enforced";
-	
+
 	session.setFeatures(newFeatures);
-	
+
 	qCDebug(D) << "Job features: " << newFeatures;
 	qCDebug(D) << "Job priority: " << parsePriority();
-	
+
 	qCDebug(D) << document();
 	auto module = parseSourceFile((char *)document().c_str(), code.data()); //TODO: Reparse to moduleCache if file has changed.
-	
+
 	//When switching between files(even if they are not modified) KDevelop decides they need to be updated
 	//and calls parseJob with VisibleDeclarations feature
 	//so for now feature, identifying import will be AllDeclarationsAndContexts, without Uses
 	bool forExport = false;
 	if((newFeatures & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsAndContexts)
 		forExport = true;
-	
+
 	if(!forExport)
 		session.setIncludePaths(dlang::Helper::getSearchPaths(document().toUrl()));
 	else
 		session.setIncludePaths(dlang::Helper::getSearchPaths());
-	
+
 	if(module)
 	{
 		QReadLocker parseLock(languageSupport()->parseLock());
-		
+
 		if(abortRequested())
 			return abortJob();
 		DeclarationBuilder builder(&session, forExport);
 		context = builder.build(document(), module, context);
-		
+
 		if(!forExport && (newFeatures & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsContextsAndUses)
 		{
 			dlang::UseBuilder useBuilder(&session);
@@ -135,17 +137,17 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 		context = new TopDUContext(document(), RangeInRevision(0, 0, INT_MAX, INT_MAX), file);
 		DUChain::self()->addDocumentChain(context);
 	}
-	
+
 	setDuChain(context);
-	
+
 	highlightDUChain();
-	
+
 	{
 		DUChainReadLocker lock;
 		DUChainDumper dumper;
 		dumper.dump(context);
 	}
-	
+
 	if(module)
 		qCDebug(D) << "===Success===" << document().str();
 	else

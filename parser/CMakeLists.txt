@@ -1,9 +1,9 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_custom_command(OUTPUT libdparser.so COMMAND cmake -E ./build.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+add_custom_command(OUTPUT libdparser.so COMMAND ./build.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_custom_target(libdparser ALL DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/libdparser.so)
+add_custom_target(libdparser ALL DEPENDS libdparser.so)
 
 set(d_parser_lib_SRC
     parsesession.cpp
@@ -11,9 +11,10 @@ set(d_parser_lib_SRC
 
 add_library(kdevdparser STATIC ${d_parser_lib_SRC})
 
-target_link_libraries(kdevdparser LINK_PRIVATE
+target_link_libraries(kdevdparser
+PRIVATE
     KDev::Language
-    ${CMAKE_CURRENT_SOURCE_DIR}/libdparser.so
+    libdparser.so
 )
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/libdparser.so DESTINATION lib)
+install(FILES libdparser.so DESTINATION lib)

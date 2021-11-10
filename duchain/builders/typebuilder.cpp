@@ -41,13 +41,13 @@ void TypeBuilder::visitTypeName(IType *node)
 		injectType<AbstractType>(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
 		return;
 	}
-	if(node->getType2()->getSymbol())
-		buildTypeName(identifierForNode(node->getType2()->getSymbol()));
-	else if(node->getType2()->getIdentifierOrTemplateChain())
-		buildTypeName(identifierForNode(node->getType2()->getIdentifierOrTemplateChain()));
+	if(node->getType2() && node->getType2()->getTypeIdentifierPart() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier())
+		buildTypeName(identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier()));
+	else if(node->getType2() && node->getType2()->getTypeIdentifierPart() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getTemplateInstance())
+		buildTypeName(identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier()));
 	else
 		buildTypeName(QualifiedIdentifier(node->getType2()->getBuiltinType()));
-	for(int i=0; i<node->numTypeSuffixes(); i++)
+	for(size_t i=0; i<node->numTypeSuffixes(); i++)
 	{
 		if(node->getTypeSuffix(i)->getArray())
 		{
@@ -56,7 +56,7 @@ void TypeBuilder::visitTypeName(IType *node)
 			array->setDimension(0);
 			injectType(array);
 		}
-		
+
 		if(QString(node->getTypeSuffix(i)->getStar()->getText()) != "")
 		{
 			KDevelop::PointerType::Ptr pointer(new KDevelop::PointerType());
@@ -103,7 +103,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 		type = KDevelop::IntegralType::TypeChar32_t;
 	else if(name == "bool")
 		type = KDevelop::IntegralType::TypeBoolean;
-	
+
 	if(type == IntegralType::TypeNone)
 	{
 		DeclarationPointer decl = dlang::getTypeDeclaration(typeName, currentContext());
@@ -134,43 +134,45 @@ void TypeBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 {
 	DUChainWriteLocker lock;
 	clearLastType();
-	
+
 	visitTypeName(node->getReturnType());
-	
+
 	FunctionType::Ptr functionType = FunctionType::Ptr(new FunctionType());
 	currentFunctionType = functionType;
-	
+
 	if(lastType())
 		functionType->setReturnType(lastType());
-	
+
 	openType(functionType);
-	
+
 	closeType();
 }
 
 void TypeBuilder::visitConstructor(IConstructor *node)
 {
+    Q_UNUSED(node);
 	DUChainWriteLocker lock;
 	clearLastType();
-	
+
 	FunctionType::Ptr functionType = FunctionType::Ptr(new FunctionType());
 	currentFunctionType = functionType;
-	
+
 	openType(functionType);
-	
+
 	closeType();
 }
 
 void TypeBuilder::visitDestructor(IDestructor *node)
 {
+    Q_UNUSED(node);
 	DUChainWriteLocker lock;
 	clearLastType();
-	
+
 	FunctionType::Ptr functionType = FunctionType::Ptr(new FunctionType());
 	currentFunctionType = functionType;
-	
+
 	openType(functionType);
-	
+
 	closeType();
 }
 

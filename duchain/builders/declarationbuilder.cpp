@@ -47,17 +47,18 @@ DeclarationBuilder::DeclarationBuilder(ParseSession *session, bool forExport) : 
 	setParseSession(session);
 }
 
-KDevelop::ReferencedTopDUContext DeclarationBuilder::build(const KDevelop::IndexedString &url, INode *node, KDevelop::ReferencedTopDUContext updateContext)
+KDevelop::ReferencedTopDUContext DeclarationBuilder::build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext)
 {
+    ReferencedTopDUContext updateContext2 = updateContext;
 	qCDebug(DUCHAIN) << "DeclarationBuilder start";
 	if(!m_preBuilding)
 	{
 		qCDebug(DUCHAIN) << "Running prebuilder";
 		DeclarationBuilder preBuilder(m_session, m_export);
 		preBuilder.m_preBuilding = true;
-		updateContext = preBuilder.build(url, node, updateContext);
+		updateContext2 = preBuilder.build(url, node, updateContext);
 	}
-	return DeclarationBuilderBase::build(url, node, updateContext);
+	return DeclarationBuilderBase::build(url, node, updateContext2);
 }
 
 void DeclarationBuilder::startVisiting(INode *node)
@@ -67,14 +68,14 @@ void DeclarationBuilder::startVisiting(INode *node)
 		topContext()->clearImportedParentContexts();
 		topContext()->updateImportsCache();
 	}
-	
+
 	return DeclarationBuilderBase::startVisiting(node);
 }
 
 void DeclarationBuilder::visitVarDeclaration(IVariableDeclaration *node)
 {
 	DeclarationBuilderBase::visitVarDeclaration(node);
-	for(int i=0; i<node->numDeclarators(); i++)
+	for(size_t i=0; i<node->numDeclarators(); i++)
 		declareVariable(node->getDeclarator(i)->getName(), lastType());
 }
 
@@ -225,12 +226,12 @@ void DeclarationBuilder::visitModule(IModule *node)
 	{
 		if(node->getModuleDeclaration()->getComment())
 			setComment(node->getModuleDeclaration()->getComment());
-		
+
 		DUChainWriteLocker lock;
-		
+
 		auto m_thisPackage = identifierForNode(node->getModuleDeclaration()->getModuleName());
 		KDevelop::RangeInRevision range = editorFindRange(node->getModuleDeclaration()->getModuleName(), node->getModuleDeclaration()->getModuleName());
-		
+
 		Declaration *packageDeclaration = openDeclaration<Declaration>(m_thisPackage, range);
 		packageDeclaration->setKind(Declaration::Namespace);
 		openContext(node, editorFindRange(node, 0), DUContext::Namespace, m_thisPackage);

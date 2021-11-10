@@ -14,5 +14,5 @@ test $? -eq 0 || exit
 test $? -eq 0 || exit
 
 #end parser wrapper generator
-ldc2 -g -Ilibdparse/src/ -Ilibdparse/stdx-allocator/source/ -shared src/dparse.d src/astWrapper.d libdparse/libdparse.a libdparse/stdx-allocator/libstdx-allocator.a
+ldc2 -of libdparser.so -g -Ilibdparse/src/ -Ilibdparse/stdx-allocator/source/ -shared src/dparse.d src/astWrapper.d libdparse/libdparse.a libdparse/stdx-allocator/libstdx-allocator.a
 test $? -eq 0 || exit

@@ -32,7 +32,7 @@ public:
 	CodeCompletionModel(QObject *parent);
 
 protected:
-	virtual KDevelop::CodeCompletionWorker *createCompletionWorker();
+	virtual KDevelop::CodeCompletionWorker *createCompletionWorker() override;
 };
 
 }

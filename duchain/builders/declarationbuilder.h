@@ -35,9 +35,9 @@ class KDEVDDUCHAIN_EXPORT DeclarationBuilder : public DeclarationBuilderBase
 {
 public:
 	DeclarationBuilder(ParseSession *session, bool forExport);
-	
-	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext()) override;
-	
+
+	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
+
 	virtual void startVisiting(INode *node) override;
 	virtual void visitModule(IModule *node) override;
 	virtual void visitVarDeclaration(IVariableDeclaration *node) override;
@@ -66,7 +66,7 @@ private:
 private:
 	bool m_export;
 	bool inClassScope;
-	
+
 	bool m_preBuilding;
 	int m_ownPriority;
 };

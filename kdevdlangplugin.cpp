@@ -35,17 +35,18 @@ K_PLUGIN_FACTORY_WITH_JSON(DPluginFactory, "kdevdlang.json", registerPlugin<DPlu
 
 using namespace KDevelop;
 
+
 DPlugin::DPlugin(QObject *parent, const QVariantList &) : KDevelop::IPlugin("kdevdlangplugin", parent), ILanguageSupport()
 {
-	KDEV_USE_EXTENSION_INTERFACE(ILanguageSupport)
-	
+//	KDEV_USE_EXTENSION_INTERFACE(ILanguageSupport)
+
 	qCDebug(D) << "D Language Plugin is loaded\n";
-	
+
 	initDParser();
-	
+
 	CodeCompletionModel *codeCompletion = new dlang::CodeCompletionModel(this);
 	new KDevelop::CodeCompletion(this, codeCompletion, name());
-	
+
 	m_highlighting = new Highlighting(this);
 }
 

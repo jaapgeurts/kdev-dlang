@@ -211,7 +211,7 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const WithStatement withStatement) { file.writefln("%sWithStatement", indentationLevel()); if(traverse) { indentation++; withStatement.accept(this); indentation--; } }
     /** */ override void visit(const XorExpression xorExpression) { file.writefln("%sXorExpression", indentationLevel()); if(traverse) { indentation++; xorExpression.accept(this); indentation--; } }
 }
-
+// TODO: call from C++
 extern(C++) void initDParser()
 {
 	import core.runtime;
@@ -226,6 +226,10 @@ extern(C++) void deinitDParser()
 	Runtime.terminate();
 }
 
+
+//__gshared
+RollbackAllocator allocator;
+
 extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 {
 	try
@@ -238,7 +242,7 @@ extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 		
 		writefln("parseSourceFile(%s)", fromStringz(sourceFile));
 		
-		auto file = File((fromStringz(sourceFile).replace("/", ".")~".ast").idup, "w");
+		//auto file = File((fromStringz(sourceFile).replace("/", ".")~".ast").idup, "w");
 		
 		thread_attachThis();
 		
@@ -246,10 +250,10 @@ extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 		config.fileName = fromStringz(sourceFile).idup;
 		auto source = cast(ubyte[])fromStringz(sourceData);
 		auto tokens = getTokensForParser(source, config, new StringCache(StringCache.defaultBucketCount));
-        RollbackAllocator allocator;
-		auto mod = parseModule(tokens, config.fileName,&allocator);
+		auto mod = parseModule(tokens, config.fileName, &allocator);
 		//new ASTPrinter(file, true).visit(mod);
 		keepAlive[config.fileName] = new CModule(mod);
+        
 		return keepAlive[config.fileName];
 	}
 	catch(Throwable e)
@@ -259,5 +263,6 @@ extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 	}
 	assert(0);
 }
+
 
 __gshared CModule[string] keepAlive;

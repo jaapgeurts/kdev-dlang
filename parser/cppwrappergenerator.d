@@ -126,6 +126,10 @@ void main(string[] args) {
             new StringCache(StringCache.defaultBucketCount));
 
     auto mod = parseModule(tokens, config.fileName, &allocator);
+    
+    
+//    old(mod,args);
+//    return;
 
     // add Token class
     Declaration d = new Declaration();
@@ -209,6 +213,9 @@ void writeExtras() {
         foreach (cv; allclasses) {
             writefln("\t%s,", escapeAndLowerName(cv));
         }
+        foreach (aliasclass; aliasses) {
+            writefln("\t%s,", escapeAndLowerName(aliasclass.name));
+        }
         writeln("}");
         writeln();
 
@@ -227,12 +234,15 @@ void writeExtras() {
         //Forward declarations.
         foreach (classname; allclasses)
             writefln("class I%s;", classname);
+
+        foreach (aliasclass; aliasses)
+            writefln("class I%s;", aliasclass.name);
         writeln();
 
         //Functions.
-        // writeln("void initDParser();");
-        // writeln("void deinitDParser();");
-        // writeln();
+        writeln("void initDParser();");
+        writeln("void deinitDParser();");
+        writeln();
 
         writeln("IModule *parseSourceFile(char *sourceFile, char *sourceData);");
         writeln();
@@ -240,12 +250,18 @@ void writeExtras() {
         //Kind enum.
         writeln("enum class Kind");
         writeln("{");
-        foreach (classname; allclasses)
+        foreach (classname; allclasses) {
+            if (classname == "Register")
+                classname ~= "_";
             writefln("\t%s,", escapeAndLowerName(classname));
+        }
+        foreach (aliasclass; aliasses) {
+            writefln("\t%s,", escapeAndLowerName(aliasclass.name));
+        }
         writeln("};");
         writeln();
 
-        // all collected enum
+        // all collected enums
         foreach (en; enumTable) {
             writeln("enum class ", en.name, " : int8_t {");
             foreach (val; en.values)
@@ -296,12 +312,30 @@ void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
             classvars = classvars.remove(classvars.countUntil!(c => c.name == "style"));
         }
 
+        writeln("public:");
         foreach (cv; classvars) {
 
             visitor.writeInterfaceMethods(cv);
         }
 
-        writeln("}");
+        if (outFormat == OutputFormat.DModule) {
+            writeln("\tsize_t getStartLine();");
+            writeln("\tsize_t getStartColumn();");
+            writeln("\tsize_t getEndLine();");
+            writeln("\tsize_t getEndColumn();");
+            writeln("}");
+        }
+        else {
+            writeln("\tvirtual size_t getStartLine();");
+            writeln("\tvirtual size_t getStartColumn();");
+            writeln("\tvirtual size_t getEndLine();");
+            writeln("\tvirtual size_t getEndColumn();");
+            writeln();
+            writeln("protected: //Methods.");
+            writefln("\tvirtual ~I%s() {}", aliasclass.name);
+            writeln("};");
+        }
+
         writeln();
 
     }
@@ -316,6 +350,11 @@ void writeClassForTemplate(WrapperGenVisitor visitor) {
         writeln("{");
 
         visitor.writeClassConstructor(cd, aliasclass.nullable);
+
+        writeln("\textern(C++) size_t getStartLine() { return dclass.tokens[0].line; }");
+        writeln("\textern(C++) size_t getStartColumn() { return dclass.tokens[0].column; }");
+        writeln("\textern(C++) size_t getEndLine() { return dclass.tokens[$].line; }");
+        writeln("\textern(C++) size_t getEndColumn() { return dclass.tokens[$].column; }");
 
         classvars.length = 0;
         cd.accept(visitor);
@@ -460,11 +499,27 @@ class WrapperGenVisitor : ASTVisitor {
         //stderr.writeln("=>"  , templateArgs,"<=");
 
         if (genType == GenType.GenInterfaces) {
-            if (outFormat == OutputFormat.DModule)
+            if (outFormat == OutputFormat.DModule) {
                 writefln("extern(C++) interface I%s : INode", cd.name.text);
-            else
+                writeln("{");
+                if (cd.name.text != "Token") {
+                    writeln("\tsize_t getStartLine();");
+                    writeln("\tsize_t getStartColumn();");
+                    writeln("\tsize_t getEndLine();");
+                    writeln("\tsize_t getEndColumn();");
+                }
+            }
+            else {
                 writefln("class I%s : public INode", cd.name.text);
-            writeln("{");
+                writeln("{");
+                writeln("public:");
+                if (cd.name.text != "Token") {
+                    writeln("\tvirtual size_t getStartLine();");
+                    writeln("\tvirtual size_t getStartColumn();");
+                    writeln("\tvirtual size_t getEndLine();");
+                    writeln("\tvirtual size_t getEndColumn();");
+                }
+            }
 
         }
         else {
@@ -472,6 +527,14 @@ class WrapperGenVisitor : ASTVisitor {
             writeln("{");
 
             writeClassConstructor(cd, Nullable!Alias.init);
+
+            if (cd.name.text != "Token") {
+                writeln("\textern(C++) size_t getStartLine() { return dclass.tokens[0].line; }");
+                writeln("\textern(C++) size_t getStartColumn() { return dclass.tokens[0].column; }");
+                writeln("\textern(C++) size_t getEndLine() { return dclass.tokens[$].line; }");
+                writeln("\textern(C++) size_t getEndColumn() { return dclass.tokens[$].column; }");
+            }
+            writeln();
         }
 
         if (cd.name.text == "Declaration") {
@@ -494,9 +557,14 @@ class WrapperGenVisitor : ASTVisitor {
 
         if (outFormat == OutputFormat.CHeader) {
             writeln("protected: //Methods.");
-            writefln("	~I%s() {}", cd.name.text);
+            writefln("\tvirtual ~I%s() {}", cd.name.text);
         }
-        writeln("}");
+
+        // write class closing
+        if (outFormat == OutputFormat.DModule)
+            writeln("}");
+        else
+            writeln("};");
         writeln();
     }
 
@@ -645,6 +713,8 @@ class WrapperGenVisitor : ASTVisitor {
             writeln("\t{");
             if (isExpressionNode)
                 writefln("\t\tif(!%s && cast(%s)dclass)", escapeName(cv.name), cv.type);
+            else if (cv.type == "string")
+                writefln("\t\tif(!%s && dclass.%s)", escapeName(cv.name), escapeName(cv.name));
             else
                 writefln("\t\tif(!%s%s)", escapeName(cv.name), cv.type == "Token"
                         || cv.type == "string" ? "" : format(" && dclass.%s", escapeName(cv.name)));

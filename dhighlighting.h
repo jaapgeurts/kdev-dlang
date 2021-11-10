@@ -27,5 +27,5 @@ class Highlighting : public KDevelop::CodeHighlighting
 
 public:
 	Highlighting(QObject *parent);
-	virtual KDevelop::CodeHighlightingInstance *createInstance() const;
+	virtual KDevelop::CodeHighlightingInstance *createInstance() const override;
 };

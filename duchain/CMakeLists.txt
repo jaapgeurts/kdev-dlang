@@ -13,10 +13,10 @@ include_directories(
 
 generate_export_header(kdevdduchain EXPORT_FILE_NAME dduchainexport.h)
 target_link_libraries(kdevdduchain
-LINK_PRIVATE
+PRIVATE
     dparser
     kdevdparser
-LINK_PUBLIC
+PUBLIC
     KDev::Interfaces
     KDev::Language
     KDev::Shell

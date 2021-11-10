@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <QStack>
+
 #include <language/duchain/builders/abstractusebuilder.h>
 
 #include "contextbuilder.h"
@@ -32,14 +34,14 @@ class KDEVDDUCHAIN_EXPORT UseBuilder : public UseBuilderBase
 {
 public:
 	UseBuilder(ParseSession *session);
-	
+
 	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext());
-	virtual void startVisiting(INode *node);
-	virtual void visitTypeName(IType *node);
-	virtual void visitPrimaryExpression(IPrimaryExpression *node);
-	virtual void visitUnaryExpression(IUnaryExpression *node);
-	virtual void visitToken(IToken *node);
-	virtual void visitSymbol(ISymbol *node);
+	virtual void startVisiting(INode *node) override;
+	virtual void visitTypeName(IType *node) override;
+	virtual void visitPrimaryExpression(IPrimaryExpression *node) override;
+	virtual void visitUnaryExpression(IUnaryExpression *node) override;
+	virtual void visitToken(IToken *node) override;
+	virtual void visitSymbol(ISymbol *node) override;
 
 private:
 	QStack<KDevelop::AbstractType::Ptr> m_types;

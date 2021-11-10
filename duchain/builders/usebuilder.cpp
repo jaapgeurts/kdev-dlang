@@ -47,8 +47,8 @@ void UseBuilder::visitTypeName(IType *node)
 {
 	if(!node || !currentContext())
 		return;
-	
-	QualifiedIdentifier id = identifierForNode(node->getType2()->getSymbol());
+
+	QualifiedIdentifier id = identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier());
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
@@ -69,7 +69,7 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	UseBuilderBase::visitPrimaryExpression(node);
 	if(!node->getIdentifierOrTemplateInstance() || !node->getIdentifierOrTemplateInstance()->getIdentifier() || !currentContext())
 		return;
-	
+
 	QualifiedIdentifier id(identifierForNode(node->getIdentifierOrTemplateInstance()->getIdentifier()));
 	DUContext *context = nullptr;
 	{
@@ -91,7 +91,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 	UseBuilderBase::visitUnaryExpression(node);
 	if(!node->getIdentifierOrTemplateInstance() || !node->getIdentifierOrTemplateInstance()->getIdentifier() || !currentContext())
 		return;
-	
+
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
@@ -102,7 +102,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 		qDebug() << "No context found for" << node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
 		return;
 	}
-	
+
 	QualifiedIdentifier id;
 	for(const QString &str : identifierChain)
 	{
@@ -119,7 +119,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 	}
 	id.push(identifierForNode(node->getIdentifierOrTemplateInstance()->getIdentifier()));
 	identifierChain.clear();
-	
+
 	DeclarationPointer decl = getDeclaration(id, context);
 	if(decl)
 		newUse(node, decl);
@@ -130,7 +130,7 @@ void UseBuilder::visitToken(IToken *node)
 	UseBuilderBase::visitToken(node);
 	if(!node || !currentContext())
 		return;
-	
+
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
@@ -141,9 +141,9 @@ void UseBuilder::visitToken(IToken *node)
 		qDebug() << "No context found for" << node->getText();
 		return;
 	}
-	
+
 	QualifiedIdentifier id = identifierForNode(node);
-	
+
 	DeclarationPointer decl = getDeclaration(id, context);
 	if(decl)
 		newUse(node, decl);
@@ -154,9 +154,9 @@ void UseBuilder::visitSymbol(ISymbol *node)
 	UseBuilderBase::visitSymbol(node);
 	if(!node || !currentContext())
 		return;
-	
+
 	QualifiedIdentifier id = identifierForNode(node);
-	
+
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
@@ -164,10 +164,10 @@ void UseBuilder::visitSymbol(ISymbol *node)
 	}
 	if(!context)
 	{
-		qDebug() << "No context found for" << id.toString(false).toLocal8Bit().data();
+		qDebug() << "No context found for" << id.toString().toLocal8Bit().data();
 		return;
 	}
-	
+
 	DeclarationPointer decl = getDeclaration(id, context);
 	if(decl)
 		newUse(node, decl);

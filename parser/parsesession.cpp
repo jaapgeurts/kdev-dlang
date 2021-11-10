@@ -30,12 +30,13 @@ using namespace KDevelop;
 
 ParseSession::ParseSession(const QByteArray &contents, int priority, bool appendWithNewline) : m_contents(contents), m_priority(priority), m_features(TopDUContext::AllDeclarationsAndContexts)
 {
+    Q_UNUSED(appendWithNewline);
 	forExport = false;
 }
 
 ParseSession::~ParseSession()
 {
-	
+
 }
 
 KDevelop::IndexedString ParseSession::languageString()
@@ -46,6 +47,7 @@ KDevelop::IndexedString ParseSession::languageString()
 
 QString ParseSession::symbol(qint64 index)
 {
+    Q_UNUSED(index);
 	printf("ParseSession::symbol - Not implemented!\n");
 	return "";
 }
@@ -69,12 +71,15 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 		{
 			//printf("kind is functionBody\n");
 			auto f = (IFunctionBody *)from;
-			if(f->getBlockStatement())
-			{
-				auto g = (IBlockStatement *)f->getBlockStatement();
-				line = g->getStartLine();
-				column = g->getStartColumn() + 1;
-			}
+            // TODO: deal with SpecifiedFunctionBody and MissingFunctionBody
+            if (f->getSpecifiedFunctionBody()) {
+                if(f->getSpecifiedFunctionBody()->getBlockStatement())
+                {
+                    auto g = (IBlockStatement *)f->getSpecifiedFunctionBody()->getBlockStatement();
+                    line = g->getStartLine();
+                    column = g->getStartColumn() + 1;
+                }
+            }
 			break;
 		}
 		case Kind::blockStatement:
@@ -262,9 +267,9 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			break;
 		}
 		default:
-			printf("Unhandled from kind: %d\n", from->getKind());
+			printf("Unhandled from kind: %d\n", (int8_t)from->getKind());
 	}
-	
+
 	//printf("findRange: to\n");
 	switch(to->getKind())
 	{
@@ -288,12 +293,15 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 		{
 			//printf("kind is functionBody\n");
 			auto f = (IFunctionBody *)to;
-			if(f->getBlockStatement())
-			{
-				auto g = (IBlockStatement *)f->getBlockStatement();
-				lineEnd = g->getEndLine();
-				columnEnd = g->getEndColumn()+1;
-			}
+            // TODO: deal with MissingFunctionBody
+            if (f->getSpecifiedFunctionBody()) {
+                if(f->getSpecifiedFunctionBody()->getBlockStatement())
+                {
+                    auto g = (IBlockStatement *)f->getSpecifiedFunctionBody()->getBlockStatement();
+                    lineEnd = g->getEndLine();
+                    columnEnd = g->getEndColumn()+1;
+                }
+            }
 			break;
 		}
 		case Kind::blockStatement:
@@ -481,19 +489,19 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			break;
 		}
 		default:
-			printf("Unhandled to kind: %d\n", to->getKind());
+			printf("Unhandled to kind: %d\n", (int8_t)to->getKind());
 	}
-	
+
 	/*printf("lineStart: %lld\n", line);
 	printf("columnStart: %lld\n", column);
 	printf("lineEnd: %lld\n", lineEnd);
 	printf("columnEnd: %lld\n", columnEnd);*/
-	
+
 	line -= 1;
 	column -= 1;
 	lineEnd -= 1;
 	columnEnd -= 1;
-	
+
 	return KDevelop::RangeInRevision(KDevelop::CursorInRevision(line, column), KDevelop::CursorInRevision(lineEnd, columnEnd));
 }
 
@@ -566,7 +574,7 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(KDevelop::Qualified
 		QFile file(filename);
 		if(!file.exists())
 			continue;
-		
+
 		IndexedString url(filename);
 		DUChainReadLocker lock;
 		ReferencedTopDUContext context = KDevelop::DUChain::self()->chainForDocument(url);
@@ -579,7 +587,7 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(KDevelop::Qualified
 	if(shouldReparse)
 		//Reparse this file after its imports are done.
 		scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
-	
+
 	if(!forExport && m_priority != BackgroundParser::WorstPriority) //Always schedule last reparse after all recursive imports are done.
 		scheduleForParsing(m_document, BackgroundParser::WorstPriority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
 	return contexts;
@@ -590,12 +598,12 @@ bool ParseSession::scheduleForParsing(const IndexedString &url, int priority, To
 	BackgroundParser *bgparser = KDevelop::ICore::self()->languageController()->backgroundParser();
 	//TopDUContext::Features features = (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts);//(TopDUContext::Features)
 	//(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsContextsAndUses);
-	
+
 	//Currently recursive imports work really slow, nor they usually needed so disallow recursive imports.
 	int levels = 1; //Allowed levels of recursion.
 	if(forExport && priority >= BackgroundParser::InitialParsePriority && priority < BackgroundParser::WorstPriority - 2*levels)
 		return false;
-	
+
 	if(bgparser->isQueued(url))
 	{
 		if(bgparser->priorityForDocument(url) <= priority)
@@ -614,7 +622,7 @@ bool ParseSession::scheduleForParsing(const IndexedString &url, int priority, To
 void ParseSession::reparseImporters(DUContext *context)
 {
 	DUChainReadLocker lock;
-	
+
 	if(forExport || m_priority != 0)
 		return;
 	for(DUContext *importer : context->importers())
@@ -645,7 +653,7 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 				continue;
 			if(forExport && filename.endsWith("_test.d"))
 				continue;
-			
+
 			IndexedString url(filename);
 			DUChainReadLocker lock;
 			ReferencedTopDUContext context = DUChain::self()->chainForDocument(url);
@@ -657,7 +665,7 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 				if(scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
 					shouldReparse=true;
 			}
-			
+
 		}
 		if(shouldReparse)
 			scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
@@ -674,6 +682,7 @@ void ParseSession::setFeatures(TopDUContext::Features features)
 
 QString ParseSession::textForNode(INode *node)
 {
+    Q_UNUSED(node);
 	//return QString(m_contents.mid(m_lexer->at(node->startToken).begin, m_lexer->at(node->endToken).end - m_lexer->at(node->startToken).begin+1));
 	printf("ParseSession::textForNode - Not implemented!\n");
 	return "";
@@ -691,13 +700,13 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 	if(token - 1 >= 0)
 		commentStart = 0;//m_lexer->at(token-1).end+1;
 	QString comment = m_contents.mid(commentStart, commentEnd-commentStart);
-	
+
 	//in lexer, when we insert semicolons after newline
 	//inserted token's end contains '\n' position
 	//so in order not to lose this newline we prepend it
 	if(commentStart > 0 && m_contents[commentStart-1] == '\n')
 		comment.prepend('\n');
-	
+
 	//any comment must have at least single '/'
 	if(comment.indexOf('/') == -1)
 		return QByteArray();

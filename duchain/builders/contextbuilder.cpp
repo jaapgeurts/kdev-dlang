@@ -31,10 +31,10 @@ ContextBuilder::ContextBuilder()
 
 ContextBuilder::~ContextBuilder()
 {
-	
+
 }
 
-KDevelop::ReferencedTopDUContext ContextBuilder::build(const KDevelop::IndexedString &url, INode *node, KDevelop::ReferencedTopDUContext updateContext)
+KDevelop::ReferencedTopDUContext ContextBuilder::build(const KDevelop::IndexedString &url, INode *node,const KDevelop::ReferencedTopDUContext& updateContext)
 {
 	return KDevelop::AbstractContextBuilder<INode, IToken>::build(url, node, updateContext);
 }
@@ -43,7 +43,7 @@ void ContextBuilder::startVisiting(INode *node)
 {
 	if(!node || node == (INode *)0x1)
 		return;
-	
+
 	if(node->getKind() == Kind::module_)
 	{
 		auto module = (IModule *)node;
@@ -53,7 +53,7 @@ void ContextBuilder::startVisiting(INode *node)
 
 void ContextBuilder::visitModule(IModule *node)
 {
-	for(int i=0; i<node->numDeclarations(); i++)
+	for(size_t i=0; i<node->numDeclarations(); i++)
 	{
 		if(auto n = node->getDeclaration(i))
 			visitDeclaration(n);
@@ -84,7 +84,7 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierChain
 	if(!node)
 		return QualifiedIdentifier();
 	QualifiedIdentifier ident;
-	for(int i=0; i<node->numIdentifiers(); i++)
+	for(size_t i=0; i<node->numIdentifiers(); i++)
 		ident.push(Identifier(node->getIdentifier(i)->getText()));
 	return ident;
 }
@@ -94,7 +94,7 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierOrTem
 	if(!node)
 		return QualifiedIdentifier();
 	QualifiedIdentifier ident;
-	for(int i=0; i<node->numIdentifiersOrTemplateInstances(); i++)
+	for(size_t i=0; i<node->numIdentifiersOrTemplateInstances(); i++)
 		ident.push(Identifier(node->getIdentifiersOrTemplateInstance(i)->getIdentifier()->getText()));
 	return ident;
 }
@@ -161,16 +161,16 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 {
 	openContext(node, editorFindRange(node->getReturnType(), node->getFunctionBody()), DUContext::Function, node->getName());
-	
+
 	if(node->getParameters())
 	{
-		for(int i=0; i<node->getParameters()->numParameters(); i++)
+		for(size_t i=0; i<node->getParameters()->numParameters(); i++)
 		{
 			if(auto n = node->getParameters()->getParameter(i))
 				visitParameter(n);
 		}
 	}
-	
+
 	if(auto n = node->getFunctionBody())
 		visitBody(n);
 	closeContext();
@@ -179,19 +179,20 @@ void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 void ContextBuilder::visitConstructor(IConstructor *node)
 {
 	openContext(node, editorFindRange(node, node->getFunctionBody()), DUContext::Function, QualifiedIdentifier("this"));
-	
+
 	if(node->getParameters())
 	{
-		for(int i=0; i<node->getParameters()->numParameters(); i++)
+		for(size_t i=0; i<node->getParameters()->numParameters(); i++)
 		{
 			if(auto n = node->getParameters()->getParameter(i))
 				visitParameter(n);
 		}
 	}
-	
-	if(auto n = node->getFunctionBody())
+
+	if(auto n = node->getFunctionBody()) {
 		visitBody(n);
-		closeContext();
+    }
+	closeContext();
 }
 
 void ContextBuilder::visitDestructor(IDestructor *node)
@@ -205,7 +206,8 @@ void ContextBuilder::visitDestructor(IDestructor *node)
 void ContextBuilder::visitBody(IFunctionBody *node)
 {
 	openContext(node, DUContext::Other);
-	if(auto n = node->getBlockStatement())
+    // TODO: deal with SpecifiedFunctionBody
+	if(auto n = node->getSpecifiedFunctionBody()->getBlockStatement())
 		visitBlock(n, false);
 	closeContext();
 }
@@ -222,7 +224,7 @@ void ContextBuilder::visitBlock(IBlockStatement *node, bool openContext)
 
 void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *node)
 {
-	for(int i=0; i<node->numDeclarationsAndStatements(); i++)
+	for(size_t i=0; i<node->numDeclarationsAndStatements(); i++)
 	{
 		if(node->getDeclarationsAndStatement(i))
 		{
@@ -258,7 +260,7 @@ void ContextBuilder::visitDeclaration(IDeclaration *node)
 		visitInterfaceDeclaration(n);
 	else if(auto n = node->getEnumDeclaration())
 		visitEnumDeclaration(n);
-	for(int i=0; i<node->numDeclarations(); i++)
+	for(size_t i=0; i<node->numDeclarations(); i++)
 		visitDeclaration(node->getDeclaration(i));
 }
 
@@ -284,24 +286,25 @@ void ContextBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 
 void ContextBuilder::visitBaseClassList(IBaseClassList *node)
 {
-	for(int i=0; i<node->numItems(); i++)
+	for(size_t i=0; i<node->numItems(); i++)
 		visitBaseClass(node->getItem(i));
 }
 
 void ContextBuilder::visitBaseClass(IBaseClass *node)
 {
-	if(auto n = node->getType2())
+	if(auto n = node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance())
 	{
-		if(auto t = n->getSymbol())
-			visitSymbol(t);
-		if(auto t = n->getType())
+        // TODO: doesn't do anything anyways
+// 		if(auto t = n->getIdentifier())
+// 			visitSymbol(t);
+		if(auto t = node->getType2()->getType())
 			visitTypeName(t);
 	}
 }
 
 void ContextBuilder::visitStructBody(IStructBody *node)
 {
-	for(int i=0; i<node->numDeclarations(); i++)
+	for(size_t i=0; i<node->numDeclarations(); i++)
 	{
 		if(auto n = node->getDeclaration(i))
 			visitDeclaration(n);
@@ -312,7 +315,7 @@ void ContextBuilder::visitVarDeclaration(IVariableDeclaration *node)
 {
 	if(node->getType())
 		visitTypeName(node->getType());
-	for(int i=0; i<node->numDeclarators(); i++)
+	for(size_t i=0; i<node->numDeclarators(); i++)
 		visitDeclarator(node->getDeclarator(i));
 }
 
@@ -332,7 +335,7 @@ void ContextBuilder::visitEnumDeclaration(IEnumDeclaration *node)
 
 void ContextBuilder::visitEnumBody(IEnumBody *node)
 {
-	for(int i=0; i<node->numEnumMembers(); i++)
+	for(size_t i=0; i<node->numEnumMembers(); i++)
 		visitEnumMember(node->getEnumMember(i));
 }
 
@@ -512,7 +515,7 @@ void ContextBuilder::visitExpressionNode(IExpressionNode *node)
 
 void ContextBuilder::visitExpression(IExpression *node)
 {
-	for(int i=0; i<node->numItems(); i++)
+	for(size_t i=0; i<node->numItems(); i++)
 		visitExpressionNode(node->getItem(i));
 }
 
@@ -605,7 +608,7 @@ void ContextBuilder::visitInitializer(IInitializer *node)
 
 void ContextBuilder::visitImportDeclaration(IImportDeclaration *node)
 {
-	for(int i=0; i<node->numSingleImports(); i++)
+	for(size_t i=0; i<node->numSingleImports(); i++)
 	{
 		if(auto n = node->getSingleImport(i))
 			visitSingleImport(n);
@@ -627,7 +630,7 @@ void ContextBuilder::visitArguments(IArguments *node)
 	auto list = node->getArgumentList();
 	if(!list)
 		return;
-	for(int i=0; i<list->numItems(); i++)
+	for(size_t i=0; i<list->numItems(); i++)
 		visitExpressionNode(list->getItem(i));
 }
 
@@ -668,7 +671,7 @@ void ContextBuilder::visitForeachStatement(IForeachStatement *node)
 		visitForeachType(n);
 	if(auto n = node->getForeachTypeList())
 	{
-		for(int i=0; i<n->numItems(); i++)
+		for(size_t i=0; i<n->numItems(); i++)
 			visitForeachType(n->getItem(i));
 	}
 	if(auto n = node->getLow())
@@ -716,7 +719,7 @@ void ContextBuilder::visitFinalSwitchStatement(IFinalSwitchStatement *node)
 
 void ContextBuilder::visitCaseStatement(ICaseStatement *node)
 {
-	for(int i=0; i<node->getArgumentList()->numItems(); i++)
+	for(size_t i=0; i<node->getArgumentList()->numItems(); i++)
 		visitExpressionNode(node->getArgumentList()->getItem(i));
 	if(auto n = node->getDeclarationsAndStatements())
 		visitDeclarationsAndStatements(n);
@@ -771,7 +774,7 @@ void ContextBuilder::visitTryStatement(ITryStatement *node)
 		visitDeclarationOrStatement(n);
 	if(auto n = node->getCatches())
 	{
-		for(int i=0; i<n->numCatches(); i++)
+		for(size_t i=0; i<n->numCatches(); i++)
 			visitCatch(n->getCatche(i));
 		if(auto c = n->getLastCatch())
 			visitLastCatch(c);
@@ -822,8 +825,8 @@ void ContextBuilder::visitWithStatement(IWithStatement *node)
 	if(auto n = node->getExpression())
 		visitExpression(n);
 	//TODO: Open context.
-	if(auto n = node->getStatementNoCaseNoDefault())
-		visitStatementNoCaseNoDefault(n);
+	if(auto n = node->getDeclarationOrStatement())
+		visitDeclarationOrStatement(n);
 }
 
 void ContextBuilder::visitSynchronizedStatement(ISynchronizedStatement *node)
@@ -843,7 +846,13 @@ void ContextBuilder::visitStaticAssertStatement(IStaticAssertStatement *node)
 
 void ContextBuilder::visitAssertExpression(IAssertExpression *node)
 {
-	if(auto n = node->getAssertion())
+	if (auto n = node->getAssertArguments())
+        visitAssertArguments(n);
+}
+
+void ContextBuilder::visitAssertArguments(IAssertArguments *node)
+{
+    if(auto n = node->getAssertion())
 		visitExpressionNode(n);
 	if(auto n = node->getMessage())
 		visitExpressionNode(n);

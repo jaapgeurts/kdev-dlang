@@ -21,13 +21,13 @@
 
 #pragma once
 
-//Needed for KDE_EXPORT macros.
-#include <kdemacros.h>
 
 #ifndef DLANGCOMPLETION_EXPORT
 # ifdef MAKE_KDEV4GOCOMPLETION_LIB
-#  define DLANGCOMPLETION_EXPORT KDE_EXPORT
+#  define DLANGCOMPLETION_EXPORT
+// KDE_EXPORT
 # else
-#  define DLANGCOMPLETION_EXPORT KDE_IMPORT
+#  define DLANGCOMPLETION_EXPORT
+// KDE_IMPORT
 # endif
 #endif

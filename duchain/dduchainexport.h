@@ -21,13 +21,13 @@
 
 #pragma once
 
-//Needed for KDE_EXPORT macros.
-#include <kdemacros.h>
 
 #ifndef KDEVDDUCHAIN_EXPORT
 # ifdef MAKE_KDEVGODUCHAIN_LIB
-#  define KDEVDDUCHAIN_EXPORT KDE_EXPORT
+#  define KDEVDDUCHAIN_EXPORT
+// KDE_EXPORT
 # else
-#  define KDEVDDUCHAIN_EXPORT KDE_IMPORT
+#  define KDEVDDUCHAIN_EXPORT
+// KDE_IMPORT
 # endif
 #endif
