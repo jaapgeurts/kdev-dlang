@@ -35,7 +35,7 @@ class KDEVDDUCHAIN_EXPORT UseBuilder : public UseBuilderBase
 public:
 	UseBuilder(ParseSession *session);
 
-	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext());
+	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
 	virtual void startVisiting(INode *node) override;
 	virtual void visitTypeName(IType *node) override;
 	virtual void visitPrimaryExpression(IPrimaryExpression *node) override;

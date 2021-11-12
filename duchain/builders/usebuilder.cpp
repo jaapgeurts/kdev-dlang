@@ -32,7 +32,7 @@ UseBuilder::UseBuilder(ParseSession *session)
 	setParseSession(session);
 }
 
-ReferencedTopDUContext UseBuilder::build(const IndexedString &url, INode *node, ReferencedTopDUContext updateContext)
+ReferencedTopDUContext UseBuilder::build(const IndexedString &url, INode *node,const ReferencedTopDUContext& updateContext)
 {
 	qCDebug(DUCHAIN) << "Uses builder run";
 	return UseBuilderBase::build(url, node, updateContext);
@@ -48,7 +48,13 @@ void UseBuilder::visitTypeName(IType *node)
 	if(!node || !currentContext())
 		return;
 
-	QualifiedIdentifier id = identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier());
+    // TODO: fixed here
+	QualifiedIdentifier id;
+    if (node->getType2()->getTypeIdentifierPart()) {
+        if (node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()) {
+            id = identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier());
+        }
+    }
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;

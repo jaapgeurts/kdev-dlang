@@ -53,7 +53,7 @@ public:
 	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node,const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
 
 	virtual void startVisiting(INode *node) override;
-	virtual void visitBlock(IBlockStatement *node, bool openContext);
+	virtual void visitBlock(IBlockStatement *node);
 	virtual void visitBody(IFunctionBody *node);
 	virtual void visitFuncDeclaration(IFunctionDeclaration *node);
 	virtual void visitConstructor(IConstructor *node);

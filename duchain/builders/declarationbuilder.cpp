@@ -222,14 +222,14 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 
 void DeclarationBuilder::visitModule(IModule *node)
 {
+    // TODO: add anonymous namespace (files without module statements )
 	if(node->getModuleDeclaration())
 	{
 		if(node->getModuleDeclaration()->getComment())
 			setComment(node->getModuleDeclaration()->getComment());
 
-		DUChainWriteLocker lock;
-
-		auto m_thisPackage = identifierForNode(node->getModuleDeclaration()->getModuleName());
+        DUChainWriteLocker lock;
+        auto m_thisPackage = identifierForNode(node->getModuleDeclaration()->getModuleName());
 		KDevelop::RangeInRevision range = editorFindRange(node->getModuleDeclaration()->getModuleName(), node->getModuleDeclaration()->getModuleName());
 
 		Declaration *packageDeclaration = openDeclaration<Declaration>(m_thisPackage, range);
@@ -237,8 +237,13 @@ void DeclarationBuilder::visitModule(IModule *node)
 		openContext(node, editorFindRange(node, 0), DUContext::Namespace, m_thisPackage);
 		packageDeclaration->setInternalContext(currentContext());
 		lock.unlock();
-		DeclarationBuilderBase::visitModule(node);
-		closeContext();
+    }
+
+    DeclarationBuilderBase::visitModule(node);
+
+    if(node->getModuleDeclaration())
+	{
+        closeContext();
 		closeDeclaration();
 		topContext()->updateImportsCache();
 	}

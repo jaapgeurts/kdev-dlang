@@ -40,18 +40,21 @@
 #include "duchain/helper.h"
 #include "ddebug.h"
 
+#include <threadweaver/thread.h>
+
 #include "parser/dparser.h"
 
 using namespace KDevelop;
 
 DParseJob::DParseJob(const KDevelop::IndexedString &url, KDevelop::ILanguageSupport *languageSupport) : ParseJob(url, languageSupport)
 {
-    
+
 }
 
 void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
 	qCDebug(D) << "DParseJob succesfully created for document " << document();
+    qCDebug(D) << "DParseJob threadid: " << hex << thread->id();
 
 	UrlParseLock urlLock(document());
 	if(abortRequested())
@@ -118,8 +121,11 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 
 		if(abortRequested())
 			return abortJob();
+        qCDebug(D) << "Before builder creation";
 		DeclarationBuilder builder(&session, forExport);
+        qCDebug(D) << "Before building";
 		context = builder.build(document(), module, context);
+        qCDebug(D) << "after building";
 
 		if(!forExport && (newFeatures & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsContextsAndUses)
 		{

@@ -181,6 +181,7 @@ void writeHeader() {
         writeln("import dparse.parser;");
         writeln("import dparse.ast;");
         writeln();
+        writeln("import std.stdio;");
     }
     else {
         writeln("#pragma once");
@@ -197,10 +198,12 @@ void writeExtras() {
         writeln("{");
         writeln("	extern(C++) void* getContext()");
         writeln("	{");
+        writeln("\t\twritefln(\"getContext(): %x\",context);");
         writeln("		return context;");
         writeln("	}");
         writeln("	extern(C++) void setContext(void* context)");
         writeln("	{");
+        writeln("\t\twritefln(\"setContext(): %x\",context);");
         writeln("		this.context = context;");
         writeln("	}");
         writeln("	__gshared void* context;");
@@ -353,8 +356,8 @@ void writeClassForTemplate(WrapperGenVisitor visitor) {
 
         writeln("\textern(C++) size_t getStartLine() { return dclass.tokens[0].line; }");
         writeln("\textern(C++) size_t getStartColumn() { return dclass.tokens[0].column; }");
-        writeln("\textern(C++) size_t getEndLine() { return dclass.tokens[$].line; }");
-        writeln("\textern(C++) size_t getEndColumn() { return dclass.tokens[$].column; }");
+        writeln("\textern(C++) size_t getEndLine() { return dclass.tokens[$-1].line; }");
+        writeln("\textern(C++) size_t getEndColumn() { return dclass.tokens[$-1].column; }");
 
         classvars.length = 0;
         cd.accept(visitor);
@@ -531,8 +534,8 @@ class WrapperGenVisitor : ASTVisitor {
             if (cd.name.text != "Token") {
                 writeln("\textern(C++) size_t getStartLine() { return dclass.tokens[0].line; }");
                 writeln("\textern(C++) size_t getStartColumn() { return dclass.tokens[0].column; }");
-                writeln("\textern(C++) size_t getEndLine() { return dclass.tokens[$].line; }");
-                writeln("\textern(C++) size_t getEndColumn() { return dclass.tokens[$].column; }");
+                writeln("\textern(C++) size_t getEndLine() { return dclass.tokens[$-1].line; }");
+                writeln("\textern(C++) size_t getEndColumn() { return dclass.tokens[$-1].column; }");
             }
             writeln();
         }
@@ -697,6 +700,7 @@ class WrapperGenVisitor : ASTVisitor {
         if (cv.isArray) {
             writeln("\textern(C++) ", signatures[0]);
             writeln("\t{");
+            writefln("\t\twriteln(\"=>%s\");",signatures[0]);
             writefln("\t\tif(!dclass.%s)", escapeName(cv.name));
             writeln("\t\t\treturn 0;");
             writefln("\t\treturn dclass.%s.length;", escapeName(cv.name));
@@ -705,12 +709,14 @@ class WrapperGenVisitor : ASTVisitor {
 
             writeln("\textern(C++) ", signatures[1]);
             writeln("\t{");
+            writefln("\t\twriteln(\"=>%s\");",signatures[0]);
             writefln("\t\tif(index !in %s)", escapeName(cv.name));
         }
         else {
 
             writeln("\textern(C++) ", signatures[0]);
             writeln("\t{");
+            writefln("\t\twriteln(\"=>%s\");",signatures[0]);
             if (isExpressionNode)
                 writefln("\t\tif(!%s && cast(%s)dclass)", escapeName(cv.name), cv.type);
             else if (cv.type == "string")

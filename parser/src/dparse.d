@@ -237,6 +237,7 @@ extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 		import core.memory;
 		import core.thread;
 		import std.string;
+        import std.process;
 		
 		GC.disable(); //FIXME: Make it work with GC!
 		
@@ -245,12 +246,14 @@ extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 		//auto file = File((fromStringz(sourceFile).replace("/", ".")~".ast").idup, "w");
 		
 		thread_attachThis();
-		
+        writefln("Thread acquired: %x", thisThreadID);
+
 		LexerConfig config;
 		config.fileName = fromStringz(sourceFile).idup;
 		auto source = cast(ubyte[])fromStringz(sourceData);
 		auto tokens = getTokensForParser(source, config, new StringCache(StringCache.defaultBucketCount));
 		auto mod = parseModule(tokens, config.fileName, &allocator);
+        writeln("Parsing complete: ",fromStringz(sourceFile));
 		//new ASTPrinter(file, true).visit(mod);
 		keepAlive[config.fileName] = new CModule(mod);
         

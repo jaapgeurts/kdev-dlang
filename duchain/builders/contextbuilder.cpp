@@ -22,6 +22,7 @@
 #include "contextbuilder.h"
 #include "duchaindebug.h"
 
+
 using namespace KDevelop;
 
 ContextBuilder::ContextBuilder()
@@ -41,6 +42,7 @@ KDevelop::ReferencedTopDUContext ContextBuilder::build(const KDevelop::IndexedSt
 
 void ContextBuilder::startVisiting(INode *node)
 {
+    qCDebug(DUCHAIN) << "StartVisiting";
 	if(!node || node == (INode *)0x1)
 		return;
 
@@ -115,7 +117,7 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForIndex(qint64 index)
 
 void ContextBuilder::setContextOnNode(INode *node, KDevelop::DUContext *context)
 {
-	node->setContext(context);
+    node->setContext(context);
 }
 
 void ContextBuilder::setParseSession(ParseSession *session)
@@ -160,7 +162,8 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 
 void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 {
-	openContext(node, editorFindRange(node->getReturnType(), node->getFunctionBody()), DUContext::Function, node->getName());
+    openContext(node, editorFindRange(node->getReturnType(), node->getFunctionBody()),DUContext::Function, node->getName());
+
 
 	if(node->getParameters())
 	{
@@ -205,21 +208,22 @@ void ContextBuilder::visitDestructor(IDestructor *node)
 
 void ContextBuilder::visitBody(IFunctionBody *node)
 {
-	openContext(node, DUContext::Other);
-    // TODO: deal with SpecifiedFunctionBody
-	if(auto n = node->getSpecifiedFunctionBody()->getBlockStatement())
-		visitBlock(n, false);
-	closeContext();
+    // TODO: opencontext goes to block statement.
+//	openContext(node, DUContext::Other);
+    // TODO: deal with MissingFunctionBody everywhere
+    if (node->getSpecifiedFunctionBody()) {
+        if(auto n = node->getSpecifiedFunctionBody()->getBlockStatement())
+            visitBlock(n);
+    }
+//	closeContext();
 }
 
-void ContextBuilder::visitBlock(IBlockStatement *node, bool openContext)
+void ContextBuilder::visitBlock(IBlockStatement *node)
 {
-	if(openContext)
-		ContextBuilder::openContext(node, DUContext::Other);
+    ContextBuilder::openContext(node, DUContext::Other);
 	if(node->getDeclarationsAndStatements())
 		visitDeclarationsAndStatements(node->getDeclarationsAndStatements());
-	if(openContext)
-		closeContext();
+    closeContext();
 }
 
 void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *node)
@@ -235,6 +239,7 @@ void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *
 		}
 	}
 }
+
 
 void ContextBuilder::visitDeclaration(IDeclaration *node)
 {
@@ -370,7 +375,7 @@ void ContextBuilder::visitStatementNoCaseNoDefault(IStatementNoCaseNoDefault *no
 	if(auto n = node->getVersionSpecification())
 		visitVersionSpecification(n);
 	if(auto n = node->getBlockStatement())
-		visitBlock(n, true);
+		visitBlock(n);
 	if(auto n = node->getReturnStatement())
 		visitReturnStatement(n);
 	if(auto n = node->getWhileStatement())
