@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Description": "dscanner",
+        "Id": "dscanner",
+        "Name": "dscanner",
+        "ServiceTypes": [
+            "KDevelop/Plugin"
+        ]
+    },
+    "X-KDevelop-Category": "Global",
+    "X-KDevelop-Mode": "GUI"
+}
