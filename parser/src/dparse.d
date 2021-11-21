@@ -2,6 +2,7 @@ module dparser;
 
 import core.stdc.signal;
 import std.stdio;
+import std.string : toStringz;
 
 import dparse.lexer;
 import dparse.parser;
@@ -227,11 +228,53 @@ extern(C++) void deinitDParser()
 }
 
 
+
+class ParseMessage : IParseMessage {
+	
+    this(string message, ParseMsgType type, size_t line, size_t column) {
+        this.message = message;
+        this.type = type;
+        this.line = line;
+        this.column = column;
+    }
+
+    extern(C++) const(char)* getMessage() { return message.toStringz; }
+	extern(C++) ParseMsgType getType() { return type; }
+	extern(C++) size_t getLine() { return line; }
+	extern(C++) size_t getColumn() { return column; }
+
+private:
+    string message;
+    ParseMsgType type;
+    size_t line;
+    size_t column;
+}
+
+class ParseResult : IParseResult {
+
+    void setAst(IModule root) { this.root = root; }
+
+    void addMessage(string fileName , size_t line, size_t column, string message, bool isError) {
+         messages ~= new ParseMessage(message,isError ? ParseMsgType.Error : ParseMsgType.Warning,line,column);
+    }
+
+	extern(C++) IModule ast() { return root; }
+	extern(C++) bool succes() { return root !is null; }
+	extern(C++) IParseMessage message(size_t index) { return messages[index]; }
+	extern(C++) size_t messageCount() { return messages.length; }
+
+private:
+    IModule root;
+    IParseMessage[] messages;
+}
+
+
 //__gshared
 RollbackAllocator allocator;
 
-extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
+extern(C++) IParseResult parseSourceFile(char* sourceFile, char* sourceData)
 {
+    
 	try
 	{
 		import core.memory;
@@ -250,12 +293,21 @@ extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 
 		LexerConfig config;
 		config.fileName = fromStringz(sourceFile).idup;
+        uint errCnt;
+        uint wrnCnt;
+
+        ParseResult parseResult = new ParseResult();
+
 		auto source = cast(ubyte[])fromStringz(sourceData);
 		auto tokens = getTokensForParser(source, config, new StringCache(StringCache.defaultBucketCount));
-		auto mod = parseModule(tokens, config.fileName, &allocator);
+		auto mod = parseModule(tokens, config.fileName, &allocator, &parseResult.addMessage, &errCnt, &wrnCnt);
+        // TODO: report back error and warning counts
         writeln("Parsing complete: ",fromStringz(sourceFile));
 		//new ASTPrinter(file, true).visit(mod);
-		keepAlive[config.fileName] = new CModule(mod);
+
+        parseResult.setAst(new CModule(mod));
+
+		keepAlive[config.fileName] = parseResult;
         
 		return keepAlive[config.fileName];
 	}
@@ -268,4 +320,4 @@ extern(C++) INode parseSourceFile(char* sourceFile, char* sourceData)
 }
 
 
-__gshared CModule[string] keepAlive;
+__gshared ParseResult[string] keepAlive;

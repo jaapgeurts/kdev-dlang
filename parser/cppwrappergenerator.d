@@ -126,10 +126,9 @@ void main(string[] args) {
             new StringCache(StringCache.defaultBucketCount));
 
     auto mod = parseModule(tokens, config.fileName, &allocator);
-    
-    
-//    old(mod,args);
-//    return;
+
+    //    old(mod,args);
+    //    return;
 
     // add Token class
     Declaration d = new Declaration();
@@ -198,15 +197,39 @@ void writeExtras() {
         writeln("{");
         writeln("	extern(C++) void* getContext()");
         writeln("	{");
-        writeln("\t\twritefln(\"getContext(): %x\",context);");
+        version(log) writeln("\t\twritefln(\"getContext(): %x\",context);");
         writeln("		return context;");
         writeln("	}");
         writeln("	extern(C++) void setContext(void* context)");
         writeln("	{");
-        writeln("\t\twritefln(\"setContext(): %x\",context);");
+        version(log) writeln("\t\twritefln(\"setContext(): %x\",context);");
         writeln("		this.context = context;");
         writeln("	}");
+
         writeln("	__gshared void* context;");
+        writeln("}");
+        writeln();
+
+        writeln("enum ParseMsgType { Warning, Error }");
+        writeln();
+
+         // IParseMessage
+        writeln("extern(C++) interface IParseMessage");
+        writeln("{");
+        writeln("\tconst(char)* getMessage();");
+        writeln("\tParseMsgType getType();");
+        writeln("\tsize_t getLine();");
+        writeln("\tsize_t getColumn();");
+        writeln("}");
+        writeln();
+
+        // IParseResult
+        writeln("extern(C++) interface IParseResult");
+        writeln("{");
+        writeln("\tIModule ast();");
+        writeln("\tbool succes();");
+        writeln("\tIParseMessage message(size_t index);");
+        writeln("\tsize_t messageCount();");
         writeln("}");
         writeln();
 
@@ -232,7 +255,7 @@ void writeExtras() {
         writeln();
 
     }
-    else {
+    else { // output format is C header
 
         //Forward declarations.
         foreach (classname; allclasses)
@@ -247,19 +270,52 @@ void writeExtras() {
         writeln("void deinitDParser();");
         writeln();
 
-        writeln("IModule *parseSourceFile(char *sourceFile, char *sourceData);");
+        writeln("enum class ParseMsgType { Warning, Error };");
+        writeln();
+
+    // IParseMessage
+        writeln("class IParseMessage");
+        writeln("{");
+        writeln("public:");
+        
+        writeln("\tvirtual const char* getMessage();");
+        writeln("\tvirtual ParseMsgType getType();");
+        writeln("\tvirtual size_t getLine();");
+        writeln("\tvirtual size_t getColumn();");
+        writeln("protected: //Methods.");
+        writeln("\t~IParseMessage() = default;");
+        writeln("};");
+        writeln();
+
+        // IParseResult
+        writeln("class IParseResult");
+        writeln("{");
+        writeln("public:");
+        writeln("\tvirtual IModule* ast() = 0;");
+        writeln("\tvirtual bool succes() = 0;");
+        writeln("\tvirtual IParseMessage* message(uint index) = 0;");
+        writeln("\tvirtual uint messageCount() = 0;");
+        writeln("protected: //Methods.");
+        writeln("\t~IParseResult() = default;");
+        writeln("};");
+        writeln();
+
+        writeln("IParseResult *parseSourceFile(char *sourceFile, char *sourceData);");
         writeln();
 
         //Kind enum.
         writeln("enum class Kind");
         writeln("{");
+        int i=0;
         foreach (classname; allclasses) {
             if (classname == "Register")
                 classname ~= "_";
-            writefln("\t%s,", escapeAndLowerName(classname));
+            writefln("\t%s, // %d", escapeAndLowerName(classname),i);
+            i++;
         }
         foreach (aliasclass; aliasses) {
-            writefln("\t%s,", escapeAndLowerName(aliasclass.name));
+            writefln("\t%s, // %d", escapeAndLowerName(aliasclass.name),i);
+            i++;
         }
         writeln("};");
         writeln();
@@ -282,7 +338,7 @@ void writeExtras() {
         writeln("	virtual void setContext(void *context);");
         writeln("\t");
         writeln("protected: //Methods.");
-        writeln("	~INode() {}");
+        writeln("	~INode() = default;");
         writeln("};");
         writeln();
     }
@@ -335,7 +391,7 @@ void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
             writeln("\tvirtual size_t getEndColumn();");
             writeln();
             writeln("protected: //Methods.");
-            writefln("\tvirtual ~I%s() {}", aliasclass.name);
+            writefln("\tvirtual ~I%s() = default;", aliasclass.name);
             writeln("};");
         }
 
@@ -700,8 +756,8 @@ class WrapperGenVisitor : ASTVisitor {
         if (cv.isArray) {
             writeln("\textern(C++) ", signatures[0]);
             writeln("\t{");
-            writefln("\t\twriteln(\"=>%s\");",signatures[0]);
-            writefln("\t\tif(!dclass.%s)", escapeName(cv.name));
+            version(log) writefln("\t\twriteln(\"=>%s\");", signatures[0]);
+            writefln("\t\tif (!dclass.%s)", escapeName(cv.name));
             writeln("\t\t\treturn 0;");
             writefln("\t\treturn dclass.%s.length;", escapeName(cv.name));
             writeln("\t}");
@@ -709,21 +765,22 @@ class WrapperGenVisitor : ASTVisitor {
 
             writeln("\textern(C++) ", signatures[1]);
             writeln("\t{");
-            writefln("\t\twriteln(\"=>%s\");",signatures[0]);
-            writefln("\t\tif(index !in %s)", escapeName(cv.name));
+            version(log) writefln("\t\twriteln(\"=>%s\");", signatures[0]);
+            writefln("\t\tif (index !in %s)", escapeName(cv.name));
         }
         else {
 
             writeln("\textern(C++) ", signatures[0]);
             writeln("\t{");
-            writefln("\t\twriteln(\"=>%s\");",signatures[0]);
+            version(log) writefln("\t\twriteln(\"=>%s\");", signatures[0]);
+
             if (isExpressionNode)
-                writefln("\t\tif(!%s && cast(%s)dclass)", escapeName(cv.name), cv.type);
+                writefln("\t\tif (!%s && cast(%s)dclass)", escapeName(cv.name), cv.type);
             else if (cv.type == "string")
-                writefln("\t\tif(!%s && dclass.%s)", escapeName(cv.name), escapeName(cv.name));
+                writefln("\t\tif (!%s && dclass.%s)", escapeName(cv.name), escapeName(cv.name));
             else
-                writefln("\t\tif(!%s%s)", escapeName(cv.name), cv.type == "Token"
-                        || cv.type == "string" ? "" : format(" && dclass.%s", escapeName(cv.name)));
+                writefln("\t\tif (!%s%s)", escapeName(cv.name), cv.type == "Token"
+                         || cv.type == "string" ? "" : format(" && dclass.%s", escapeName(cv.name)));
         }
 
         if (isExpressionNode)

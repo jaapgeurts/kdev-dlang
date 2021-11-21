@@ -41,6 +41,7 @@ kdevplatform_add_plugin(kdevdlangplugin JSON kdevdlang.json SOURCES
     ddebug.cpp
 )
 
+# fix linkage to local shared module
 target_link_libraries(kdevdlangplugin
     KDev::Interfaces
     KDev::Language

@@ -26,18 +26,48 @@
 #include <QProcess>
 #include <QUrl>
 
+#include "duchain/duchaindebug.h"
+
+
 using namespace KDevelop;
 
-ParseSession::ParseSession(const QByteArray &contents, int priority, bool appendWithNewline) : m_contents(contents), m_priority(priority), m_features(TopDUContext::AllDeclarationsAndContexts)
+
+// TODO: JG put dlang proxy and dlang code in its own namespace
+
+ParseSession::ParseSession(const QByteArray &contents, int priority, bool appendWithNewline) :
+    m_contents(contents),
+    m_priority(priority),
+    m_features(TopDUContext::AllDeclarationsAndContexts)
 {
     Q_UNUSED(appendWithNewline);
 	forExport = false;
+
+    //TODO: Reparse to moduleCache if file has changed.
+
 }
 
 ParseSession::~ParseSession()
 {
 
 }
+
+bool ParseSession::startParsing()
+{
+    m_parseresult = parseSourceFile((char *)m_document.c_str(), m_contents.data());
+
+    qCDebug(DUCHAIN) << "After parsing";
+
+    for(int i=0 ;i<m_parseresult->messageCount();i++) {
+        IParseMessage* msg = m_parseresult->message(i);
+        addProblem(QString::fromUtf8(msg->getMessage()),msg->getLine(), msg->getColumn(),msg->getType() == ParseMsgType::Warning ? KDevelop::IProblem::Warning :KDevelop::IProblem::Error);
+    }
+
+
+
+
+    return m_parseresult->succes();
+}
+
 
 KDevelop::IndexedString ParseSession::languageString()
 {
@@ -267,7 +297,7 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			break;
 		}
 		default:
-			printf("Unhandled from kind: %d\n", (int8_t)from->getKind());
+			printf("Unhandled from kind: %d\n", (uint8_t)to->getKind());
 	}
 
 	//printf("findRange: to\n");
@@ -465,7 +495,13 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			if(f)
 			{
 				lineEnd = f->getLine();
-				columnEnd = f->getColumn() + strlen(f->getText());
+                const char* s = f->getText();
+                if (s == nullptr) { // some tokens have no text.
+                    printf("******#### token text is NULL on col,line: %d,%d\n",(int)f->getColumn(),(int)lineEnd);
+                    columnEnd = f->getColumn();
+                }else {
+                    columnEnd = f->getColumn() + strlen(f->getText());
+                }
 			}
 			break;
 		}
@@ -489,7 +525,7 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			break;
 		}
 		default:
-			printf("Unhandled to kind: %d\n", (int8_t)to->getKind());
+			printf("Unhandled to kind: %d\n", (uint8_t)to->getKind());
 	}
 
 	/*printf("lineStart: %lld\n", line);
@@ -789,4 +825,28 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 void ParseSession::setCanonicalImports(QHash<QString, QString> *imports)
 {
 	m_canonicalImports = imports;
+}
+
+INode* ParseSession::ast() const {
+    return m_parseresult->ast();
+}
+
+
+void ParseSession::addProblem(const QString& message, size_t line, size_t column,
+                              KDevelop::IProblem::Severity severity)
+{
+    ProblemPointer p(new Problem);
+
+    p->setDescription(message);
+    p->setSeverity(severity);
+    p->setSource(IProblem::SemanticAnalysis);
+    p->setFinalLocation(DocumentRange(m_document, KTextEditor::Range(line,column,line,column)));
+    //editorFindRange(node, node).castToSimpleRange()));
+
+    m_problems << p;
+}
+
+const QList<ProblemPointer> ParseSession::problems() const
+{
+    return m_problems;
 }

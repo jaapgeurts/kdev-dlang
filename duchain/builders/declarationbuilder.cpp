@@ -223,6 +223,8 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 void DeclarationBuilder::visitModule(IModule *node)
 {
     // TODO: add anonymous namespace (files without module statements )
+    // TODO: no module is an error!
+    // TODO JG revert to original
 	if(node->getModuleDeclaration())
 	{
 		if(node->getModuleDeclaration()->getComment())

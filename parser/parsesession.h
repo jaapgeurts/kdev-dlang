@@ -19,10 +19,15 @@
 #pragma once
 
 #include <language/editor/rangeinrevision.h>
+#include <language/editor/documentrange.h>
 #include <language/duchain/topducontext.h>
+#include <language/duchain/problem.h>
+
 #include <serialization/indexedstring.h>
 
 #include "parser/dparser.h"
+
+
 
 typedef QPair<KDevelop::DUContextPointer, KDevelop::RangeInRevision> SimpleUse;
 
@@ -35,7 +40,7 @@ public:
 
 	static KDevelop::IndexedString languageString();
 
-	//bool startParsing();
+	bool startParsing();
 
 	//bool parseExpression(dlang::ExpressionAst **node);
 
@@ -67,6 +72,23 @@ public:
 
 	void setCanonicalImports(QHash<QString, QString> *imports);
 
+    /**
+     * Returns a list of problems discovered during parsing.
+     * This can be problems from the DLang parser or discovered by the DeclarationBuilder
+     */
+    const QList<KDevelop::ProblemPointer> problems() const;
+
+    /**
+     * Add a problem concerning the given range
+     */
+    void addProblem(const QString& message,size_t line, size_t column,
+                    KDevelop::IProblem::Severity severity = KDevelop::IProblem::Warning );
+
+    /**
+     * Returns the top node of the AST after parsing
+     */
+    INode* ast() const;
+
 	/**
 	 * Returns doc comment preceding given token.
 	 * GoDoc comments are multilined / *-style comments
@@ -92,9 +114,13 @@ public:
 private:
 	QByteArray m_contents;
 
+    INode* m_ast;
+
 	int m_priority;
+    IParseResult* m_parseresult;
 	KDevelop::IndexedString m_document;
 	KDevelop::TopDUContext::Features m_features;
+    QList<KDevelop::ProblemPointer> m_problems;
 	bool forExport;
 	QList<QString> m_includePaths;
 	QHash<QString, QString> *m_canonicalImports;

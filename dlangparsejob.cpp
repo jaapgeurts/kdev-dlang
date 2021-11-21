@@ -42,7 +42,9 @@
 
 #include <threadweaver/thread.h>
 
-#include "parser/dparser.h"
+
+// JG REMOVE
+#include "language/duchain/codemodel.h"
 
 using namespace KDevelop;
 
@@ -101,7 +103,9 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	qCDebug(D) << "Job priority: " << parsePriority();
 
 	qCDebug(D) << document();
-	auto module = parseSourceFile((char *)document().c_str(), code.data()); //TODO: Reparse to moduleCache if file has changed.
+    
+    // parsing to parsesession
+    session.startParsing();
 
 	//When switching between files(even if they are not modified) KDevelop decides they need to be updated
 	//and calls parseJob with VisibleDeclarations feature
@@ -115,7 +119,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	else
 		session.setIncludePaths(dlang::Helper::getSearchPaths());
 
-	if(module)
+	if(session.ast())
 	{
 		QReadLocker parseLock(languageSupport()->parseLock());
 
@@ -124,13 +128,13 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
         qCDebug(D) << "Before builder creation";
 		DeclarationBuilder builder(&session, forExport);
         qCDebug(D) << "Before building";
-		context = builder.build(document(), module, context);
+		context = builder.build(document(), session.ast(), context);
         qCDebug(D) << "after building";
 
 		if(!forExport && (newFeatures & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsContextsAndUses)
 		{
 			dlang::UseBuilder useBuilder(&session);
-			useBuilder.buildUses(module);
+			useBuilder.buildUses(session.ast());
 		}
 		//This notifies other opened files of changes.
 		//session.reparseImporters(context);
@@ -146,15 +150,39 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 
 	setDuChain(context);
 
+    {
+        DUChainWriteLocker lock;
+        context->setProblems(session.problems());
+    }
+
 	highlightDUChain();
 
-	{
-		DUChainReadLocker lock;
-		DUChainDumper dumper;
-		dumper.dump(context);
-	}
+    // Dumps DU Chain to output
+    // 	{
+// 		DUChainReadLocker lock;
+// 		DUChainDumper dumper;
+// 		dumper.dump(context);
+// 	}
 
-	if(module)
+	// BEGIN JG
+// 	uint count;
+//     const CodeModelItem* items;
+//     IndexedString file = IndexedString("/home/jaapg/tmp/trial.d");
+//
+//     Retrieve the items for the given file
+//
+//     KDevelop::CodeModel::self().items(file, count, items);
+//
+//     for (uint i = 0; i < count; ++i) {
+//         const CodeModelItem* thisItem = items++;
+//
+//         qCDebug(D) << thisItem->id;
+//
+//     }
+        // END JG
+
+
+	if(session.ast())
 		qCDebug(D) << "===Success===" << document().str();
 	else
 		qCDebug(D) << "===Failed===" << document().str();
