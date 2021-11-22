@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// TODO: change all licenses to SPDX
+
 #include "utils.h"
 
 #include <interfaces/icore.h>

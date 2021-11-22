@@ -42,8 +42,8 @@ Q_SIGNALS:
     void problemsDetected(const QVector<KDevelop::IProblem::Ptr>& problems);
 
 protected Q_SLOTS:
-//     void postProcessStdout(const QStringList& lines) override;
-//     void postProcessStderr(const QStringList& lines) override;
+    void postProcessStdout(const QStringList& lines) override;
+    //void postProcessStderr(const QStringList& lines) override;
 
     void childProcessExited(int exitCode, QProcess::ExitStatus exitStatus) override;
     void childProcessError(QProcess::ProcessError processError) override;
@@ -53,13 +53,11 @@ protected:
 
     QScopedPointer<QElapsedTimer> m_timer;
 
-    QScopedPointer<DScannerParser> m_parser;
     QVector<KDevelop::IProblem::Ptr> m_problems;
 
     QStringList m_standardOutput;
-    QStringList m_xmlOutput;
+    QString m_document;
 
-//     bool m_showXmlOutput;
 
     KDevelop::Path m_projectRootPath;
 };

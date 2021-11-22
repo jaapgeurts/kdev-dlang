@@ -30,6 +30,14 @@ class IProject;
 namespace dscannercheck
 {
 
+namespace defaults
+{
+
+// global settings
+static const bool hideOutputView = true;
+static const bool checkStyle = true;
+}
+
 /**
  * @todo write docs
  */
@@ -51,6 +59,8 @@ public:
     // TODO: reconsider this. Make these private!!
     // global settings
     QString executablePath;
+    bool hideOutputView;
+
     // runtime settings
     QString checkPath;
 

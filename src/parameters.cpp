@@ -19,6 +19,8 @@
 #include <QStringList>
 
 #include "parameters.h"
+#include "globalsettings.h"
+#include "projectsettings.h"
 
 #include <interfaces/iproject.h>
 
@@ -31,6 +33,7 @@ DScannerParameters::DScannerParameters(IProject* project) :
     m_project(project)
 {
     executablePath = "/home/jaapg/bin/dscanner";
+    hideOutputView = GlobalSettings::hideOutputView();
 
     m_projectRootPath    = m_project->path();
 }
@@ -45,6 +48,21 @@ QStringList DScannerParameters::commandLine() const
     QStringList result;
 
     result << executablePath;
+
+    result << "-S"; // do style check. Individual settings are controlled via a settings file
+
+    // set reporting format
+    result << "-f";
+    result << "##{filepath}:{line}:{column}:{type}:{message}";
+
+    // append all the checks here, depending on the settings.
+    // if (boolean this or that)
+    // result << "--option=value
+
+    // get a list of all project files when we're scanning the project
+
+    // finally add the path of the file to checks
+    result << checkPath;
 
     return result;
 }

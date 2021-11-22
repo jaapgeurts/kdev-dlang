@@ -15,12 +15,12 @@
 #include "job.h"
 
 #include "debug.h"
-#include "parser.h"
-//#include "utils.h"
+#include "utils.h"
 
 #include <interfaces/icore.h>
 #include <interfaces/iuicontroller.h>
 #include <interfaces/iprojectcontroller.h>
+#include <language/editor/documentrange.h>
 #include <sublime/message.h>
 #include <shell/problem.h>
 // KF
@@ -37,25 +37,22 @@ using namespace KDevelop;
 namespace dscannercheck
 {
 
-
-
 DScannerJob::DScannerJob(const DScannerParameters& params, QObject* parent)
-    : OutputExecuteJob(parent)
-    , m_timer(new QElapsedTimer)
-    , m_parser(new DScannerParser)
-//     , m_showXmlOutput(params.showXmlOutput)
-     , m_projectRootPath(params.projectRootPath())
+    : OutputExecuteJob(parent),
+     m_timer(new QElapsedTimer),
+//     , m_showXmlOutput(params.showXmlOutput),
+     m_document(params.checkPath),
+     m_projectRootPath(params.projectRootPath())
 {
     setJobName(i18n("DScanner Analysis (%1)", prettyPathName(params.checkPath)));
 
     setCapabilities(KJob::Killable);
-    // TODO: require IOutputView plugin in json file
     setStandardToolView(IOutputView::TestView);
     setBehaviours(IOutputView::AutoScroll);
 
     setProperties(OutputExecuteJob::JobProperty::DisplayStdout);
     setProperties(OutputExecuteJob::JobProperty::DisplayStderr);
-//     setProperties(OutputExecuteJob::JobProperty::PostProcessOutput);
+    setProperties(OutputExecuteJob::JobProperty::PostProcessOutput);
 
     *this << params.commandLine();
     qCDebug(DSCANNER) << "checking path" << params.checkPath;
@@ -66,26 +63,47 @@ DScannerJob::~DScannerJob()
     doKill();
 }
 
-/*
-
 void DScannerJob::postProcessStdout(const QStringList& lines)
 {
-    static const auto fileNameRegex = QRegularExpression(QStringLiteral("Checking ([^:]*)\\.{3}"));
-    static const auto percentRegex  = QRegularExpression(QStringLiteral("(\\d+)% done"));
-
-    QRegularExpressionMatch match;
+    qCDebug(DSCANNER) << "processing output";
 
     for (const QString& line : lines) {
-        match = fileNameRegex.match(line);
-        if (match.hasMatch()) {
-            emit infoMessage(this, match.captured(1));
-            continue;
-        }
+        // parsing lines is simple so we do it here.
+        if (line[0] == QLatin1Char('#') && line[1] == QLatin1Char('#')) {
+            // this is an analysis message
+            QStringList parts = line.split(QLatin1Char(':'));
+            QString fileName = parts[0].remove(0,2);
+            int line  = parts[1].toInt();
+            int column = parts[2].toInt();
+            QString type = parts[3];
+            QString message = parts[4];
 
-        match = percentRegex.match(line);
-        if (match.hasMatch()) {
-            setPercent(match.capturedRef(1).toULong());
-            continue;
+            KDevelop::IProblem::Ptr problem(new KDevelop::DetectedProblem(i18n("DScanner")));
+
+            if (type == "error")
+                problem->setSeverity(KDevelop::IProblem::Error);
+            if (type == "warn")
+                problem->setSeverity(KDevelop::IProblem::Warning);
+            else
+                problem->setSeverity(KDevelop::IProblem::Hint);
+            problem->setDescription(message);
+            problem->setExplanation(message);
+
+            KDevelop::DocumentRange range;
+            range.document = IndexedString(m_document);
+            range.setBothLines(line-1); // dscanner reports 1 indexed.
+            range.setBothColumns(column-1); // DocumentRange is 0 indexed
+
+            problem->setFinalLocation(range);
+            problem->setFinalLocationMode(KDevelop::IProblem::TrimmedLine);
+
+            //problem->addDiagnostic();
+
+            qCDebug(DSCANNER) << "Adding problem: " << problem;
+            m_problems << problem;
+        }
+        else {
+            emit infoMessage(this, line);
         }
     }
 
@@ -96,8 +114,11 @@ void DScannerJob::postProcessStdout(const QStringList& lines)
     }
 }
 
+
+
+/*
 void DScannerJob::postProcessStderr(const QStringList& lines)
-{
+
     static const auto xmlStartRegex = QRegularExpression(QStringLiteral("\\s*<"));
 
     for (const QString & line : lines) {
@@ -144,7 +165,6 @@ void DScannerJob::postProcessStderr(const QStringList& lines)
 void DScannerJob::start()
 {
     m_standardOutput.clear();
-    m_xmlOutput.clear();
 
     qCDebug(DSCANNER) << "executing:" << commandLine().join(QLatin1Char(' '));
 
@@ -197,15 +217,18 @@ void DScannerJob::childProcessExited(int exitCode, QProcess::ExitStatus exitStat
 {
     qCDebug(DSCANNER) << "Process Finished, exitCode" << exitCode << "process exit status" << exitStatus;
 
-    // TODO: JG fix this
-//     postProcessStdout({QStringLiteral("Elapsed time: %1 s.").arg(m_timer->elapsed()/1000.0)});
+     postProcessStdout({QStringLiteral("Elapsed time: %1 s.").arg(m_timer->elapsed()/1000.0)});
 
-    if (exitCode != 0) {
-        qCDebug(DSCANNER) << "DScanner failed, standard output: ";
-        qCDebug(DSCANNER) << m_standardOutput.join(QLatin1Char('\n'));
-        qCDebug(DSCANNER) << "DScanner failed, XML output: ";
-        qCDebug(DSCANNER) << m_xmlOutput.join(QLatin1Char('\n'));
-    }
+    // Can't make any meaningful statement. Since DScanner returns 1 when there is something to parse
+//     if (exitCode != 0) {
+// //        there was something to parse
+//         qCDebug(DSCANNER) << "DScanner failed, standard output: ";
+//         qCDebug(DSCANNER) << m_standardOutput.join(QLatin1Char('\n'));
+//         qCDebug(DSCANNER) << "DScanner failed, XML output: ";
+//         qCDebug(DSCANNER) << m_xmlOutput.join(QLatin1Char('\n'));
+//     }
+
+    emitProblems();
 
     OutputExecuteJob::childProcessExited(exitCode, exitStatus);
 }

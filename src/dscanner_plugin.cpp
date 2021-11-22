@@ -1,9 +1,12 @@
 #include "dscanner_plugin.h"
 
+#include "config/globalconfigpage.h"
+#include "config/projectconfigpage.h"
+#include "globalsettings.h"
+
 #include <debug.h>
 
 #include <language/interfaces/editorcontext.h>
-#include <project/projectmodel.h>
 #include <interfaces/contextmenuextension.h>
 #include <interfaces/icore.h>
 #include <interfaces/idocumentcontroller.h>
@@ -12,6 +15,8 @@
 #include <interfaces/iuicontroller.h>
 #include <interfaces/iproject.h>
 #include <util/jobstatus.h>
+#include <project/projectconfigpage.h>
+#include <project/projectmodel.h>
 
 #include <klocalizedstring.h>
 
@@ -38,8 +43,8 @@ DScannerPlugin::DScannerPlugin(QObject *parent, const QVariantList& args)
 
     qCDebug(DSCANNER) << "Starting DScanner";
 
-//     qCDebug(DSCANNER) << "setting dscanner rc file";
-//     setXMLFile(QStringLiteral("kdevcppcheck.rc"));
+    qCDebug(DSCANNER) << "setting dscanner rc file";
+    setXMLFile(QStringLiteral("kdevdscanner.rc"));
 
     QIcon dscannerIcon = QIcon::fromTheme(QStringLiteral("dscanner"));
 
@@ -58,7 +63,7 @@ DScannerPlugin::DScannerPlugin(QObject *parent, const QVariantList& args)
     connect(m_menuActionProject, &QAction::triggered, this, [this](){
         runDScanner(true);
     });
-    actionCollection()->addAction(QStringLiteral("cppcheck_project"), m_menuActionProject);
+    actionCollection()->addAction(QStringLiteral("dscanner_project"), m_menuActionProject);
 
     m_contextActionProject = new QAction(dscannerIcon, i18nc("@item:inmenu", "DScanner"), this);
     connect(m_contextActionProject, &QAction::triggered, this, [this]() {
@@ -113,7 +118,7 @@ void DScannerPlugin::raiseProblemsView()
 void DScannerPlugin::raiseOutputView()
 {
     core()->uiController()->findToolView(
-        i18nc("@title:window", "Test"),// TODO: name test?
+        i18nc("@title:window", "Test"),
         nullptr,
         KDevelop::IUiController::FindFlags::Raise);
 }
@@ -184,6 +189,8 @@ void DScannerPlugin::runDScanner(bool checkProject)
 
 void DScannerPlugin::runDScanner(IProject* project, const QString& path)
 {
+    m_model->reset(project, path);
+
     DScannerParameters params(project);
     params.checkPath = path;
 
@@ -195,12 +202,11 @@ void DScannerPlugin::runDScanner(IProject* project, const QString& path)
     core()->uiController()->registerStatus(new JobStatus(m_job, QStringLiteral("DScanner")));
     core()->runController()->registerJob(m_job);
 
-    //TODO: fix
-//     if (params.hideOutputView) {
+     if (params.hideOutputView) {
          raiseProblemsView();
-//     } else {
-//         raiseOutputView();
-//     }
+     } else {
+         raiseOutputView();
+     }
 
     updateActions();
 }
@@ -251,7 +257,7 @@ int DScannerPlugin::configPages() const
 
 ConfigPage* DScannerPlugin::configPage(int number, QWidget* parent)
 {
-    return nullptr;
+    return number ? nullptr : new GlobalConfigPage(this, parent);
 }
 
 int DScannerPlugin::perProjectConfigPages() const
@@ -261,7 +267,7 @@ int DScannerPlugin::perProjectConfigPages() const
 
 ConfigPage* DScannerPlugin::perProjectConfigPage(int number, const ProjectConfigOptions& options, QWidget* parent)
 {
-    return nullptr;
+        return number ? nullptr : new ProjectConfigPage(this, options.project, parent);
 }
 
 void DScannerPlugin::result(KJob*)
@@ -275,10 +281,9 @@ void DScannerPlugin::result(KJob*)
             m_job->status() == KDevelop::OutputExecuteJob::JobStatus::JobCanceled) {
             raiseProblemsView();
         }
-        // TODO: fix
-//         else {
-//             raiseOutputView();
-//         }
+        else {
+            raiseOutputView();
+        }
     }
 
     m_job = nullptr; // job is automatically deleted later
