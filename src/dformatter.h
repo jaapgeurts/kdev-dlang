@@ -31,6 +31,11 @@ class FormatJob;
 class DFormatter {
 public:
 
+    enum class IndentStyle {
+        Tabs,
+        Spaces
+    };
+
     enum class BraceStyle {
         Allman,
         Otbs,
@@ -38,10 +43,10 @@ public:
     };
 
     enum class TemplateContraintStyle {
-        ConditionalNewlineIndent,
-        ConditionaleNewline,
         AlwaysNewline,
-        AlwaysNewlineIndent
+        AlwaysNewlineIndent,
+        ConditionalNewlineIndent,
+        ConditionaleNewline
     };
 
     /**
@@ -56,13 +61,14 @@ public:
 
     QString formatSource(const QString& text, const QString& leftContext = QString(), const QString& rightContext = QString());
 
-    QVariant option(const QString &name) const;
+    QVariant option(const QString &key) const;
 
     bool predefinedStyle(const QString &name);
     void loadStyle(const QString &content);
     QString saveStyle() const;
+    void resetStyle();
 
-protected Q_SLOTS:
+
     // indent
 
     // DON'T USE: end_of_line | `cr`, `crlf` and **`lf`** | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#end_of_line)
@@ -72,7 +78,7 @@ protected Q_SLOTS:
     // DON'T USE: charset | **`UTF-8`** | Not supported. `dfmt` only works correctly on UTF-8.
 
     // indent_style | `tab`, **`space`** | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#indent_style)
-    void setIndentStyle(bool mode);
+    void setIndentStyle(IndentStyle mode);
 
     // indent_size | positive integers (**`4`**) | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#indent_size)
     void setIndentSize(int length);
@@ -81,7 +87,7 @@ protected Q_SLOTS:
     void setTabWidth(int length);
 
     // dfmt_single_indent | `true`, **`false`** | Set if the code in parens is indented by a single tab instead of two.
-    void setSingleIndent(bool vaue);
+    void setSingleIndent(bool value);
 
     // DON'T USE: trim_trailing_whitespace | **`true`** | Not supported. `dfmt` does not emit trailing whitespace.
 
@@ -128,12 +134,14 @@ protected Q_SLOTS:
     // dfmt_keep_line_breaks | `true`, **`false`** | Keep existing line breaks if these don't violate other formatting rules.
     void setKeepLineBreaks(bool value);
 
+
 private:
+
+    void saveSettings();
 
     FormatJob* m_job;
 
     void updateFormatter();
-    void resetStyle();
 
     QVariantMap m_options;
 

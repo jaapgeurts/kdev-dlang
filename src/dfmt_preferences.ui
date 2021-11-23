@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>332</width>
+    <width>338</width>
     <height>602</height>
    </rect>
   </property>
@@ -29,65 +29,79 @@
       <string/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
-     <widget class="QWidget" name="tabIndentqtion">
+     <widget class="QWidget" name="tabIndentation">
       <attribute name="title">
        <string comment="@title:tab">Indentation &amp;&amp; Spaces</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_4">
          <item>
-          <widget class="KComboBox" name="cbIndentType">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
            <item>
-            <property name="text">
-             <string comment="@item:inlistbox Indentation type">Tabs</string>
-            </property>
+            <widget class="KComboBox" name="cbIndentType">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <item>
+              <property name="text">
+               <string comment="@item:inlistbox Indentation type">Tabs</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string comment="@item:inlistbox Indentation type">Spaces</string>
+              </property>
+             </item>
+            </widget>
            </item>
            <item>
-            <property name="text">
-             <string comment="@item:inlistbox Indentation type">Spaces</string>
-            </property>
+            <spacer name="spacer13_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Minimum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>18</width>
+               <height>21</height>
+              </size>
+             </property>
+            </spacer>
            </item>
-          </widget>
-         </item>
-         <item>
-          <spacer name="spacer13_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Minimum</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>18</width>
-             <height>21</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="inpNuberSpaces">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="toolTip">
-            <string comment="@info:tooltip">Number of spaces that will be converted to a tab.
+           <item>
+            <widget class="QSpinBox" name="sbNumberSpaces">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string comment="@info:tooltip">Number of spaces that will be converted to a tab.
 The number of spaces per tab is controlled by the editor.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>4</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chkSingleIndent">
+           <property name="toolTip">
+            <string>Set if the code in parens is indented by a single tab instead of two.</string>
            </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="value">
-            <number>4</number>
+           <property name="text">
+            <string>Single indent</string>
            </property>
           </widget>
          </item>
@@ -216,7 +230,7 @@ The number of spaces per tab is controlled by the editor.</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QCheckBox" name="chkKeepLineBtreaks">
+           <widget class="QCheckBox" name="chkKeepLineBreaks">
             <property name="toolTip">
              <string comment="@info:tooltip">Adds a space after an associative array key before the `:` like in older dfmt versions.</string>
             </property>
@@ -256,7 +270,7 @@ The number of spaces per tab is controlled by the editor.</string>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="chkOutdentaAttributes">
+           <widget class="QCheckBox" name="chkOutdentAttributes">
             <property name="enabled">
              <bool>false</bool>
             </property>

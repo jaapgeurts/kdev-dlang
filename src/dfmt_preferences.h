@@ -28,20 +28,36 @@ public:
 protected:
     void init();
     void updatePreviewText(bool emitChangedSignal = true);
-    void setItemChecked(int idx, bool checked);
     void updateWidgets();
 
 private Q_SLOTS:
     void currentTabChanged();
+
+    // indentation
     void indentChanged();
-    void indentObjectsChanged(QListWidgetItem *item);
-    void minMaxValuesChanged();
-    void bracketsChanged();
-    void blocksChanged();
-    void paddingChanged();
-    void onelinersChanged();
-    void pointerAlignChanged();
-    void afterParensChanged();
+    void singleIndentChanged();
+
+    // spaces
+    void spaceAfterCastChanged();
+    void spaceBeforeFunctionParametersChanged();
+    void selectiveImportSpaceChanged();
+    void spaceBeforeAssocArrayColonChanged();
+    // void spaceAfterKeywordsChanged();
+
+    // bracestyle
+    void braceStyleChanged();
+
+    // alignment
+    void keepLineBreaksChanged();
+    void alignSwitchStatementsChanged();
+    void splitOperatorAtLineEndChanged();
+    void compactLabeledStatementsChanged();
+    //void outdentAttributesChanged();
+
+   // templates
+    void templateConstraintStyleChanged();
+    void singleTemplateConstraintIndentChanged();
+
 
 private:
     QScopedPointer<DFormatter> m_formatter;

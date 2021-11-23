@@ -101,7 +101,7 @@ DFormatPlugin::DFormatPlugin(QObject *parent, const QVariantList& args)
 {
     Q_UNUSED(args);
 
-    qCDebug(DFMT) << "Hello world, dfmt plugin is loaded!";
+    qCDebug(DFMT) << "DFmt plugin: D source formatter started!";
 }
 
 DFormatPlugin::~DFormatPlugin()
@@ -123,7 +123,7 @@ QString DFormatPlugin::caption() const
 QString DFormatPlugin::description() const
 {
     return QStringLiteral("<b>DFmt</b> is a source code indenter, formatter "
-        " and beautifier for the D language");
+        "and beautifier for the D language.<br/>Home page: <a href=\"https://github.com/dlang-community/dfmt\">https://github.com/dlang-community/dfmt</a>");
 }
 
 QString DFormatPlugin::formatSource(const QString& text, const QUrl &url, const QMimeType& mime, const QString& leftContext, const QString& rightContext) const
@@ -154,9 +154,9 @@ static SourceFormatterStyle createPredefinedStyle(const QString& name, const QSt
 {
     SourceFormatterStyle st = SourceFormatterStyle( name );
     st.setCaption( caption.isEmpty() ? name : caption );
-//    DFor;
-//    fmt.predefinedStyle( name );
-    st.setContent( "mystyle" );
+    DFormatter fmt;
+    fmt.predefinedStyle( name );
+    st.setContent( fmt.saveStyle() );
     st.setMimeTypes({SourceFormatterStyle::MimeHighlightPair{"text/x-dsrc","D"}});
     st.setUsePreview(true);
     return st;
@@ -165,7 +165,8 @@ static SourceFormatterStyle createPredefinedStyle(const QString& name, const QSt
 QVector<SourceFormatterStyle> DFormatPlugin::predefinedStyles() const
 {
     static const QVector<SourceFormatterStyle> list = {
-        createPredefinedStyle(QStringLiteral("D"),"(Default)")
+        createPredefinedStyle(QStringLiteral("Default"))
+        // Consider adding more default styles
     };
     return list;
 }
@@ -183,11 +184,33 @@ SettingsWidget* DFormatPlugin::editStyleWidget(const QMimeType& mime) const
 
 QString DFormatPlugin::previewText(const SourceFormatterStyle& style, const QMimeType& mime) const
 {
-    return "previewText";
+   return
+      QLatin1String("// Indentation\n") +
+      indentingSample() +
+      QLatin1String("\t// Formatting\n") +
+      formattingSample();
 }
 
 ISourceFormatter::Indentation DFormatPlugin::indentation(const QUrl &url) const{
-    return ISourceFormatter::Indentation();
+
+    // Call formatSource first, to initialize the m_formatter data structures according to the URL
+    formatSource(QString(), url, QMimeDatabase().mimeTypeForUrl(url), QString(), QString());
+
+    Indentation ret;
+
+    ret.indentWidth = m_formatter->option(QStringLiteral("IndentSize")).toInt();
+
+    QString s = m_formatter->option(QStringLiteral("IndentStyle")).toString();
+    if(s == QLatin1String("Tabs"))
+    {
+        // Do tabs-only indentation
+        ret.indentationTabWidth = m_formatter->option(QStringLiteral("TabWidth")).toInt();;
+    }else{
+        // Don't use tabs at all
+        ret.indentationTabWidth = -1;
+    }
+
+    return ret;
 }
 
 QString DFormatPlugin::formattingSample()
