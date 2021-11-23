@@ -12,6 +12,7 @@ include(ECMQtDeclareLoggingCategory)
 include(FeatureSummary)
 
 find_package(KDevPlatform 5.2.40 REQUIRED)
+#find_package(KF5CoreAddons)
 
 add_subdirectory(src)
 

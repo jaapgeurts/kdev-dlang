@@ -21,5 +21,6 @@ kdevplatform_add_plugin(dfmt_plugin
 )
 
 target_link_libraries(dfmt_plugin
+#    KF5::CoreAddons
     KDev::Interfaces
 )

@@ -4,6 +4,8 @@
 #include <interfaces/iplugin.h>
 #include <interfaces/isourceformatter.h>
 
+#include "dformatter.h"
+
 #include <QMimeType>
 
 class DFormatPlugin : public KDevelop::IPlugin, public KDevelop::ISourceFormatter
@@ -49,6 +51,10 @@ public:
 
     static QString formattingSample();
     static QString indentingSample();
+
+private:
+    QScopedPointer<DFormatter> m_formatter;
+
 };
 
 #endif // DFORMATTER_PLUGIN_H

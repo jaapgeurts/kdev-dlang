@@ -19,15 +19,31 @@
 #ifndef DFORMATTER_H
 #define DFORMATTER_H
 
+
 #include <QVariant>
 #include <QString>
+
+class FormatJob;
 
 /**
  * @todo write docs
  */
-class DFormatter
-{
+class DFormatter {
 public:
+
+    enum class BraceStyle {
+        Allman,
+        Otbs,
+        Stroustrup
+    };
+
+    enum class TemplateContraintStyle {
+        ConditionalNewlineIndent,
+        ConditionaleNewline,
+        AlwaysNewline,
+        AlwaysNewlineIndent
+    };
+
     /**
      * Default constructor
      */
@@ -36,7 +52,7 @@ public:
     /**
      * Destructor
      */
-    ~DFormatter();
+    virtual ~DFormatter();
 
     QString formatSource(const QString& text, const QString& leftContext = QString(), const QString& rightContext = QString());
 
@@ -46,45 +62,76 @@ public:
     void loadStyle(const QString &content);
     QString saveStyle() const;
 
+protected Q_SLOTS:
     // indent
-    /*
-    void setTabIndentation(int length, bool forceTabs);
-    void setSpaceIndentation(int length);
-    void setTabSpaceConversionMode(bool mode);
-    void setFillEmptyLines(bool on);
-    void setBlockIndent(bool on);
-    void setBracketIndent(bool on);
-    void setCaseIndent(bool on);
-    void setClassIndent(bool on);
-    void setLabelIndent(bool on);
-    void setNamespaceIndent(bool on);
-    void setPreprocessorIndent(bool on);
-    void setSwitchIndent(bool on);
-    void setMaxInStatementIndentLength(int max);
-    void setMinConditionalIndentLength(int min);
-    void setAfterParens(bool on);
-    void setContinuation(int n);
-    */
-    //brackets
-//    void setBracketFormatMode(astyle::BraceMode mode);
-//     void setBreakClosingHeaderBracketsMode(bool state);
-    //blocks
-//     void setBreakBlocksMode(bool state);
-//     void setBreakElseIfsMode(bool state);
-//     void setBreakClosingHeaderBlocksMode(bool state);
-    //padding
-//     void setOperatorPaddingMode(bool mode);
-//     void setParensOutsidePaddingMode(bool mode);
-//     void setParensInsidePaddingMode(bool mode);
-//     void setParensHeaderPaddingMode(bool mode);
-//     void setParensUnPaddingMode(bool state);
-    //oneliners
-//     void setBreakOneLineBlocksMode(bool state);
-//     void setBreakOneLineStatementsMode(bool state);
-    //     pointer
-//     void setPointerAlignment(astyle::PointerAlign alignment);
+
+    // DON'T USE: end_of_line | `cr`, `crlf` and **`lf`** | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#end_of_line)
+
+    // DON'T USE: insert_final_newline | **`true`** | Not supported. `dfmt` always inserts a final newline.
+
+    // DON'T USE: charset | **`UTF-8`** | Not supported. `dfmt` only works correctly on UTF-8.
+
+    // indent_style | `tab`, **`space`** | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#indent_style)
+    void setIndentStyle(bool mode);
+
+    // indent_size | positive integers (**`4`**) | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#indent_size)
+    void setIndentSize(int length);
+
+    // tab_width | positive integers (**`4`**) | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#tab_width)
+    void setTabWidth(int length);
+
+    // dfmt_single_indent | `true`, **`false`** | Set if the code in parens is indented by a single tab instead of two.
+    void setSingleIndent(bool vaue);
+
+    // DON'T USE: trim_trailing_whitespace | **`true`** | Not supported. `dfmt` does not emit trailing whitespace.
+
+    // DON'T USE: max_line_length | positive integers (**`120`**) | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#max_line_length)
+
+    // dfmt_brace_style | **`allman`**, `otbs`, or `stroustrup` | [See Wikipedia](https://en.wikipedia.org/wiki/Brace_style)
+    void setBraceStyle(BraceStyle braceStyle);
+
+    // DON'T USE: dfmt_soft_max_line_length | positive integers (**`80`**) | The formatting process will usually keep lines below this length, but they may be up to *max_line_length* columns long.
+
+    // dfmt_align_switch_statements | **`true`**, `false` | Align labels, cases, and defaults with their enclosing switch.
+    void setAlignSwitchStatements(bool value);
+
+    // dfmt_outdent_attributes (Not yet implemented) | **`true`**, `false`| Decrease the indentation level of attributes.
+    void setOutdentAttributes(bool value);
+
+    // dfmt_split_operator_at_line_end | `true`, **`false`** | Place operators on the end of the previous line when splitting lines.
+    void setSplitOperatorAtLineEnd(bool value);
+
+    // dfmt_space_after_cast | **`true`**, `false` | Insert space after the closing paren of a `cast` expression.
+    void setSpaceAfterCast(bool value);
+
+    // dfmt_space_after_keywords (Not yet implemented) | **`true`**, `false` | Insert space after `if`, `while`, `foreach`, etc, and before the `(`.
+    void setSpaceAfterKeywords(bool value);
+
+    // dfmt_space_before_function_parameters | `true`, **`false`** | Insert space before the opening paren of a function parameter list.
+    void setSpaceBeforeFunctionParameters(bool value);
+
+    // dfmt_selective_import_space | **`true`**, `false` | Insert space after the module name and before the `:` for selective imports.
+    void setSelectiveImportSpace(bool value);
+
+    // dfmt_compact_labeled_statements | **`true`**, `false` | Place labels on the same line as the labeled `switch`, `for`, `foreach`, or `while` statement.
+    void setCompactLabeledStatements(bool value);
+
+    // dfmt_template_constraint_style | **`conditional_newline_indent`** `conditional_newline` `always_newline` `always_newline_indent` | Control the formatting of template constraints.
+    void setTemplateContraintStyle(TemplateContraintStyle style);
+
+    // dfmt_single_template_constraint_indent | `true`, **`false`** | Set if the constraints are indented by a single tab instead of two. Has only an effect if the style set to `always_newline_indent` or `conditional_newline_indent`.
+    void setSingleTemplateContraintIndent(bool value);
+
+    // dfmt_space_before_aa_colon | `true`, **`false`** | Adds a space after an associative array key before the `:` like in older dfmt versions.
+    void setSpaceBeforeAssocArrayColon(bool value);
+
+    // dfmt_keep_line_breaks | `true`, **`false`** | Keep existing line breaks if these don't violate other formatting rules.
+    void setKeepLineBreaks(bool value);
 
 private:
+
+    FormatJob* m_job;
+
     void updateFormatter();
     void resetStyle();
 

@@ -2,6 +2,9 @@
 
 #include <debug.h>
 
+#include <interfaces/icore.h>
+#include <interfaces/isourceformattercontroller.h>
+
 #include <KPluginFactory>
 
 #include <QMimeDatabase>
@@ -93,11 +96,12 @@ using namespace KDevelop;
 K_PLUGIN_FACTORY_WITH_JSON(DFormatterPluginFactory, "kdevdfmt_plugin.json", registerPlugin<DFormatPlugin>(); )
 
 DFormatPlugin::DFormatPlugin(QObject *parent, const QVariantList& args)
-    : KDevelop::IPlugin(QStringLiteral("kdevdfmt"), parent)
+    : KDevelop::IPlugin(QStringLiteral("kdevdfmt"), parent),
+    m_formatter(new DFormatter())
 {
     Q_UNUSED(args);
 
-    qCDebug(DFMT) << "Hello world, my plugin is loaded!";
+    qCDebug(DFMT) << "Hello world, dfmt plugin is loaded!";
 }
 
 DFormatPlugin::~DFormatPlugin()
@@ -124,7 +128,9 @@ QString DFormatPlugin::description() const
 
 QString DFormatPlugin::formatSource(const QString& text, const QUrl &url, const QMimeType& mime, const QString& leftContext, const QString& rightContext) const
 {
-        return "DFmt formatSource()";
+    auto style = ICore::self()->sourceFormatterController()->styleForUrl(url, mime);
+    return formatSourceWithStyle(style, text, url, mime, leftContext, rightContext);
+
 }
 
 QString DFormatPlugin::formatSourceWithStyle(SourceFormatterStyle style,
@@ -134,7 +140,14 @@ QString DFormatPlugin::formatSourceWithStyle(SourceFormatterStyle style,
                                 const QString& leftContext,
                                 const QString& rightContext) const
 {
-    return "formatSourceWithStyle()";
+
+    if (style.content().isEmpty()) {
+        m_formatter->predefinedStyle(style.name());
+    } else {
+        m_formatter->loadStyle(style.content());
+    }
+
+     return m_formatter->formatSource(text,leftContext,rightContext);
 }
 
 static SourceFormatterStyle createPredefinedStyle(const QString& name, const QString& caption = QString())
