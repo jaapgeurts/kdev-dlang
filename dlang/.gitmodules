@@ -1,3 +1,0 @@
-[submodule "parser/libdparse"]
-	path = parser/libdparse
-	url = https://github.com/ThomasBrixLarsen/libdparse.git
