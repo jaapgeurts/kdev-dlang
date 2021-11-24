@@ -2,6 +2,10 @@
 
 Adds D language features and Dub project management to kdevelop.
 
+KDevDlang is a plugin which adds D language ([dlang](https://dlang.org/)) features to KDevelop. See Features for what's supported.
+
+This project is in beta stage. It is work in progress. Expect things to fail. Help by posting issues or sending pull requests is greatly appreciated.
+
 ## Features
 
 * Autocompletion and Problem reporting
