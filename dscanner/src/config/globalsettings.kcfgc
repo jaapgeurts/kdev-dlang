@@ -1,0 +1,4 @@
+File=globalsettings.kcfg
+NameSpace=dscannercheck
+ClassName=GlobalSettings
+Singleton=true

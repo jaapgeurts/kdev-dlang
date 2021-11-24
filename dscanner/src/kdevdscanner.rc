@@ -1,0 +1,13 @@
+<!DOCTYPE gui SYSTEM "kpartgui.dtd">
+<gui name="kdevdscanner" version="9" translationDomain="kdevdscanner">
+<MenuBar>
+  <Menu name="code">
+    <Menu name="analyze_file">
+      <Action name="dscanner_file"/>
+    </Menu>
+    <Menu name="analyze_project">
+      <Action name="dscanner_project"/>
+    </Menu>
+  </Menu>
+</MenuBar>
+</gui>

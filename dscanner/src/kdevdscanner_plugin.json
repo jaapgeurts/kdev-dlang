@@ -1,0 +1,24 @@
+{
+    "KPlugin": {
+        "Category": "Analyzers",
+        "Description": "A plugin for analyzing D language source code",
+        "Id": "kdevdscanner",
+        "Name": "DScanner",
+        "Authors": [
+            { "Name": "Jaap Geurts",
+            "Email": "jaap.geurts@fontys.nl"
+            }],
+        "Version": "0.1",
+        "License": "GPL",
+        "Icon": "dlang",
+        "ServiceTypes": [
+            "KDevelop/Plugin"
+        ]
+    },
+    "X-KDevelop-Category": "Global",
+    "X-KDevelop-Mode": "GUI",
+    "X-KDevelop-IRequired": [
+        "org.kdevelop.IOutputView"
+    ]
+
+}
