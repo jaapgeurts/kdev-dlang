@@ -2,12 +2,6 @@
 
 Adds D language features to kdevelop.
 
-Why when there is Visual Studio Code?
-1. For learning and fun.
-2. Electron is slow and huge!
-3. Control of our own computers. I think Microsoft has long term plans to move Visual Studio Code into the cloud. They will support VS Code for as long as is needed to reach that goal. Once developers are in the cloud, support will stop.
-4. KDevelop is a fantastic program that deserves more love!
-
 ## Features
 
 * Autocompletion and Problem reporting
@@ -31,6 +25,19 @@ $ make
 ```
 
 Note: This procedure hasn't been tested yet. Please open an issue in case of problems or, better yet, fix issues and issue a pull request.
+
+## Why?
+
+But there is Visual Studio Code??? Why did you make this?
+1. For learning and fun.
+2. Electron is slow and huge!
+3. Control of our own computers. I think Microsoft has long term plans to move Visual Studio Code into the cloud. They will support VS Code for as long as is needed to reach that goal. Once developers are in the cloud, support will stop.
+4. KDevelop is a fantastic program that deserves more love!
+
+## Thanks
+
+These plugins are based on the work of others. A huge thanks to:
+Thomas Brix Larsen for the language plugin(completion), Astyle plugin developers, qmake plugin developers, cppcheck developers.
 
 ## Autocompletion support
 ## Dub project management support
