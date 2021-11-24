@@ -1,6 +1,7 @@
 # kdevelop
 build/
 .kdev4/
+*.kdev4
 
 # CMake
 CMakeLists.txt.user
