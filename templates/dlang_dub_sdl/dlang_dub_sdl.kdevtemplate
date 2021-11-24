@@ -3,6 +3,6 @@ Name=SDL Project
 Comment=Creates a DUB project using SDL as the package format
 Category=D/DUB Project
 Language=D
-Icon=dlang_sdl.png
+Icon=dub_sdl.png
 ShowFilesAfterGeneration=%{PROJECTDIR}/source/app.d
 ValidProjectName=^[a-zA-Z_][a-zA-Z0-9_\-]+$

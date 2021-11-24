@@ -3,6 +3,6 @@ Name=JSON Project
 Comment=Creates a DUB project using JSON as the package format
 Category=D/DUB Project
 Language=D
-Icon=dlang_json.png
+Icon=dub_json.png
 ShowFilesAfterGeneration=%{PROJECTDIR}/source/app.d
 ValidProjectName=^[a-zA-Z_][a-zA-Z0-9_\-]+$
