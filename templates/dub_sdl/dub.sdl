@@ -1,0 +1,5 @@
+name "%{APPNAMEID}"
+description "A minimal D application."
+authors "Your Name"
+copyright "Copyright © 2021 ACME"
+license "GPLv2.1"

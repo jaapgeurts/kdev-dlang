@@ -1,0 +1,9 @@
+{
+	"authors": [
+		"Your Name"
+	],
+	"copyright": "Copyright © 2021 ACME",
+	"description": "A minimal D application.",
+	"license": "GPLv2.1",
+	"name": "%{APPNAMEID}"
+}
