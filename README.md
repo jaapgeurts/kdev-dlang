@@ -35,6 +35,7 @@ Note: This procedure hasn't been tested yet. Please open an issue in case of pro
 ## Why?
 
 But there is Visual Studio Code??? Why did you make this?
+
 1. For learning and fun.
 2. Electron is slow and huge!
 3. Control of our own computers. I think Microsoft has long term plans to move Visual Studio Code into the cloud. They will support VS Code for as long as is needed to reach that goal. Once developers are in the cloud, support will stop.
