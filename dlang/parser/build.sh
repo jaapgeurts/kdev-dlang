@@ -1,6 +1,9 @@
 #!/bin/bash
 
 pushd libdparse
+pushd stdx-allocator
+dub build --compiler=ldc2
+popd
 dub build --compiler=ldc2
 test $? -eq 0 || exit
 popd
