@@ -1,0 +1,4 @@
+# ignore project generated files
+parser/cppwrappergenerator
+parser/dparser.h
+parser/src/astWrapper.d
