@@ -1,6 +1,6 @@
 # KDevDlang project
 
-Adds D language features to kdevelop.
+Adds D language features and Dub project management to kdevelop.
 
 ## Features
 
@@ -16,7 +16,9 @@ Run the following in a terminal:
 
 ```
 $ git clone --recurse submodules https://github.com/jaapgeurts/kdev-dlang
-$ cd kdev-dlang
+$ cd kdev-dlang/dlang/parser
+$ ./build.sh
+$ cd ../../
 $ mkdir build
 $ cd build
 $ cmake ..
