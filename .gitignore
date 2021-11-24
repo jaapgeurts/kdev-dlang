@@ -1,0 +1,12 @@
+# kdevelop
+build/
+.kdev4/
+
+# objects and libraries
+*.o
+*.so
+
+# other
+*.bz2
+*.tar.gz
+
