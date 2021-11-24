@@ -1,0 +1,28 @@
+{
+    "KPlugin": {
+        "Category": "Utilities",
+        "Description": "A Plugin for formatting D language source code",
+        "Id": "kdevdfmt",
+        "Name": "DLang Source Code Formatter",
+        "Authors": [
+            { "Name": "Jaap Geurts",
+            "Email": "jaap.geurts@fontys.nl"
+            }],
+        "Version": "0.1",
+        "License": "GPL",
+        "Icon": "dlang",
+        "ServiceTypes": [
+            "KDevelop/Plugin"
+        ]
+    },
+    "X-KDevelop-Category": "Global",
+    "X-KDevelop-Interfaces": [
+        "org.kdevelop.ISourceFormatter"
+    ],
+    "X-KDevelop-Mode": "NoGUI",
+    "X-KDevelop-Language": "D",
+    "X-KDevelop-SupportedMimeTypes": [
+        "text/x-dsrc"
+    ]
+
+}

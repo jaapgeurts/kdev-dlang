@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DFMTPreferences</class>
+ <widget class="QWidget" name="DFMTPreferences">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>338</width>
+    <height>602</height>
+   </rect>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="toolTip">
+      <string/>
+     </property>
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <widget class="QWidget" name="tabIndentation">
+      <attribute name="title">
+       <string comment="@title:tab">Indentation &amp;&amp; Spaces</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="KComboBox" name="cbIndentType">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <item>
+              <property name="text">
+               <string comment="@item:inlistbox Indentation type">Tabs</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string comment="@item:inlistbox Indentation type">Spaces</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <spacer name="spacer13_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Minimum</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>18</width>
+               <height>21</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QSpinBox" name="sbNumberSpaces">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="toolTip">
+              <string comment="@info:tooltip">Number of spaces that will be converted to a tab.
+The number of spaces per tab is controlled by the editor.</string>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="value">
+              <number>4</number>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chkSingleIndent">
+           <property name="toolTip">
+            <string>Set if the code in parens is indented by a single tab instead of two.</string>
+           </property>
+           <property name="text">
+            <string>Single indent</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gpSpaces">
+         <property name="title">
+          <string comment="@title:group">Spaces</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QCheckBox" name="chkSpaceAfterCast">
+            <property name="toolTip">
+             <string comment="@info:tooltip">Place operators on the end of the previous line when splitting lines.</string>
+            </property>
+            <property name="text">
+             <string comment="@option:check break unrelated blocks by a newline">Space after cast</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkSpaceBeforeFunctionParameters">
+            <property name="toolTip">
+             <string comment="@info:tooltip">Insert space before the opening paren of a function parameter list.</string>
+            </property>
+            <property name="text">
+             <string comment="@option:check break else if() into separate lines">Space before function parameters</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkSelectiveImportSpace">
+            <property name="toolTip">
+             <string>Insert space after the module name and before the `:` for selective imports.</string>
+            </property>
+            <property name="text">
+             <string>Selective import space</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkSpaceBeforeAssocArrayColon">
+            <property name="toolTip">
+             <string>Adds a space after an associative array key before the `:` like in older dfmt versions.</string>
+            </property>
+            <property name="text">
+             <string>Space before aa colon</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkSpaceAfterKeywords">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string comment="@info:tooltip">Insert space after `if`, `while`, `foreach`, etc, and before the `(`.</string>
+            </property>
+            <property name="text">
+             <string comment="@option:check break all blocks with a newline">Space after keywords (not implemented)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>144</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabOther">
+      <attribute name="title">
+       <string comment="@title:tab">Other</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QGroupBox" name="gpBraceStyle">
+         <property name="title">
+          <string comment="@title:group">Brace style</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="KComboBox" name="cbBraceStyle">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <item>
+             <property name="text">
+              <string>Allman</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>One true brace style (OTBS)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Stroustrup</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gpAlignment">
+         <property name="title">
+          <string>Alignment</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QCheckBox" name="chkKeepLineBreaks">
+            <property name="toolTip">
+             <string comment="@info:tooltip">Adds a space after an associative array key before the `:` like in older dfmt versions.</string>
+            </property>
+            <property name="text">
+             <string comment="@option:check">Keep line breaks</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkAlignSwitchStatements">
+            <property name="toolTip">
+             <string>Align labels, cases, and defaults with their enclosing switch.</string>
+            </property>
+            <property name="text">
+             <string>Align switch statements</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkSplitOperatorAtLineEnd">
+            <property name="toolTip">
+             <string>Place operators on the end of the previous line when splitting lines.</string>
+            </property>
+            <property name="text">
+             <string>Split operator at line end</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkCompactLabeledStatements">
+            <property name="toolTip">
+             <string>Place labels on the same line as the labeled `switch`, `for`, `foreach`, or `while` statement.</string>
+            </property>
+            <property name="text">
+             <string>Compact labeled statements</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkOutdentAttributes">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Decrease the indentation level of attributes.</string>
+            </property>
+            <property name="text">
+             <string>Outdent attributes (not implemented)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="gpTemplates">
+         <property name="title">
+          <string comment="@title:group">Templates</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="0" column="1">
+             <widget class="KComboBox" name="cbTemplateConstraintStyle">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <item>
+               <property name="text">
+                <string>Always newline</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Always newline indent</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Conditional newline</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Conditional newline indent</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QCheckBox" name="chkSingleTemplateConstraintIndent">
+              <property name="toolTip">
+               <string comment="@info:tooltip">Control the formatting of template constraints.</string>
+              </property>
+              <property name="text">
+               <string comment="@option:check">Single template constraint indent</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="lblTemplateConstraintStyle">
+              <property name="text">
+               <string comment="@label:listbox">Constraint Style</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>70</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KComboBox</class>
+   <extends>QComboBox</extends>
+   <header>kcombobox.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
