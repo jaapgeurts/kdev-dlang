@@ -1,0 +1,45 @@
+[General]
+Name=D File
+Comment=An empty D module.
+Category=D/Basic
+Language=D
+Type=Other
+OptionsFile=options.kcfg
+Files=Implementation
+
+[Implementation]
+Name=Implementation
+Name[bs]=Implementacija
+Name[ca]=Implementació
+Name[ca@valencia]=Implementació
+Name[cs]=Implementace
+Name[da]=Implementation
+Name[de]=Implementation
+Name[el]=Implementation
+Name[en_GB]=Implementation
+Name[es]=Implementación
+Name[et]=Teostus
+Name[fi]=Toteutus
+Name[fr]=Implémentation
+Name[gl]=Implementación
+Name[hu]=Megvalósítás
+Name[it]=Implementazione
+Name[kk]=Іске асыруы
+Name[nb]=Implementering
+Name[nds]=Ümsetten
+Name[nl]=Implementatie
+Name[pl]=Implementacja
+Name[pt]=Implementação
+Name[pt_BR]=Implementação
+Name[ru]=Реализация
+Name[sk]=Implementácia
+Name[sl]=Izvedba
+Name[sv]=Implementering
+Name[tr]=Gerçekleme
+Name[uk]=Реалізація
+Name[x-test]=xxImplementationxx
+Name[zh_CN]=实现
+Name[zh_TW]=實作
+File=module.d
+OutputFile={{ name }}.d
+
