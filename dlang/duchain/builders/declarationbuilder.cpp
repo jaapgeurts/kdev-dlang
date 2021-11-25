@@ -95,6 +95,7 @@ void DeclarationBuilder::visitClassDeclaration(IClassDeclaration *node)
 	if(node->getComment())
 		setComment(node->getComment());
 	DUChainWriteLocker lock;
+    // TODO: JG: class declarations don't have correct name
 	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), 0));
 	dec->setType(lastType());
 	dec->setKind(KDevelop::Declaration::Type);
@@ -234,7 +235,10 @@ void DeclarationBuilder::visitModule(IModule *node)
         auto m_thisPackage = identifierForNode(node->getModuleDeclaration()->getModuleName());
 		KDevelop::RangeInRevision range = editorFindRange(node->getModuleDeclaration()->getModuleName(), node->getModuleDeclaration()->getModuleName());
 
-		Declaration *packageDeclaration = openDeclaration<Declaration>(m_thisPackage, range);
+        Identifier localId;
+        if (!m_thisPackage.isEmpty())
+            localId = m_thisPackage.last();
+		Declaration *packageDeclaration = openDeclaration<Declaration>(localId, range);
 		packageDeclaration->setKind(Declaration::Namespace);
 		openContext(node, editorFindRange(node, 0), DUContext::Namespace, m_thisPackage);
 		packageDeclaration->setInternalContext(currentContext());

@@ -57,7 +57,7 @@ bool ParseSession::startParsing()
 
     qCDebug(DUCHAIN) << "After parsing";
 
-    for(int i=0 ;i<m_parseresult->messageCount();i++) {
+    for(uint i=0 ;i<m_parseresult->messageCount();i++) {
         IParseMessage* msg = m_parseresult->message(i);
         addProblem(QString::fromUtf8(msg->getMessage()),msg->getLine(), msg->getColumn(),msg->getType() == ParseMsgType::Warning ? KDevelop::IProblem::Warning :KDevelop::IProblem::Error);
     }
@@ -101,7 +101,7 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 		{
 			//printf("kind is functionBody\n");
 			auto f = (IFunctionBody *)from;
-            // TODO: deal with SpecifiedFunctionBody and MissingFunctionBody
+            // TODO: JG deal with SpecifiedFunctionBody and MissingFunctionBody
             if (f->getSpecifiedFunctionBody()) {
                 if(f->getSpecifiedFunctionBody()->getBlockStatement())
                 {
@@ -277,27 +277,9 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			}
 			break;
 		}
-		case Kind::symbol:
-		{
-			auto f = (ISymbol*)from;
-			if(f)
-			{
-				if(auto n = f->getIdentifierOrTemplateChain())
-				{
-					if(n->numIdentifiersOrTemplateInstances() > 0)
-					{
-						if(auto k = n->getIdentifiersOrTemplateInstance(0)->getIdentifier())
-						{
-							line = k->getLine();
-							column = k->getColumn();
-						}
-					}
-				}
-			}
-			break;
-		}
 		default:
-			printf("Unhandled from kind: %d\n", (uint8_t)to->getKind());
+			printf("Unhandled from kind: %s(%d)\n", kindToString(to->getKind()), (uint8_t)to->getKind());
+
 	}
 
 	//printf("findRange: to\n");
@@ -323,7 +305,7 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 		{
 			//printf("kind is functionBody\n");
 			auto f = (IFunctionBody *)to;
-            // TODO: deal with MissingFunctionBody
+            // TODO: JG deal with MissingFunctionBody
             if (f->getSpecifiedFunctionBody()) {
                 if(f->getSpecifiedFunctionBody()->getBlockStatement())
                 {
@@ -505,27 +487,8 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			}
 			break;
 		}
-		case Kind::symbol:
-		{
-			auto f = (ISymbol*)to;
-			if(f)
-			{
-				if(auto n = f->getIdentifierOrTemplateChain())
-				{
-					if(n->numIdentifiersOrTemplateInstances() > 0)
-					{
-						if(auto k = n->getIdentifiersOrTemplateInstance(n->numIdentifiersOrTemplateInstances()-1)->getIdentifier())
-						{
-							lineEnd = k->getLine();
-							columnEnd = k->getColumn() + strlen(k->getText());
-						}
-					}
-				}
-			}
-			break;
-		}
 		default:
-			printf("Unhandled to kind: %d\n", (uint8_t)to->getKind());
+			printf("Unhandled to kind: %s(%d)\n", kindToString(to->getKind()), (uint8_t)to->getKind());
 	}
 
 	/*printf("lineStart: %lld\n", line);

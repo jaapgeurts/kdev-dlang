@@ -162,6 +162,8 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 
 void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 {
+    // NOTE: Context must be opened here, because parameter variables
+    // are part of the function context, not of the containing context.
     openContext(node, editorFindRange(node->getReturnType(), node->getFunctionBody()),DUContext::Function, node->getName());
 
 
@@ -175,7 +177,7 @@ void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 	}
 
 	if(auto n = node->getFunctionBody())
-		visitBody(n);
+		visitBody(n, false);
 	closeContext();
 }
 
@@ -193,7 +195,7 @@ void ContextBuilder::visitConstructor(IConstructor *node)
 	}
 
 	if(auto n = node->getFunctionBody()) {
-		visitBody(n);
+		visitBody(n, false);
     }
 	closeContext();
 }
@@ -202,28 +204,26 @@ void ContextBuilder::visitDestructor(IDestructor *node)
 {
 	openContext(node, editorFindRange(node, node->getFunctionBody()), DUContext::Function, QualifiedIdentifier("~this"));
 	if(auto n = node->getFunctionBody())
-		visitBody(n);
+		visitBody(n, false);
 	closeContext();
 }
 
-void ContextBuilder::visitBody(IFunctionBody *node)
+void ContextBuilder::visitBody(IFunctionBody *node, bool openContext)
 {
-    // TODO: opencontext goes to block statement.
-//	openContext(node, DUContext::Other);
-    // TODO: deal with MissingFunctionBody everywhere
     if (node->getSpecifiedFunctionBody()) {
         if(auto n = node->getSpecifiedFunctionBody()->getBlockStatement())
-            visitBlock(n);
+            visitBlockStatement(n, openContext);
     }
-//	closeContext();
 }
 
-void ContextBuilder::visitBlock(IBlockStatement *node)
+void ContextBuilder::visitBlockStatement(IBlockStatement *node, bool openContext)
 {
-    ContextBuilder::openContext(node, DUContext::Other);
+    if (openContext)
+        ContextBuilder::openContext(node, DUContext::Other);
 	if(node->getDeclarationsAndStatements())
 		visitDeclarationsAndStatements(node->getDeclarationsAndStatements());
-    closeContext();
+    if (openContext)
+        closeContext();
 }
 
 void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *node)
@@ -299,9 +299,9 @@ void ContextBuilder::visitBaseClass(IBaseClass *node)
 {
 	if(auto n = node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance())
 	{
-        // TODO: doesn't do anything anyways
-// 		if(auto t = n->getIdentifier())
-// 			visitSymbol(t);
+        // TODO: JG changed from visitSymbol to visitToken
+		if(auto t = n->getIdentifier())
+			visitToken(t);
 		if(auto t = node->getType2()->getType())
 			visitTypeName(t);
 	}
@@ -375,7 +375,7 @@ void ContextBuilder::visitStatementNoCaseNoDefault(IStatementNoCaseNoDefault *no
 	if(auto n = node->getVersionSpecification())
 		visitVersionSpecification(n);
 	if(auto n = node->getBlockStatement())
-		visitBlock(n);
+		visitBlockStatement(n, true);
 	if(auto n = node->getReturnStatement())
 		visitReturnStatement(n);
 	if(auto n = node->getWhileStatement())
@@ -671,7 +671,10 @@ void ContextBuilder::visitForStatement(IForStatement *node)
 
 void ContextBuilder::visitForeachStatement(IForeachStatement *node)
 {
+    // TODO: JG adjust to new foreach style with indexer
+    // also add foreach_reverse by accessing the token!
 	ContextBuilder::openContext(node, DUContext::Other);
+    qDebug() << "Opening foreach context";
 	if(auto n = node->getForeachType())
 		visitForeachType(n);
 	if(auto n = node->getForeachTypeList())
@@ -685,6 +688,7 @@ void ContextBuilder::visitForeachStatement(IForeachStatement *node)
 		visitExpression(n);
 	if(auto n = node->getDeclarationOrStatement())
 		visitDeclarationOrStatement(n);
+    qDebug() << "Closing foreach context";
 	closeContext();
 }
 
@@ -870,11 +874,6 @@ void ContextBuilder::visitAsmStatement(IAsmStatement *node)
 }
 
 void ContextBuilder::visitToken(IToken *node)
-{
-	Q_UNUSED(node)
-}
-
-void ContextBuilder::visitSymbol(ISymbol *node)
 {
 	Q_UNUSED(node)
 }

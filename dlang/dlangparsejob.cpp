@@ -103,7 +103,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	qCDebug(D) << "Job priority: " << parsePriority();
 
 	qCDebug(D) << document();
-    
+
     // parsing to parsesession
     session.startParsing();
 
@@ -158,11 +158,11 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	highlightDUChain();
 
     // Dumps DU Chain to output
-    // 	{
-// 		DUChainReadLocker lock;
-// 		DUChainDumper dumper;
-// 		dumper.dump(context);
-// 	}
+    	{
+		DUChainReadLocker lock;
+		DUChainDumper dumper;
+		dumper.dump(context);
+	}
 
 	// BEGIN JG
 // 	uint count;

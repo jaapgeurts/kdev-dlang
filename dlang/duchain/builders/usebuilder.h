@@ -41,7 +41,6 @@ public:
 	virtual void visitPrimaryExpression(IPrimaryExpression *node) override;
 	virtual void visitUnaryExpression(IUnaryExpression *node) override;
 	virtual void visitToken(IToken *node) override;
-	virtual void visitSymbol(ISymbol *node) override;
 
 private:
 	QStack<KDevelop::AbstractType::Ptr> m_types;

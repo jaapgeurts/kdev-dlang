@@ -245,6 +245,23 @@ void writeExtras() {
         writeln("}");
         writeln();
 
+        // Enum kind
+        writeln("string[] kindEnumName = ");
+        writeln("[");
+        foreach (cv; allclasses) {
+            writefln("\t\"%s\",", escapeAndLowerName(cv));
+        }
+        foreach (aliasclass; aliasses) {
+            writefln("\t\"%s\",", escapeAndLowerName(aliasclass.name));
+        }
+        writeln("];");
+        writeln();
+        writeln("extern(C++) const(char)* kindToString(Kind kind)");
+        writeln("{");
+        writeln("\treturn kindEnumName[kind].toStringz;");
+        writeln("}");
+        writeln();
+
         //INode.
         writeln("extern(C++) interface INode");
         writeln("{");
@@ -277,7 +294,7 @@ void writeExtras() {
         writeln("class IParseMessage");
         writeln("{");
         writeln("public:");
-        
+
         writeln("\tvirtual const char* getMessage();");
         writeln("\tvirtual ParseMsgType getType();");
         writeln("\tvirtual size_t getLine();");
@@ -319,6 +336,10 @@ void writeExtras() {
         }
         writeln("};");
         writeln();
+
+        writeln("const char* kindToString(Kind kind);");
+        writeln();
+
 
         // all collected enums
         foreach (en; enumTable) {
@@ -481,11 +502,12 @@ class pass1Visitor : ASTVisitor {
         if (cd.name.text == "ASTVisitor")
             return;
 
-        allclasses[cd.name.text] = cd.name.text;
 
         if (cd.templateParameters !is null) {
-            // store templated classes for later 
+            // store templated classes for different use
             templatedClasses[cd.name.text] = cast(ClassDeclaration) cd;
+        }  else {
+            allclasses[cd.name.text] = cd.name.text;
         }
 
         if (cd.baseClassList) {
@@ -502,6 +524,8 @@ class pass1Visitor : ASTVisitor {
 
         const AliasInitializer init = ad.initializers[0];
         string name = init.name.text;
+        // NOTE: this only works for the specific Foreach template class
+        // where the template param is either true of false
         aliasses[name] = Alias(name,
                 getString(init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance.identifier),
                 init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance
@@ -701,7 +725,7 @@ class WrapperGenVisitor : ASTVisitor {
                 //     typename = "string";
                 //     return;
                 // }
-                // else 
+                // else
                 if (typename == "size_t" || typename == "string")
                     return;
             }
@@ -730,7 +754,10 @@ class WrapperGenVisitor : ASTVisitor {
         writeln("\t");
         writeln("\textern(C++) Kind getKind()");
         writeln("\t{");
-        writefln("\t\treturn Kind.%s;", escapeAndLowerName(cd.name.text));
+        if (!aliasclass.isNull)
+            writefln("\t\treturn Kind.%s;", escapeAndLowerName(aliasclass.get.name));
+        else
+            writefln("\t\treturn Kind.%s;", escapeAndLowerName(classname));
         writeln("\t}");
         writeln("\t");
         writeln("\tmixin ContextMethods;");
@@ -926,7 +953,7 @@ void old(Module mod, string[] args) {
                             init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance.identifier),
                             init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance
                             .templateArguments.templateSingleArgument.token == tok!"true"
-                            ? "true" : "false" // 
+                            ? "true" : "false" //
                             );
 
                 }
@@ -952,7 +979,7 @@ void old(Module mod, string[] args) {
         classType.name = declaration.classDeclaration.name.text;
 
         if (declaration.classDeclaration.templateParameters !is null) {
-            // store templated classes for later 
+            // store templated classes for later
             ClassDeclaration decl = cast(ClassDeclaration) declaration.classDeclaration();
             templatedClasses[classType.name] = decl;
             continue;
@@ -1022,7 +1049,7 @@ void old(Module mod, string[] args) {
             /*	if(auto symbol = var.type.type2.symbol)
 				cv.type = getString(var.type.type2.symbol);
 			else if(auto chain = var.type.type2.identifierOrTemplateChain)
-				cv.type = getString(var.type.type2.symbol); 
+				cv.type = getString(var.type.type2.symbol);
 			else*/
             //cv.type = str(var.type.type2.builtinType);
 
@@ -1285,7 +1312,7 @@ void old(Module mod, string[] args) {
     writeln();
 
     // writeln("import std.variant : Algebraic;");
-    // writeln(); 
+    // writeln();
 
     writeln("template ContextMethods()");
     writeln("{");
@@ -1363,6 +1390,7 @@ void old(Module mod, string[] args) {
     //Classes.
     foreach (classType, declarations; classes) {
 
+        // TODO: replace with WriteClassConstructor?
         writefln("class C%s : I%s", classType.name, classType.name);
         writeln("{");
         writeln("public: //Methods.");

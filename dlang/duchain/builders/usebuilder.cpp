@@ -62,7 +62,7 @@ void UseBuilder::visitTypeName(IType *node)
 	}
 	if(!context)
 	{
-		qDebug() << "No context found for" << id;
+		qDebug() << "visitTypeName: No context found for" << id;
 		return;
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);
@@ -80,12 +80,20 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
+        const char*s1= node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
+        QString s2 = QString::fromUtf8(s1);
+        if (s2 == QLatin1String("args")) {
+            qDebug() << "triggered";
+        }
 		context = currentContext()->findContextIncluding(editorFindRange(node->getIdentifierOrTemplateInstance()->getIdentifier(), 0));
+
 	}
 	if(!context)
 	{
-		qDebug() << "No context found for" << id;
-		return;
+        // TODO: JG: debug should use categories.
+		qDebug() << "visitPrimaryExpression: No context found for" << id;
+		//return;
+        context = currentContext();
 	}
 	DeclarationPointer decl = getDeclaration(id, context);
 	if(decl)
@@ -105,7 +113,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 	}
 	if(!context)
 	{
-		qDebug() << "No context found for" << node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
+		qDebug() << "visitUnaryExpression: No context found for" << node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
 		return;
 	}
 
@@ -144,7 +152,7 @@ void UseBuilder::visitToken(IToken *node)
 	}
 	if(!context)
 	{
-		qDebug() << "No context found for" << node->getText();
+		qDebug() << "visitToken: No context found for" << node->getText();
 		return;
 	}
 
@@ -155,27 +163,5 @@ void UseBuilder::visitToken(IToken *node)
 		newUse(node, decl);
 }
 
-void UseBuilder::visitSymbol(ISymbol *node)
-{
-	UseBuilderBase::visitSymbol(node);
-	if(!node || !currentContext())
-		return;
 
-	QualifiedIdentifier id = identifierForNode(node);
-
-	DUContext *context = nullptr;
-	{
-		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(node, 0));
-	}
-	if(!context)
-	{
-		qDebug() << "No context found for" << id.toString().toLocal8Bit().data();
-		return;
-	}
-
-	DeclarationPointer decl = getDeclaration(id, context);
-	if(decl)
-		newUse(node, decl);
-}
 }
