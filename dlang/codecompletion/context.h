@@ -34,9 +34,9 @@ class DLANGCOMPLETION_EXPORT CodeCompletionContext : public KDevelop::CodeComple
 public:
 	CodeCompletionContext(const KDevelop::DUContextPointer &context, const QString &text,
 	                      const KDevelop::CursorInRevision &position, int depth = 0);
-	
-	virtual QList<KDevelop::CompletionTreeItemPointer> completionItems(bool &abort, bool fullCompletion = true);
-	
+
+	virtual QList<KDevelop::CompletionTreeItemPointer> completionItems(bool &abort, bool fullCompletion = true) override;
+
 	KDevelop::AbstractType::Ptr typeToMatch()
 	{
 		return m_typeToMatch;
@@ -54,27 +54,27 @@ private:
 
 private:
 	QStack<ExpressionStackEntry> expressionStack(const QString &expression);
-	
+
 	KDevelop::AbstractType::Ptr lastType(const QString &expression);
-	
+
 	KDevelop::DeclarationPointer lastDeclaration(const QString &expression);
-	
+
 	QList<KDevelop::CompletionTreeItemPointer> importAndMemberCompletion();
-	
+
 	QList<KDevelop::CompletionTreeItemPointer> normalCompletion();
-	
+
 	/**
 	 * Creates FunctionCallTips and sets m_typeToMatch.
 	 **/
 	QList<KDevelop::CompletionTreeItemPointer> functionCallTips();
-	
+
 	QList<KDevelop::CompletionTreeItemPointer> importCompletion();
-	
+
 	/**
 	 * Return completion item for declaration.
 	 **/
 	KDevelop::CompletionTreeItemPointer itemForDeclaration(QPair<KDevelop::Declaration *, int> declaration);
-	
+
 	/**
 	 * Returns true if cursor is in comment and completion is not needed.
 	 **/

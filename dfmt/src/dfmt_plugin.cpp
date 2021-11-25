@@ -140,7 +140,8 @@ QString DFormatPlugin::formatSourceWithStyle(SourceFormatterStyle style,
                                 const QString& leftContext,
                                 const QString& rightContext) const
 {
-
+    Q_UNUSED(url);
+    Q_UNUSED(mime);
     if (style.content().isEmpty()) {
         m_formatter->predefinedStyle(style.name());
     } else {
@@ -184,6 +185,8 @@ SettingsWidget* DFormatPlugin::editStyleWidget(const QMimeType& mime) const
 
 QString DFormatPlugin::previewText(const SourceFormatterStyle& style, const QMimeType& mime) const
 {
+    Q_UNUSED(style);
+    Q_UNUSED(mime);
    return
       QLatin1String("// Indentation\n") +
       indentingSample() +

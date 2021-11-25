@@ -218,12 +218,15 @@ void ContextBuilder::visitBody(IFunctionBody *node, bool openContext)
 
 void ContextBuilder::visitBlockStatement(IBlockStatement *node, bool openContext)
 {
-    if (openContext)
+    if (openContext) {
         ContextBuilder::openContext(node, DUContext::Other);
-	if(node->getDeclarationsAndStatements())
+    }
+	if(node->getDeclarationsAndStatements()) {
 		visitDeclarationsAndStatements(node->getDeclarationsAndStatements());
-    if (openContext)
+    }
+    if (openContext) {
         closeContext();
+    }
 }
 
 void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *node)

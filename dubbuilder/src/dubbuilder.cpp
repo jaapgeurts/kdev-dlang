@@ -29,6 +29,7 @@ DUBBuilder::~DUBBuilder() {
     */
 KJob* DUBBuilder::install(KDevelop::ProjectBaseItem* item, const QUrl &specificPrefix) {
 
+    Q_UNUSED(specificPrefix);
     qCDebug(PLUGIN_KDEVDUBBUILDER) << "install(KDevelop::ProjectBaseItem*, const QUrl &)";
     return new DUBJob(this,item,DUBJob::CommandType::InstallCommand);
 };

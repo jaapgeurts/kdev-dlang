@@ -120,7 +120,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 			id.push(Identifier(str));
 			continue;
 		}
-		for(const QString &part : t->type<AbstractType>()->toString().split("::", QString::SkipEmptyParts))
+		for(const QString &part : t->type<AbstractType>()->toString().split("::", Qt::SkipEmptyParts))
 			id.push(Identifier(part));
 	}
 	id.push(identifierForNode(node->getIdentifierOrTemplateInstance()->getIdentifier()));

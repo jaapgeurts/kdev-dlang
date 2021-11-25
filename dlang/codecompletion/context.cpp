@@ -44,30 +44,32 @@ namespace dlang
 CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer &context, const QString &text, const KDevelop::CursorInRevision &position, int depth) :
     KDevelop::CodeCompletionContext(context, extractLastLine(text), position, depth), m_fullText(text)
 {
-	
+
 }
 
 QList<CompletionTreeItemPointer> CodeCompletionContext::completionItems(bool &abort, bool fullCompletion)
 {
+    Q_UNUSED(abort);
+    Q_UNUSED(fullCompletion);
 	qCDebug(COMPLETION) << m_text;
 	QList<CompletionTreeItemPointer> items;
-	
+
 	//We shouldn't need anything before last semicolon (previous statements).
 	if(m_text.lastIndexOf(';') != -1)
 		m_text = m_text.mid(m_text.lastIndexOf(';'));
-	
+
 	//TODO: Fix for D.
 	if(m_text.contains(QRegExp("import.*$")))
 	{
 		items << importCompletion();
 		return items;
 	}
-	
+
 	if(isInsideCommentOrString())
 		return items;
-	
+
 	items << functionCallTips();
-	
+
 	QChar lastChar = m_text.size() > 0? m_text.at(m_text.size() - 1) : QLatin1Char('\0');
 	if(lastChar == QLatin1Char('.'))
 	{
@@ -113,7 +115,7 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::functionCallTips()
 				FunctionCompletionItem *item = new FunctionCompletionItem(function, depth, entry.commas);
 				depth++;
 				items << CompletionTreeItemPointer(item);
-				
+
 				if(isTopOfStack && !m_typeToMatch)
 				{
 					KDevelop::FunctionType::Ptr ftype(fastCast<KDevelop::FunctionType *>(function->abstractType().constData()));
@@ -209,8 +211,8 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::importCompletion()
 	auto searchPaths = Helper::getSearchPaths();
 	QList<CompletionTreeItemPointer> items;
 	QString fullPath = m_text;
-	
-	QStringList pathChain = fullPath.split('.', QString::SkipEmptyParts);
+
+	QStringList pathChain = fullPath.split('.', Qt::SkipEmptyParts);
 	qCDebug(COMPLETION) << pathChain;
 	for(const QString &path : searchPaths)
 	{
@@ -248,14 +250,14 @@ QStack<CodeCompletionContext::ExpressionStackEntry> CodeCompletionContext::expre
 	Lexer lexer(iter);
 	bool atEnd=false;
 	ExpressionStackEntry entry;
-	
+
 	entry.startPosition = 0;
 	entry.operatorStart = 0;
 	entry.operatorEnd = 0;
 	entry.commas = 0;
-	
+
 	stack.push(entry);
-	
+
 	qint64 line, lineEnd, column, columnEnd;
 	while(!atEnd)
 	{
@@ -274,7 +276,7 @@ QStack<CodeCompletionContext::ExpressionStackEntry> CodeCompletionContext::expre
 	        entry.operatorStart = entry.startPosition;
 	        entry.operatorEnd = entry.startPosition;
 	        entry.commas = 0;
-	
+
 	        stack.push(entry);
 	        break;
 	case Parser::Token_RBRACE:
@@ -308,7 +310,7 @@ QStack<CodeCompletionContext::ExpressionStackEntry> CodeCompletionContext::expre
 	    lexer.locationTable()->positionAt(token.end+1, &lineEnd, &columnEnd);
 	        stack.top().operatorStart = column;
 	        stack.top().operatorEnd = columnEnd;
-	
+
 	}
 	}*/
 	return stack;
@@ -316,16 +318,19 @@ QStack<CodeCompletionContext::ExpressionStackEntry> CodeCompletionContext::expre
 
 AbstractType::Ptr CodeCompletionContext::lastType(const QString &expression)
 {
+        // TODO: JG investigate
+    Q_UNUSED(expression);
+
 	//QStack<ExpressionStackEntry> stack = expressionStack(expression);
 	//QString lastExpression(expression.mid(stack.top().operatorEnd));
 	//qCDebug(COMPLETION) << lastExpression;
-	
+
 	/*ParseSession session(lastExpression.toUtf8(), 0, false);
 	ExpressionAst* expressionAst;
 	if(!session.parseExpression(&expressionAst))
 		return AbstractType::Ptr();*/
-	
-	
+
+
 	/*ExpressionVisitor expVisitor(&session, this->m_duContext.data());
 	expVisitor.visitExpression(expressionAst);
 	if(expVisitor.lastTypes().size() != 0)
@@ -333,26 +338,28 @@ AbstractType::Ptr CodeCompletionContext::lastType(const QString &expression)
 	 AbstractType::Ptr type = expVisitor.lastTypes().first();
 	 return type;
 	}*/
-	
+
 	return AbstractType::Ptr();
 }
 
 DeclarationPointer CodeCompletionContext::lastDeclaration(const QString &expression)
 {
+    // TODO: JG investigate
+    Q_UNUSED(expression);
 	//QStack<ExpressionStackEntry> stack = expressionStack(expression);
 	//QString lastExpression(expression.mid(stack.top().operatorEnd));
 	//qCDebug(COMPLETION) << lastExpression;
-	
+
 	/*ParseSession session(lastExpression.toUtf8(), 0, false);
 	ExpressionAst* expressionAst;
 	if(!session.parseExpression(&expressionAst))
 	    return DeclarationPointer();*/
-	
+
 	/*ExpressionVisitor expVisitor(&session, this->m_duContext.data());
 	expVisitor.visitExpression(expressionAst);
 	if(expVisitor.lastDeclaration())
 	    return expVisitor.lastDeclaration();*/
-	
+
 	return DeclarationPointer();
 }
 
@@ -418,7 +425,7 @@ bool CodeCompletionContext::isInsideCommentOrString()
 		}
 		else if(inBackQuotes)
 		{
-			if(c != QLatin1Char('\\') && next == QLatin1Char('\`'))
+			if(c != QLatin1Char('\\') && next == QLatin1Char('`'))
 			{
 				inBackQuotes = false;
 				continue;
@@ -436,7 +443,7 @@ bool CodeCompletionContext::isInsideCommentOrString()
 				inQuotes = true;
 			if(next == QLatin1Char('\"'))
 				inDoubleQuotes = true;
-			if(next == QLatin1Char('\`'))
+			if(next == QLatin1Char('`'))
 				inBackQuotes = true;
 		}
 	}

@@ -30,7 +30,8 @@ DUBJob::DUBJob( QObject* parent, ProjectBaseItem* item,
              m_Idx(item->index()),
              m_Command(command)
 {
-
+    Q_UNUSED(parent);
+    Q_UNUSED(overrideTargets);
 }
 
     /**

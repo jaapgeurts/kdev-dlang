@@ -34,6 +34,7 @@ KDevelop::CodeCompletionContext *CodeCompletionWorker::createCompletionContext(K
         const QString &followingText,
         const KDevelop::CursorInRevision &position) const
 {
+    Q_UNUSED(followingText);
 	qCDebug(COMPLETION) << "Completion test";
 	return new dlang::CodeCompletionContext(context, contextText, position);
 }

@@ -60,6 +60,7 @@ QList<QString> Helper::getSearchPaths(QUrl document)
 
 DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bool searchInParent)
 {
+    Q_UNUSED(searchInParent);
 	DUChainReadLocker lock;
 	if(context)
 	{
@@ -77,6 +78,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
 
 DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext *context, bool searchInParent)
 {
+    Q_UNUSED(searchInParent);
 	DUChainReadLocker lock;
 	if(context)
 	{
@@ -93,6 +95,7 @@ DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext *co
 
 DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext *context, bool searchInParent)
 {
+    Q_UNUSED(searchInParent);
 	DUChainReadLocker lock;
 	if(context)
 	{
@@ -109,6 +112,7 @@ DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext *context
 
 QList<Declaration *> getDeclarations(QualifiedIdentifier id, DUContext *context, bool searchInParent)
 {
+    Q_UNUSED(searchInParent);
 	DUChainReadLocker lock;
 	if(context)
 	{

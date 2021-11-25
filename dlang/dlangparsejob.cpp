@@ -55,8 +55,9 @@ DParseJob::DParseJob(const KDevelop::IndexedString &url, KDevelop::ILanguageSupp
 
 void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
+    Q_UNUSED(self);
 	qCDebug(D) << "DParseJob succesfully created for document " << document();
-    qCDebug(D) << "DParseJob threadid: " << hex << thread->id();
+    qCDebug(D) << "DParseJob threadid: " << Qt::hex << thread->id();
 
 	UrlParseLock urlLock(document());
 	if(abortRequested())

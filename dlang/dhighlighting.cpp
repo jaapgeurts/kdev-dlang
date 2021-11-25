@@ -21,20 +21,20 @@
 
 Highlighting::Highlighting(QObject *parent) : CodeHighlighting(parent)
 {
-	
+
 }
 
 class HighlightingInstance : public KDevelop::CodeHighlightingInstance
 {
 public:
 	HighlightingInstance(const KDevelop::CodeHighlighting *highlighting);
-	virtual Types typeForDeclaration(KDevelop::Declaration *decl, KDevelop::DUContext *context) const;
-	virtual bool useRainbowColor(KDevelop::Declaration *dec) const;
+	virtual Types typeForDeclaration(KDevelop::Declaration *decl, KDevelop::DUContext *context) const override;
+	virtual bool useRainbowColor(KDevelop::Declaration *dec) const override;
 };
 
 HighlightingInstance::HighlightingInstance(const KDevelop::CodeHighlighting *highlighting) : CodeHighlightingInstance(highlighting)
 {
-	
+
 }
 
 KDevelop::CodeHighlightingInstance *Highlighting::createInstance() const

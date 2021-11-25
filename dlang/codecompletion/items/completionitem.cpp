@@ -32,10 +32,12 @@ CompletionItem::CompletionItem(KDevelop::DeclarationPointer decl, QExplicitlySha
     NormalDeclarationCompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
     m_prefix("")
 {
+    Q_UNUSED(context);
+    Q_UNUSED(inheritanceDepth);
 	DUChainReadLocker lock;
 	if(!decl)
 		return;
-	
+
 	if(decl->kind() == KDevelop::Declaration::Import || decl->kind() == KDevelop::Declaration::NamespaceAlias)
 		m_prefix = "module";
 }
