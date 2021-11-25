@@ -674,7 +674,6 @@ void ContextBuilder::visitForeachStatement(IForeachStatement *node)
     // TODO: JG adjust to new foreach style with indexer
     // also add foreach_reverse by accessing the token!
 	ContextBuilder::openContext(node, DUContext::Other);
-    qDebug() << "Opening foreach context";
 	if(auto n = node->getForeachType())
 		visitForeachType(n);
 	if(auto n = node->getForeachTypeList())
@@ -682,13 +681,12 @@ void ContextBuilder::visitForeachStatement(IForeachStatement *node)
 		for(size_t i=0; i<n->numItems(); i++)
 			visitForeachType(n->getItem(i));
 	}
-	if(auto n = node->getLow())
+	if(auto n = node->getLow()) // the expression, or the low side of range
 		visitExpression(n);
-	if(auto n = node->getHigh())
+	if(auto n = node->getHigh()) // high side of range
 		visitExpression(n);
 	if(auto n = node->getDeclarationOrStatement())
 		visitDeclarationOrStatement(n);
-    qDebug() << "Closing foreach context";
 	closeContext();
 }
 

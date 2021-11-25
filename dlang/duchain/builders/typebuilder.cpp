@@ -41,12 +41,16 @@ void TypeBuilder::visitTypeName(IType *node)
 		injectType<AbstractType>(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
 		return;
 	}
-	if(node->getType2() && node->getType2()->getTypeIdentifierPart() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier())
-		buildTypeName(identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier()));
-	else if(node->getType2() && node->getType2()->getTypeIdentifierPart() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance() && node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getTemplateInstance())
-		buildTypeName(identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier()));
-	else
+	// TODO: JG this must change to visiting
+	ITypeIdentifierPart* identPart = node->getType2()->getTypeIdentifierPart();
+	if(identPart) {
+      if (identPart->getIdentifierOrTemplateInstance() && identPart->getIdentifierOrTemplateInstance()->getIdentifier())
+		buildTypeName(identifierForNode(identPart->getIdentifierOrTemplateInstance()->getIdentifier()));
+	else if(identPart->getIdentifierOrTemplateInstance()->getTemplateInstance())
+		buildTypeName(identifierForNode(identPart->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier()));
+    } else {
 		buildTypeName(QualifiedIdentifier(node->getType2()->getBuiltinType()));
+    }
 	for(size_t i=0; i<node->numTypeSuffixes(); i++)
 	{
 		if(node->getTypeSuffix(i)->getArray())
@@ -117,6 +121,9 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 		}
 		DelayedType *unknown = new DelayedType();
 		unknown->setIdentifier(IndexedTypeIdentifier(typeName));
+        // TODO: JG BEGIN added by me:
+        //unknown->setKind(DelayedType::Unresolved);
+        //JG END
 		injectType<AbstractType>(AbstractType::Ptr(unknown));
 		return;
 	}

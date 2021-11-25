@@ -80,20 +80,13 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-        const char*s1= node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
-        QString s2 = QString::fromUtf8(s1);
-        if (s2 == QLatin1String("args")) {
-            qDebug() << "triggered";
-        }
 		context = currentContext()->findContextIncluding(editorFindRange(node->getIdentifierOrTemplateInstance()->getIdentifier(), 0));
-
 	}
 	if(!context)
 	{
         // TODO: JG: debug should use categories.
 		qDebug() << "visitPrimaryExpression: No context found for" << id;
-		//return;
-        context = currentContext();
+		return;
 	}
 	DeclarationPointer decl = getDeclaration(id, context);
 	if(decl)
