@@ -119,10 +119,13 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 			injectType<AbstractType>(AbstractType::Ptr(type));
 			return;
 		}
+		// This happens e.g. with foreach without type spec.
+		// It needs to be supplied later depending on the expression of foreach
 		DelayedType *unknown = new DelayedType();
 		unknown->setIdentifier(IndexedTypeIdentifier(typeName));
         // TODO: JG BEGIN added by me:
         //unknown->setKind(DelayedType::Unresolved);
+        //
         //JG END
 		injectType<AbstractType>(AbstractType::Ptr(unknown));
 		return;

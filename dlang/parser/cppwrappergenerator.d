@@ -206,7 +206,7 @@ void writeExtras() {
         writeln("		this.context = context;");
         writeln("	}");
 
-        writeln("	__gshared void* context;");
+        writeln("	void* context;");
         writeln("}");
         writeln();
 
@@ -1324,7 +1324,7 @@ void old(Module mod, string[] args) {
     writeln("	{");
     writeln("		this.context = context;");
     writeln("	}");
-    writeln("	__gshared void* context;");
+    writeln("	void* context;");
     writeln("}");
     writeln();
 
