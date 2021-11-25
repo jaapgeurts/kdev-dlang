@@ -80,7 +80,15 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(node->getIdentifierOrTemplateInstance()->getIdentifier(), 0));
+        auto n = node->getIdentifierOrTemplateInstance()->getIdentifier();
+        QString s = n->getText();
+        RangeInRevision r = editorFindRange(n, 0);
+        if (s == QLatin1String("args")) {
+            qCDebug(DUCHAIN) << "trigger";
+            qCDebug(DUCHAIN) << "exp range: " << r;
+            qCDebug(DUCHAIN) << "ctx range: " << currentContext()->range();
+        }
+		context = currentContext()->findContextIncluding(r);
 	}
 	if(!context)
 	{

@@ -81,6 +81,8 @@ public:
 	virtual void visitAddExpression(IAddExpression *node);
 	virtual void visitUnaryExpression(IUnaryExpression *node);
 	virtual void visitAssignExpression(IAssignExpression *node);
+    virtual void visitIndexExpression(IIndexExpression *node);
+    virtual void visitIndex(IIndex *node);
 	virtual void visitDeclarator(IDeclarator *node);
 	virtual void visitInitializer(IInitializer *node);
 	virtual void visitImportDeclaration(IImportDeclaration *node);

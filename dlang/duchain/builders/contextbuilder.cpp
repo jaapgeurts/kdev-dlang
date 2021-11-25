@@ -590,6 +590,8 @@ void ContextBuilder::visitUnaryExpression(IUnaryExpression *node)
 		visitUnaryExpression(n);
 	else if(auto n = node->getAssertExpression())
 		visitAssertExpression(n);
+    else if (auto n = node->getIndexExpression())
+        visitIndexExpression(n);
 }
 
 void ContextBuilder::visitAssignExpression(IAssignExpression *node)
@@ -598,6 +600,23 @@ void ContextBuilder::visitAssignExpression(IAssignExpression *node)
 		visitExpressionNode(n);
 	if(auto n = node->getTernaryExpression())
 		visitExpressionNode(n);
+}
+
+void ContextBuilder::visitIndexExpression ( IIndexExpression* node )
+{
+    if (auto n = node->getUnaryExpression())
+        visitUnaryExpression(n);
+    for(size_t i=0; i<node->numIndexes(); i++)
+        visitIndex(node->getIndex(i));
+}
+
+void ContextBuilder::visitIndex ( IIndex* node )
+{
+    if (auto n = node->getLow())
+        visitExpressionNode(n);
+    if (auto n = node->getHigh())
+        visitExpressionNode(n);
+
 }
 
 void ContextBuilder::visitDeclarator(IDeclarator *node)
