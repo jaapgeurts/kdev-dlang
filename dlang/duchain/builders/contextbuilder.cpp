@@ -618,7 +618,21 @@ void ContextBuilder::visitImportDeclaration(IImportDeclaration *node)
 		if(auto n = node->getSingleImport(i))
 			visitSingleImport(n);
 	}
+	if (auto n = node->getImportBindings())
+    {
+        if (auto n2 = n->getSingleImport())
+            visitSingleImport(n2);
+        for(size_t i=0;i<n->numImportBinds();i++)
+            visitImportBind(n->getImportBind(i));
+    }
 }
+
+void ContextBuilder::visitImportBind ( IImportBind* node )
+{
+    Q_UNUSED(node);
+    qCDebug(DUCHAIN) << "visitImportBind() not implemented";
+}
+
 
 void ContextBuilder::visitFunctionCallExpression(IFunctionCallExpression *node)
 {

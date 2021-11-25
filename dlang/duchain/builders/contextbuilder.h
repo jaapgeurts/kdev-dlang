@@ -84,6 +84,7 @@ public:
 	virtual void visitDeclarator(IDeclarator *node);
 	virtual void visitInitializer(IInitializer *node);
 	virtual void visitImportDeclaration(IImportDeclaration *node);
+    virtual void visitImportBind(IImportBind* node);
 	virtual void visitFunctionCallExpression(IFunctionCallExpression *node);
 	virtual void visitSingleImport(ISingleImport *node);
 	virtual void visitTypeName(IType *node) = 0;
