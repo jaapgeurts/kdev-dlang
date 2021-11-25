@@ -62,7 +62,7 @@ void UseBuilder::visitTypeName(IType *node)
 	}
 	if(!context)
 	{
-		qDebug() << "visitTypeName: No context found for" << id;
+		qCDebug(DUCHAIN) << "visitTypeName: No context found for" << id;
 		return;
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);
@@ -84,8 +84,7 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	}
 	if(!context)
 	{
-        // TODO: JG: debug should use categories.
-		qDebug() << "visitPrimaryExpression: No context found for" << id;
+		qCDebug(DUCHAIN) << "visitPrimaryExpression: No context found for" << id;
 		return;
 	}
 	DeclarationPointer decl = getDeclaration(id, context);
@@ -106,7 +105,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 	}
 	if(!context)
 	{
-		qDebug() << "visitUnaryExpression: No context found for" << node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
+		qCDebug(DUCHAIN) << "visitUnaryExpression: No context found for" << node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
 		return;
 	}
 
@@ -145,7 +144,7 @@ void UseBuilder::visitToken(IToken *node)
 	}
 	if(!context)
 	{
-		qDebug() << "visitToken: No context found for" << node->getText();
+		qCDebug(DUCHAIN) << "visitToken: No context found for" << node->getText();
 		return;
 	}
 
