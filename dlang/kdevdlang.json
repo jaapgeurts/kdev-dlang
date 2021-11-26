@@ -2,7 +2,7 @@
     "KPlugin": {
         "Category": "Language Support",
         "Icon": "text-x-dsrc",
-        "Id": "kdevd",
+        "Id": "KDevDLang",
         "License": "GPL",
         "Name": "D Support",
         "Name[ast]": "Sofitu D",

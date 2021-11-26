@@ -1,25 +1,15 @@
-#include "dubbuilder.h"
+#include <KPluginFactory>
 
 #include <debug.h>
 
-#include <KPluginFactory>
-
 #include "dubjob.h"
+#include "dubbuilder.h"
 
 
-
-K_PLUGIN_FACTORY_WITH_JSON(DUBBuilderFactory, "kdevdubbuilder.json", registerPlugin<DUBBuilder>(); )
-
-DUBBuilder::DUBBuilder(QObject *parent, const QVariantList& args)
-    : KDevelop::IPlugin(QStringLiteral("kdevdubbuilder"), parent)
+DUBBuilder::DUBBuilder::DUBBuilder()
 {
-    Q_UNUSED(args);
-
-    qCDebug(PLUGIN_KDEVDUBBUILDER) << "DUBBuilder(QObject *, const QVariantList&)";
 }
 
-DUBBuilder::~DUBBuilder() {
-}
 
 /**
     * Installs the given project @p item, exact behaviour depends
@@ -30,7 +20,7 @@ DUBBuilder::~DUBBuilder() {
 KJob* DUBBuilder::install(KDevelop::ProjectBaseItem* item, const QUrl &specificPrefix) {
 
     Q_UNUSED(specificPrefix);
-    qCDebug(PLUGIN_KDEVDUBBUILDER) << "install(KDevelop::ProjectBaseItem*, const QUrl &)";
+    qCDebug(DUB) << "install(KDevelop::ProjectBaseItem*, const QUrl &)";
     return new DUBJob(this,item,DUBJob::CommandType::InstallCommand);
 };
 
@@ -39,7 +29,7 @@ KJob* DUBBuilder::install(KDevelop::ProjectBaseItem* item, const QUrl &specificP
     * on the implementation
     */
 KJob* DUBBuilder::build(KDevelop::ProjectBaseItem *item) {
-        qCDebug(PLUGIN_KDEVDUBBUILDER) << "build(KDevelop::ProjectBaseItem *)";
+        qCDebug(DUB) << "build(KDevelop::ProjectBaseItem *)";
 
         return new DUBJob(this,item,DUBJob::CommandType::BuildCommand);
 
@@ -52,7 +42,7 @@ KJob* DUBBuilder::build(KDevelop::ProjectBaseItem *item) {
     * that the builder needs shouldn't be removed.
     */
 KJob* DUBBuilder::clean(KDevelop::ProjectBaseItem *item) {
-        qCDebug(PLUGIN_KDEVDUBBUILDER) << "clean(KDevelop::ProjectBaseItem *)";
+        qCDebug(DUB) << "clean(KDevelop::ProjectBaseItem *)";
 
     return new DUBJob(this,item,DUBJob::CommandType::CleanCommand);
 }
@@ -83,5 +73,3 @@ KJob* DUBBuilder::clean(KDevelop::ProjectBaseItem *item) {
      */
 //    void pruned(IProject*);
 
-// needed for QObject class created from K_PLUGIN_FACTORY_WITH_JSON
-#include "dubbuilder.moc"

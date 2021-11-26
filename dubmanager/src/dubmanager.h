@@ -4,6 +4,8 @@
 #include <project/interfaces/ibuildsystemmanager.h>
 #include <project/abstractfilemanagerplugin.h>
 
+#include "dubbuilder.h"
+
 
 class DUBProjectManager : public KDevelop::AbstractFileManagerPlugin, public KDevelop::IBuildSystemManager
 {
@@ -67,6 +69,7 @@ private Q_SLOTS:
     void slotDirty(const QString& path);
 
 private:
+    KDevelop::IProjectBuilder* m_builder;
 //     KDevelop::ProjectFolderItem* projectRootItem( KDevelop::IProject* project, const KDevelop::Path& path );
 //     KDevelop::ProjectFolderItem* buildFolderItem( KDevelop::IProject* project, const KDevelop::Path& path, KDevelop::ProjectBaseItem* parent );
 };

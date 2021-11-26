@@ -13,17 +13,20 @@
 #include <project/interfaces/iprojectbuilder.h>
 #include <project/projectmodel.h>
 
+#include "dubbuilder.h"
+
 K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "kdevdubmanager.json", registerPlugin<DUBProjectManager>(); )
 
 using namespace KDevelop;
 
 DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
     : AbstractFileManagerPlugin(QStringLiteral("kdevdubmanager"), parent),
-    IBuildSystemManager()
+    IBuildSystemManager(),
+    m_builder(new DUBBuilder())
 {
     Q_UNUSED(args);
 
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "DUBProjectManager(QObject *, const QVariantList&";
+    qCDebug(DUB) << "DUBProjectManager(QObject *, const QVariantList&";
 }
 
 DUBProjectManager::~DUBProjectManager() {
@@ -32,7 +35,7 @@ DUBProjectManager::~DUBProjectManager() {
 //BEGIN AbstractFileManager
 ProjectFolderItem* DUBProjectManager::import( IProject* project )
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "import( IProject*)";
+    qCDebug(DUB) << "import( IProject*)";
 
     ProjectFolderItem* item = AbstractFileManagerPlugin::import(project);
     // TODO: connect
@@ -42,7 +45,7 @@ ProjectFolderItem* DUBProjectManager::import( IProject* project )
 ProjectFolderItem* DUBProjectManager::createFolderItem( IProject* project, const Path& path,
                                                 ProjectBaseItem* parent )
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "createFolderItem( IProject* , const Path& ,                                                ProjectBaseItem*)";
+    qCDebug(DUB) << "createFolderItem( IProject* , const Path& ,                                                ProjectBaseItem*)";
 
     if (!parent) {
         return new ProjectBuildFolderItem( project, path, parent );
@@ -53,7 +56,7 @@ ProjectFolderItem* DUBProjectManager::createFolderItem( IProject* project, const
 
 IProjectFileManager::Features DUBProjectManager::features() const
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "features()";
+    qCDebug(DUB) << "features()";
 
     return IProjectFileManager::Features::enum_type::Folders | IProjectFileManager::Features::enum_type::Files;
 }
@@ -62,7 +65,7 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
 {
     Q_UNUSED(isFolder);
     Q_UNUSED(project);
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "isValid( const Path& , const bool , IProject*)";
+    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
     return path.lastPathSegment()[0] != '.';
 }
 
@@ -72,20 +75,20 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
 //TODO
 IProjectBuilder*  DUBProjectManager::builder() const
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "builder()";
+    qCDebug(DUB) << "builder()";
 
     // Dynamically get the dub builder through the plugin system
-    IPlugin* i = core()->pluginController()->pluginForExtension( QStringLiteral("org.kdevelop.IProjectBuilder"), QStringLiteral("DUBBuilder"));
-    Q_ASSERT(i);
-    auto* _builder = i->extension<KDevelop::IProjectBuilder>();
-    Q_ASSERT(_builder );
-    return _builder;
+//     IPlugin* i = core()->pluginController()->pluginForExtension( QStringLiteral("org.kdevelop.IProjectBuilder"), QStringLiteral("DUBBuilder"));
+//     Q_ASSERT(i);
+//     auto* _builder = i->extension<KDevelop::IProjectBuilder>();
+//     Q_ASSERT(_builder );
+    return m_builder;
 
 }
 
 Path DUBProjectManager::buildDirectory(ProjectBaseItem*) const
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "buildDirectory(ProjectBaseItem*)";
+    qCDebug(DUB) << "buildDirectory(ProjectBaseItem*)";
 
     return Path();
 }
@@ -93,14 +96,14 @@ Path DUBProjectManager::buildDirectory(ProjectBaseItem*) const
 Path::List DUBProjectManager::collectDirectories(ProjectBaseItem*, const bool collectIncludes) const
 {
     Q_UNUSED(collectIncludes);
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "collectDirectories(ProjectBaseItem*, const bool)";
+    qCDebug(DUB) << "collectDirectories(ProjectBaseItem*, const bool)";
 
     return Path::List();
 }
 
 Path::List DUBProjectManager::includeDirectories(ProjectBaseItem*) const
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "includeDirectories(ProjectBaseItem*)";
+    qCDebug(DUB) << "includeDirectories(ProjectBaseItem*)";
 
     return { Path("/usr/include/dlang/dmd") };
 }
@@ -108,14 +111,14 @@ Path::List DUBProjectManager::includeDirectories(ProjectBaseItem*) const
 Path::List DUBProjectManager::frameworkDirectories(ProjectBaseItem* item) const
 {
     Q_UNUSED(item);
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "frameworkDirectories(ProjectBaseItem*)";
+    qCDebug(DUB) << "frameworkDirectories(ProjectBaseItem*)";
 
     return Path::List();
 }
 
 QHash<QString,QString> DUBProjectManager::defines(ProjectBaseItem*) const
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "defines(ProjectBaseItem*)";
+    qCDebug(DUB) << "defines(ProjectBaseItem*)";
 
     return QHash<QString,QString>();
 }
@@ -123,14 +126,14 @@ QHash<QString,QString> DUBProjectManager::defines(ProjectBaseItem*) const
 QString DUBProjectManager::extraArguments(ProjectBaseItem *item) const
 {
     Q_UNUSED(item);
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "extraArguments(ProjectBaseItem *)";
+    qCDebug(DUB) << "extraArguments(ProjectBaseItem *)";
 
     return "";
 }
 
 bool DUBProjectManager::hasBuildInfo(ProjectBaseItem*) const
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "hasBuildInfo(ProjectBaseItem*)";
+    qCDebug(DUB) << "hasBuildInfo(ProjectBaseItem*)";
 
     return false;
 }
@@ -138,7 +141,7 @@ bool DUBProjectManager::hasBuildInfo(ProjectBaseItem*) const
 
 QList<ProjectTargetItem*> DUBProjectManager::targets(ProjectFolderItem*) const
 {
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "targets(ProjectFolderItem*)";
+    qCDebug(DUB) << "targets(ProjectFolderItem*)";
 
     return QList<ProjectTargetItem*>();
 }
@@ -147,7 +150,7 @@ QList<ProjectTargetItem*> DUBProjectManager::targets(ProjectFolderItem*) const
 Path DUBProjectManager::compiler(ProjectTargetItem* item) const
 {
     Q_UNUSED(item);
-    qCDebug(PLUGIN_KDEVDUBMANAGER) << "compiler(ProjectTargetItem*)";
+    qCDebug(DUB) << "compiler(ProjectTargetItem*)";
 
     return Path();
 }

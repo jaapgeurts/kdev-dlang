@@ -17,17 +17,15 @@
     },
     "X-KDevelop-Category": "Project",
     "X-KDevelop-Interfaces": [
-        "org.kdevelop.IDUBBuilder",
         "org.kdevelop.IBuildSystemManager",
         "org.kdevelop.IProjectFileManager"
     ],
     "X-KDevelop-IRequired": [
-        "org.kdevelop.IOutputView",
-        "org.kdevelop.IDUBBuilder"
+        "org.kdevelop.IOutputView"
     ],
     "X-KDevelop-Mode": "GUI",
+    "X-KDevelop-FileManager": "D",
     "X-KDevelop-Languages": [ "D" ],
-    "X-KDevelop-ProjectBuilder": "DUB",
     "X-KDevelop-ProjectFilesFilter": [
         "*.json",
         "*.sdl"

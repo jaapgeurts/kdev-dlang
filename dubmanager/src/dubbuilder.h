@@ -4,21 +4,19 @@
 
 #include <interfaces/iplugin.h>
 #include <project/projectmodel.h>
+#include <project/interfaces/iprojectbuilder.h>
 
-#include "idubbuilder.h"
 
 
-class DUBBuilder : public KDevelop::IPlugin, public IDUBBuilder
+class DUBBuilder :  public QObject, public KDevelop::IProjectBuilder
 {
     Q_OBJECT
-    Q_INTERFACES( IDUBBuilder )
     Q_INTERFACES( KDevelop::IProjectBuilder )
 
 public:
-    // KPluginFactory-based plugin wants constructor with this signature
-    explicit DUBBuilder(QObject* parent, const QVariantList& args);
 
-    ~DUBBuilder() override;
+    DUBBuilder();
+    virtual ~DUBBuilder() = default;
 
     KJob* install(KDevelop::ProjectBaseItem* item, const QUrl &specificPrefix = {}) override;
     /**
