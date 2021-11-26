@@ -102,7 +102,7 @@ Path::List DUBProjectManager::includeDirectories(ProjectBaseItem*) const
 {
     qCDebug(PLUGIN_KDEVDUBMANAGER) << "includeDirectories(ProjectBaseItem*)";
 
-    return Path::List();
+    return { Path("/usr/include/dlang/dmd") };
 }
 
 Path::List DUBProjectManager::frameworkDirectories(ProjectBaseItem* item) const

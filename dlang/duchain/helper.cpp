@@ -31,6 +31,7 @@ namespace dlang
 
 QList<QString> Helper::getSearchPaths(QUrl document)
 {
+    // TODO: jg these should be configurable
 	QList<QString> paths;
 	if(QFileInfo("/usr/include/dlang/dmd").exists())
 		paths.append("/usr/include/dlang/dmd");

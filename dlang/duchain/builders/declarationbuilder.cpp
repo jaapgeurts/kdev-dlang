@@ -223,36 +223,44 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 
 void DeclarationBuilder::visitModule(IModule *node)
 {
-    // TODO: add anonymous namespace (files without module statements )
-    // TODO: no module is an error!
-    // TODO JG revert to original
+    // Always open a context here. Modules /do/ require a module statement
+    // but if omitted an AST will still be generated and parsing will crash
+    // because there is no context.
 	if(node->getModuleDeclaration())
 	{
 		if(node->getModuleDeclaration()->getComment())
 			setComment(node->getModuleDeclaration()->getComment());
 
         DUChainWriteLocker lock;
+
         auto m_thisPackage = identifierForNode(node->getModuleDeclaration()->getModuleName());
 		KDevelop::RangeInRevision range = editorFindRange(node->getModuleDeclaration()->getModuleName(), node->getModuleDeclaration()->getModuleName());
 
         Identifier localId;
         if (!m_thisPackage.isEmpty())
             localId = m_thisPackage.last();
+        else
+            qCDebug(DUCHAIN) << "openDeclaration() called without identifier";
 		Declaration *packageDeclaration = openDeclaration<Declaration>(localId, range);
 		packageDeclaration->setKind(Declaration::Namespace);
+
 		openContext(node, editorFindRange(node, 0), DUContext::Namespace, m_thisPackage);
 		packageDeclaration->setInternalContext(currentContext());
 		lock.unlock();
     }
 
+    // TODO: JG this should be inside if statement. If it's inside it will
+    // crash during buildUses because currentContext() is nullptr. Figure out why
     DeclarationBuilderBase::visitModule(node);
 
     if(node->getModuleDeclaration())
-	{
+    {
         closeContext();
-		closeDeclaration();
-		topContext()->updateImportsCache();
-	}
+        closeDeclaration();
+        topContext()->updateImportsCache();
+    }
+
+
 }
 
 void DeclarationBuilder::visitForeachType(IForeachType *node)

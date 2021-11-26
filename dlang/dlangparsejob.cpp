@@ -19,6 +19,8 @@
 
 #include "dlangparsejob.h"
 
+#include <interfaces/icore.h>
+
 #include <language/backgroundparser/urlparselock.h>
 #include <language/backgroundparser/parsejob.h>
 #include <language/duchain/duchainlock.h>
@@ -64,7 +66,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 		return;
 
 	ProblemPointer p = readContents();
-	if(p)
+	if(p )
 		return abortJob();
 
 	QByteArray code = contents().contents;
@@ -75,7 +77,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	session.setCurrentDocument(document());
 	session.setFeatures(minimumFeatures());
 
-	if(abortRequested())
+	if(abortRequested() || ICore::self()->shuttingDown())
 		return;
 
 	ReferencedTopDUContext context;
@@ -105,7 +107,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 
 	qCDebug(D) << document();
 
-    // parsing to parsesession
+    // The actual parsing is done in the session
     session.startParsing();
 
 	//When switching between files(even if they are not modified) KDevelop decides they need to be updated
@@ -126,11 +128,9 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 
 		if(abortRequested())
 			return abortJob();
-        qCDebug(D) << "Before builder creation";
-		DeclarationBuilder builder(&session, forExport);
-        qCDebug(D) << "Before building";
+
+        DeclarationBuilder builder(&session, forExport);
 		context = builder.build(document(), session.ast(), context);
-        qCDebug(D) << "after building";
 
 		if(!forExport && (newFeatures & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsContextsAndUses)
 		{

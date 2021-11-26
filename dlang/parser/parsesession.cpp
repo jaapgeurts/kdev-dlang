@@ -57,21 +57,19 @@ bool ParseSession::startParsing()
 
     qCDebug(DUCHAIN) << "After parsing";
 
+    // Add any problem reported by libdparse to the problem list
     for(uint i=0 ;i<m_parseresult->messageCount();i++) {
         IParseMessage* msg = m_parseresult->message(i);
-        addProblem(QString::fromUtf8(msg->getMessage()),msg->getLine(), msg->getColumn(),msg->getType() == ParseMsgType::Warning ? KDevelop::IProblem::Warning :KDevelop::IProblem::Error);
+        addProblem(QString::fromUtf8(msg->getMessage()),msg->getLine(), msg->getColumn(),msg->getType() == ParseMsgType::Warning ? IProblem::Warning :IProblem::Error);
     }
-
-
-
 
     return m_parseresult->succes();
 }
 
 
-KDevelop::IndexedString ParseSession::languageString()
+IndexedString ParseSession::languageString()
 {
-	static const KDevelop::IndexedString langString("d");
+	static const IndexedString langString("D");
 	return langString;
 }
 
@@ -82,7 +80,7 @@ QString ParseSession::symbol(qint64 index)
 	return "";
 }
 
-KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
+RangeInRevision ParseSession::findRange(INode *from, INode *to)
 {
 	qint64 line = 1, column = 1, lineEnd = 1, columnEnd = 1;
 	//Location: Constructor, SharedStaticConstructor, SharedStaticDestructor, StaticConstructor, StaticDestructor.
@@ -501,15 +499,15 @@ KDevelop::RangeInRevision ParseSession::findRange(INode *from, INode *to)
 	lineEnd -= 1;
 	columnEnd -= 1;
 
-	return KDevelop::RangeInRevision(KDevelop::CursorInRevision(line, column), KDevelop::CursorInRevision(lineEnd, columnEnd));
+	return RangeInRevision(CursorInRevision(line, column), CursorInRevision(lineEnd, columnEnd));
 }
 
-KDevelop::IndexedString ParseSession::currentDocument()
+IndexedString ParseSession::currentDocument()
 {
 	return m_document;
 }
 
-void ParseSession::setCurrentDocument(const KDevelop::IndexedString &document)
+void ParseSession::setCurrentDocument(const IndexedString &document)
 {
 	m_document = document;
 }
@@ -525,7 +523,7 @@ void ParseSession::setCurrentDocument(const KDevelop::IndexedString &document)
  * 	 100000: reparse of opened file, after all recursive imports
  * layers higher than 99998 are NOT parsed right now because its too slow
  */
-QList<ReferencedTopDUContext> ParseSession::contextForImport(KDevelop::QualifiedIdentifier package)
+QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier package)
 {
 	QStringList files;
 	if(files.empty())
@@ -576,12 +574,12 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(KDevelop::Qualified
 
 		IndexedString url(filename);
 		DUChainReadLocker lock;
-		ReferencedTopDUContext context = KDevelop::DUChain::self()->chainForDocument(url);
+		ReferencedTopDUContext context = DUChain::self()->chainForDocument(url);
 		lock.unlock();
 		if(context)
 			contexts.append(context);
 		else if(scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
-			shouldReparse = true;
+                shouldReparse = true;
 	}
 	if(shouldReparse)
 		//Reparse this file after its imports are done.
@@ -589,12 +587,13 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(KDevelop::Qualified
 
 	if(!forExport && m_priority != BackgroundParser::WorstPriority) //Always schedule last reparse after all recursive imports are done.
 		scheduleForParsing(m_document, BackgroundParser::WorstPriority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+
 	return contexts;
 }
 
 bool ParseSession::scheduleForParsing(const IndexedString &url, int priority, TopDUContext::Features features)
 {
-	BackgroundParser *bgparser = KDevelop::ICore::self()->languageController()->backgroundParser();
+	BackgroundParser *bgparser = ICore::self()->languageController()->backgroundParser();
 	//TopDUContext::Features features = (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts);//(TopDUContext::Features)
 	//(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsContextsAndUses);
 
@@ -630,6 +629,7 @@ void ParseSession::reparseImporters(DUContext *context)
 
 QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedString package)
 {
+    qCDebug(DUCHAIN) << "Ctxt for this pack: " << package;
 	QList<ReferencedTopDUContext> contexts;
 	QUrl url = package.toUrl();
 	QDir path(url.adjusted(QUrl::RemoveFilename).path());
@@ -796,7 +796,7 @@ INode* ParseSession::ast() const {
 
 
 void ParseSession::addProblem(const QString& message, size_t line, size_t column,
-                              KDevelop::IProblem::Severity severity)
+                              IProblem::Severity severity)
 {
     ProblemPointer p(new Problem);
 

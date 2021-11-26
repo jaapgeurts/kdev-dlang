@@ -130,7 +130,7 @@ TopDUContext *ContextBuilder::newTopContext(const RangeInRevision &range, Parsin
 	if(!file)
 	{
 		file = new ParsingEnvironmentFile(m_session->currentDocument());
-		file->setLanguage(m_session->languageString());
+		file->setLanguage(ParseSession::languageString());
 	}
 	return new KDevelop::TopDUContext(m_session->currentDocument(), range, file);
 }
@@ -155,8 +155,10 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
 	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(node->getIdentifierChain()));
-	if(contexts.length() > 0 && node->getIdentifierChain()->numIdentifiers() > 0)
+	if(contexts.length() > 0 && node->getIdentifierChain()->numIdentifiers() > 0) {
 		currentContext()->addImportedParentContext(contexts[0], CursorInRevision(node->getIdentifierChain()->getIdentifier(0)->getLine(), node->getIdentifierChain()->getIdentifier(0)->getColumn()));
+        qCDebug(DUCHAIN) << "Adding importedParentContext";
+    }
 	topContext()->updateImportsCache();
 }
 
