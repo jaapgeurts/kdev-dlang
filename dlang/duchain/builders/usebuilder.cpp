@@ -102,7 +102,7 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	}
 	DeclarationPointer decl = getDeclaration(id, context);
 	if(decl)
-		newUse(node, decl);
+		newUse(ident, decl);
 }
 
 void UseBuilder::visitUnaryExpression(IUnaryExpression *node)

@@ -47,7 +47,7 @@ DeclarationBuilder::DeclarationBuilder(ParseSession *session, bool forExport) : 
 	setParseSession(session);
 }
 
-KDevelop::ReferencedTopDUContext DeclarationBuilder::build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext)
+ReferencedTopDUContext DeclarationBuilder::build(const IndexedString &url, INode *node, const ReferencedTopDUContext& updateContext)
 {
     ReferencedTopDUContext updateContext2 = updateContext;
 	qCDebug(DUCHAIN) << "DeclarationBuilder start";
@@ -98,7 +98,7 @@ void DeclarationBuilder::visitClassDeclaration(IClassDeclaration *node)
     // TODO: JG: class declarations don't have correct name
 	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), 0));
 	dec->setType(lastType());
-	dec->setKind(KDevelop::Declaration::Type);
+	dec->setKind(Declaration::Type);
 	dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Class);
 	closeDeclaration();
@@ -114,7 +114,7 @@ void DeclarationBuilder::visitStructDeclaration(IStructDeclaration *node)
 	DUChainWriteLocker lock;
 	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), 0));
 	dec->setType(lastType());
-	dec->setKind(KDevelop::Declaration::Type);
+	dec->setKind(Declaration::Type);
 	dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Struct);
 	closeDeclaration();
@@ -130,7 +130,7 @@ void DeclarationBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 	DUChainWriteLocker lock;
 	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), 0));
 	dec->setType(lastType());
-	dec->setKind(KDevelop::Declaration::Type);
+	dec->setKind(Declaration::Type);
 	dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Interface);
 	closeDeclaration();
@@ -156,7 +156,7 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 		ClassFunctionDeclaration *newMethod = openDefinition<ClassFunctionDeclaration>(node->getName(), node);
 		if(node->getComment())
 			newMethod->setComment(QString::fromUtf8(node->getComment()));
-		newMethod->setKind(KDevelop::Declaration::Type);
+		newMethod->setKind(Declaration::Type);
 		lock.unlock();
 		ContextBuilder::visitFuncDeclaration(node);
 		lock.lock();
@@ -169,7 +169,7 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 		FunctionDeclaration *newMethod = openDefinition<FunctionDeclaration>(node->getName(), node);
 		if(node->getComment())
 			newMethod->setComment(QString::fromUtf8(node->getComment()));
-		newMethod->setKind(KDevelop::Declaration::Type);
+		newMethod->setKind(Declaration::Type);
 		lock.unlock();
 		ContextBuilder::visitFuncDeclaration(node);
 		lock.lock();
@@ -186,7 +186,7 @@ void DeclarationBuilder::visitConstructor(IConstructor *node)
 	ClassFunctionDeclaration *newMethod = openDefinition<ClassFunctionDeclaration>(QualifiedIdentifier("this"), editorFindRange(node, node));
 	if(node->getComment())
 		newMethod->setComment(QString::fromUtf8(node->getComment()));
-	newMethod->setKind(KDevelop::Declaration::Type);
+	newMethod->setKind(Declaration::Type);
 	lock.unlock();
 	ContextBuilder::visitConstructor(node);
 	lock.lock();
@@ -202,7 +202,7 @@ void DeclarationBuilder::visitDestructor(IDestructor *node)
 	ClassFunctionDeclaration *newMethod = openDefinition<ClassFunctionDeclaration>(QualifiedIdentifier("~this"), editorFindRange(node, node));
 	if(node->getComment())
 		newMethod->setComment(QString::fromUtf8(node->getComment()));
-	newMethod->setKind(KDevelop::Declaration::Type);
+	newMethod->setKind(Declaration::Type);
 	lock.unlock();
 	ContextBuilder::visitDestructor(node);
 	lock.lock();
@@ -215,9 +215,11 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
 	QualifiedIdentifier import = identifierForNode(node->getIdentifierChain());
-    // TODO: consider changing this to a ImportDeclaration
+    // TODO: JG consider making ImportDeclaration class
 	NamespaceAliasDeclaration *importDecl = openDefinition<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), editorFindRange(node->getIdentifierChain(), 0));
 	importDecl->setImportIdentifier(import);
+    // TODO: JG should be an import kind
+    //importDecl->setKind(Declaration::Import);
 	closeDeclaration();
 	DeclarationBuilderBase::visitSingleImport(node);
 }
@@ -235,7 +237,7 @@ void DeclarationBuilder::visitModule(IModule *node)
         DUChainWriteLocker lock;
 
         auto m_thisPackage = identifierForNode(node->getModuleDeclaration()->getModuleName());
-		KDevelop::RangeInRevision range = editorFindRange(node->getModuleDeclaration()->getModuleName(), node->getModuleDeclaration()->getModuleName());
+		RangeInRevision range = editorFindRange(node->getModuleDeclaration()->getModuleName(), node->getModuleDeclaration()->getModuleName());
 
         Identifier localId;
         if (!m_thisPackage.isEmpty())
