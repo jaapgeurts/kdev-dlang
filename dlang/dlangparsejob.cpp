@@ -45,7 +45,7 @@
 #include <threadweaver/thread.h>
 
 
-// JG REMOVE
+// TODO: JG REMOVE
 #include "language/duchain/codemodel.h"
 
 using namespace KDevelop;
@@ -70,8 +70,9 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 		return abortJob();
 
 	QByteArray code = contents().contents;
-	while(code.endsWith('\0'))
+ 	while(code.endsWith('\0'))
 		code.chop(1);
+    code.append('\0');
 
 	ParseSession session(code, parsePriority());
 	session.setCurrentDocument(document());
@@ -108,7 +109,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	qCDebug(D) << document();
 
     // The actual parsing is done in the session
-    session.startParsing();
+    bool parseSuccess = session.startParsing();
 
 	//When switching between files(even if they are not modified) KDevelop decides they need to be updated
 	//and calls parseJob with VisibleDeclarations feature
@@ -122,7 +123,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	else
 		session.setIncludePaths(dlang::Helper::getSearchPaths());
 
-	if(session.ast())
+	if(parseSuccess)
 	{
 		QReadLocker parseLock(languageSupport()->parseLock());
 
@@ -158,12 +159,14 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 
 	highlightDUChain();
 
+    DUChain::self()->emitUpdateReady(document(), duChain());
+
     // Dumps DU Chain to output
-    	{
-		DUChainReadLocker lock;
-		DUChainDumper dumper;
-		dumper.dump(context);
-	}
+//     	{
+// 		DUChainReadLocker lock;
+// 		DUChainDumper dumper;
+// 		dumper.dump(context);
+// 	}
 
 	// BEGIN JG
 // 	uint count;
@@ -183,7 +186,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
         // END JG
 
 
-	if(session.ast())
+	if(parseSuccess)
 		qCDebug(D) << "===Success===" << document().str();
 	else
 		qCDebug(D) << "===Failed===" << document().str();

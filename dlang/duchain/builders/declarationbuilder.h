@@ -39,23 +39,24 @@ public:
 	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
 
 	virtual void startVisiting(INode *node) override;
-	virtual void visitModule(IModule *node) override;
-	virtual void visitVarDeclaration(IVariableDeclaration *node) override;
-	virtual void visitFuncDeclaration(IFunctionDeclaration *node) override;
-	virtual void visitConstructor(IConstructor *node) override;
-	virtual void visitDestructor(IDestructor *node) override;
+
+    virtual void visitCatch(ICatch *node) override;
 	virtual void visitClassDeclaration(IClassDeclaration *node) override;
-	virtual void visitStructDeclaration(IStructDeclaration *node) override;
-	virtual void visitInterfaceDeclaration(IInterfaceDeclaration *node) override;
-	virtual void visitSingleImport(ISingleImport *node) override;
-	virtual void visitParameter(IParameter *node) override;
-	virtual void visitForeachType(IForeachType *node) override;
-	virtual void visitLabeledStatement(ILabeledStatement *node) override;
+	virtual void visitConstructor(IConstructor *node) override;
 	virtual void visitDebugSpecification(IDebugSpecification *node) override;
-	virtual void visitVersionSpecification(IVersionSpecification *node) override;
-	virtual void visitCatch(ICatch *node) override;
+	virtual void visitDestructor(IDestructor *node) override;
 	virtual void visitEnumDeclaration(IEnumDeclaration *node) override;
 	virtual void visitEnumMember(IEnumMember *node) override;
+	virtual void visitForeachType(IForeachType *node) override;
+	virtual void visitFuncDeclaration(IFunctionDeclaration *node) override;
+	virtual void visitInterfaceDeclaration(IInterfaceDeclaration *node) override;
+	virtual void visitLabeledStatement(ILabeledStatement *node) override;
+	virtual void visitModule(IModule *node) override;
+	virtual void visitParameter(IParameter *node) override;
+	virtual void visitSingleImport(ISingleImport *node) override;
+	virtual void visitStructDeclaration(IStructDeclaration *node) override;
+	virtual void visitVarDeclaration(IVariableDeclaration *node) override;
+	virtual void visitVersionSpecification(IVersionSpecification *node) override;
 
 private:
 	/**

@@ -212,7 +212,13 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const WithStatement withStatement) { file.writefln("%sWithStatement", indentationLevel()); if(traverse) { indentation++; withStatement.accept(this); indentation--; } }
     /** */ override void visit(const XorExpression xorExpression) { file.writefln("%sXorExpression", indentationLevel()); if(traverse) { indentation++; xorExpression.accept(this); indentation--; } }
 }
-// TODO: call from C++
+/*
+TODO: doesn't seem to have any effect.
+extern(C) __gshared bool rt_envvars_enabled = true;
+
+extern(C) __gshared string[] rt_options = [ "gcopt=parallel:0 profile:1" ];
+*/
+
 extern(C++) void initDParser()
 {
 	import core.runtime;
@@ -230,7 +236,7 @@ extern(C++) void deinitDParser()
 
 
 class ParseMessage : IParseMessage {
-	
+
     this(string message, ParseMsgType type, size_t line, size_t column) {
         this.message = message;
         this.type = type;
@@ -252,6 +258,10 @@ private:
 
 class ParseResult : IParseResult {
 
+    ~this() {
+        writeln("***** Parse result destructor");
+    }
+
     void setAst(IModule root) { this.root = root; }
 
     void addMessage(string fileName , size_t line, size_t column, string message, bool isError) {
@@ -263,61 +273,84 @@ class ParseResult : IParseResult {
 	extern(C++) IParseMessage message(size_t index) { return messages[index]; }
 	extern(C++) size_t messageCount() { return messages.length; }
 
+
+    RollbackAllocator* getAllocator() {
+        return &m_allocator;
+    }
+
 private:
     IModule root;
     IParseMessage[] messages;
+
+    RollbackAllocator m_allocator;
 }
 
-
-//__gshared
-RollbackAllocator allocator;
-
-extern(C++) IParseResult parseSourceFile(char* sourceFile, char* sourceData)
+extern(C++) IParseResult parseSourceFile(const char* sourceFile, const char * sourceData)
 {
-    
+
 	try
 	{
 		import core.memory;
 		import core.thread;
 		import std.string;
         import std.process;
-		
-		GC.disable(); //FIXME: Make it work with GC!
-		
-		writefln("parseSourceFile(%s)", fromStringz(sourceFile));
-		
-		//auto file = File((fromStringz(sourceFile).replace("/", ".")~".ast").idup, "w");
-		
+
+        GC.disable(); // disable the GC, but manually collect memory
 		thread_attachThis();
-        writefln("Thread acquired: %x", thisThreadID);
+		writefln("Thread acquired: %x", thisThreadID);
+
+        string fileName = cast(string)fromStringz(sourceFile);
+        writefln("parseSourceFile(%s)", fileName);
+
+		//auto file = File(fileName.replace("/", ".")~".ast").idup, "w");
 
 		LexerConfig config;
-		config.fileName = fromStringz(sourceFile).idup;
+		config.fileName = fileName;
         uint errCnt;
         uint wrnCnt;
 
         ParseResult parseResult = new ParseResult();
 
+        GC.addRoot(cast(void*)parseResult);
+        GC.setAttr(cast(void*)parseResult, GC.BlkAttr.NO_MOVE);
+
 		auto source = cast(ubyte[])fromStringz(sourceData);
 		auto tokens = getTokensForParser(source, config, new StringCache(StringCache.defaultBucketCount));
-		auto mod = parseModule(tokens, config.fileName, &allocator, &parseResult.addMessage, &errCnt, &wrnCnt);
+		auto mod = parseModule(tokens, config.fileName, parseResult.getAllocator(), &parseResult.addMessage, &errCnt, &wrnCnt);
         // TODO: report back error and warning counts
         writeln("Parsing complete: ",fromStringz(sourceFile));
 		//new ASTPrinter(file, true).visit(mod);
 
         parseResult.setAst(new CModule(mod));
 
-		keepAlive[config.fileName] = parseResult;
-        
-		return keepAlive[config.fileName];
+        return parseResult;
 	}
 	catch(Throwable e)
 	{
 		writefln("e: %s", e);
-		raise(SIGSEGV);
+		//raise(SIGABRT);
+		return null;
 	}
-	assert(0);
+}
+
+extern(C++) void freeAst(IParseResult parseResult) {
+    import core.memory;
+    import std.stdio;
+    import core.thread;
+    // Remove old AST if existing and remove the parseresult
+    // it won't remove the idup string from above.
+    // TODO: check memory leaks. Suspected are the new CXxxxxXxx object calls
+    // in the AST wrapper classes
+    writeln("Releasing parseresult back to GC");
+    GC.removeRoot(cast(void*)parseResult);
+    GC.clrAttr(cast(void*)parseResult, GC.BlkAttr.NO_MOVE);
+//    GC.free(cast(void*)r);
+//    r.destroy();
+    // TODO: MUST collect lost data
+    //GC.collect();
+//    thread_detachThis();
 }
 
 
-__gshared ParseResult[string] keepAlive;
+
+//__gshared ParseResult[string] keepAlive;

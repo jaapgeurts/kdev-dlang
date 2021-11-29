@@ -37,6 +37,7 @@ using namespace KDevelop;
 ParseSession::ParseSession(const QByteArray &contents, int priority, bool appendWithNewline) :
     m_contents(contents),
     m_priority(priority),
+    m_parseresult(nullptr),
     m_features(TopDUContext::AllDeclarationsAndContexts)
 {
     Q_UNUSED(appendWithNewline);
@@ -48,19 +49,30 @@ ParseSession::ParseSession(const QByteArray &contents, int priority, bool append
 
 ParseSession::~ParseSession()
 {
-
+    qCDebug(DUCHAIN) << "Freeing parsesession";
+    if (m_parseresult) {
+        freeAst(m_parseresult);
+        m_parseresult = nullptr;
+    }
 }
 
 bool ParseSession::startParsing()
 {
-    m_parseresult = parseSourceFile((char *)m_document.c_str(), m_contents.data());
+    m_parseresult = parseSourceFile(m_document.c_str(),m_contents.data());
 
-    qCDebug(DUCHAIN) << "After parsing";
+    if (m_parseresult == nullptr) {
+        qCDebug(DUCHAIN) << "Failed to parse: " << m_document;
+        return false;
+    }
 
+    m_problems.clear();
     // Add any problem reported by libdparse to the problem list
     for(uint i=0 ;i<m_parseresult->messageCount();i++) {
         IParseMessage* msg = m_parseresult->message(i);
-        addProblem(QString::fromUtf8(msg->getMessage()),msg->getLine(), msg->getColumn(),msg->getType() == ParseMsgType::Warning ? IProblem::Warning :IProblem::Error);
+        // subtract 1 because dscanner reports starting lines/columns starting at 1
+        // find the range for the error: from the line/column to the end of the node
+
+        addProblem(QString::fromUtf8(msg->getMessage()),msg->getLine()-1, msg->getColumn()-1,msg->getType() == ParseMsgType::Warning ? IProblem::Warning :IProblem::Error);
     }
 
     return m_parseresult->succes();
@@ -372,20 +384,25 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 		case Kind::primaryExpression:
 		{
 			//printf("kind is primaryExpression\n");
-			auto f = ((IPrimaryExpression *)to)->getIdentifierOrTemplateInstance()->getIdentifier();
-			lineEnd = f->getLine();
-			columnEnd = f->getColumn() + strlen(f->getText());
+            IToken *ident = nullptr;
+			if (auto f = ((IPrimaryExpression *)to)->getIdentifierOrTemplateInstance()->getTemplateInstance())
+                ident = f->getIdentifier();
+            else
+                ident = ((IPrimaryExpression *)to)->getIdentifierOrTemplateInstance()->getIdentifier();
+			lineEnd = ident->getLine();
+			columnEnd = ident->getColumn() + strlen(ident->getText());
 			break;
 		}
 		case Kind::unaryExpression:
 		{
 			//printf("kind is unaryExpression\n");
-			auto f = ((IUnaryExpression *)to)->getIdentifierOrTemplateInstance()->getIdentifier();
-			if(f)
-			{
-				lineEnd = f->getLine();
-				columnEnd = f->getColumn() + strlen(f->getText());
-			}
+			IToken *ident = nullptr;
+			if (auto f = ((IPrimaryExpression *)to)->getIdentifierOrTemplateInstance()->getTemplateInstance())
+                ident = f->getIdentifier();
+            else
+                ident = ((IPrimaryExpression *)to)->getIdentifierOrTemplateInstance()->getIdentifier();
+			lineEnd = ident->getLine();
+			columnEnd = ident->getColumn() + strlen(ident->getText());
 			break;
 		}
 		case Kind::whileStatement:
@@ -525,6 +542,7 @@ void ParseSession::setCurrentDocument(const IndexedString &document)
  */
 QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier package)
 {
+
 	QStringList files;
 	if(files.empty())
 	{
@@ -571,6 +589,8 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier
 		QFile file(filename);
 		if(!file.exists())
 			continue;
+
+        qCDebug(DUCHAIN) << "File needs parsing after import statement: " << filename;
 
 		IndexedString url(filename);
 		DUChainReadLocker lock;
@@ -800,10 +820,17 @@ void ParseSession::addProblem(const QString& message, size_t line, size_t column
 {
     ProblemPointer p(new Problem);
 
+
     p->setDescription(message);
     p->setSeverity(severity);
     p->setSource(IProblem::SemanticAnalysis);
-    p->setFinalLocation(DocumentRange(m_document, KTextEditor::Range(line,column,line,column)));
+    KDevelop::DocumentRange r;
+    r.setBothLines(line);
+    r.setBothColumns(column);
+    r.document = m_document;
+    p->setFinalLocation(r);
+    p->setFinalLocationMode(KDevelop::IProblem::TrimmedLine);
+//     p->setFinalLocation(DocumentRange(m_document, KTextEditor::Range(line,column,line,column)));
     //editorFindRange(node, node).castToSimpleRange()));
 
     m_problems << p;

@@ -215,6 +215,7 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
 	QualifiedIdentifier import = identifierForNode(node->getIdentifierChain());
+    // TODO: consider changing this to a ImportDeclaration
 	NamespaceAliasDeclaration *importDecl = openDefinition<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), editorFindRange(node->getIdentifierChain(), 0));
 	importDecl->setImportIdentifier(import);
 	closeDeclaration();

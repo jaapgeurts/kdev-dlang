@@ -23,6 +23,7 @@
 #include <language/editor/documentrange.h>
 #include <sublime/message.h>
 #include <shell/problem.h>
+
 // KF
 #include <KLocalizedString>
 // Qt
@@ -91,8 +92,13 @@ void DScannerJob::postProcessStdout(const QStringList& lines)
 
             KDevelop::DocumentRange range;
             range.document = IndexedString(m_document);
-            range.setBothLines(line-1); // dscanner reports 1 indexed.
-            range.setBothColumns(column-1); // DocumentRange is 0 indexed
+            // TODO: JG
+            // figure out the distance from the position of the error
+            // till the next white space char
+//             int endcolumn = column;
+//             range.setRange(KTextEditor::Range(line,column,line,endcolumn));
+             range.setBothLines(line-1); // dscanner reports 1 indexed.
+             range.setBothColumns(column-1); // DocumentRange is 0 indexed
 
             problem->setFinalLocation(range);
             problem->setFinalLocationMode(KDevelop::IProblem::TrimmedLine);

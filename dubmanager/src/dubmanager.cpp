@@ -65,7 +65,7 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
 {
     Q_UNUSED(isFolder);
     Q_UNUSED(project);
-    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
+//    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
     return path.lastPathSegment()[0] != '.';
 }
 
@@ -105,7 +105,7 @@ Path::List DUBProjectManager::includeDirectories(ProjectBaseItem*) const
 {
     qCDebug(DUB) << "includeDirectories(ProjectBaseItem*)";
 
-    return { Path("/usr/include/dlang/dmd") };
+    return {  };
 }
 
 Path::List DUBProjectManager::frameworkDirectories(ProjectBaseItem* item) const
@@ -113,7 +113,7 @@ Path::List DUBProjectManager::frameworkDirectories(ProjectBaseItem* item) const
     Q_UNUSED(item);
     qCDebug(DUB) << "frameworkDirectories(ProjectBaseItem*)";
 
-    return Path::List();
+    return {  };
 }
 
 QHash<QString,QString> DUBProjectManager::defines(ProjectBaseItem*) const

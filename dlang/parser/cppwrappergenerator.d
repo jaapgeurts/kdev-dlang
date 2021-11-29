@@ -181,6 +181,8 @@ void writeHeader() {
         writeln("import dparse.ast;");
         writeln();
         writeln("import std.stdio;");
+//        writeln("import core.stdc.string;");
+        writeln();
     }
     else {
         writeln("#pragma once");
@@ -317,7 +319,8 @@ void writeExtras() {
         writeln("};");
         writeln();
 
-        writeln("IParseResult *parseSourceFile(char *sourceFile, char *sourceData);");
+        writeln("IParseResult *parseSourceFile(const char *sourceFile, const char *sourceData);");
+        writeln("void freeAst(IParseResult *parseResult);");
         writeln();
 
         //Kind enum.

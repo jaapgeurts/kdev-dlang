@@ -1,4 +1,0 @@
-[Project]
-Name=%{APPNAME}
-Manager=KDevGenericManager
-VersionControl=%{VERSIONCONTROLPLUGIN}

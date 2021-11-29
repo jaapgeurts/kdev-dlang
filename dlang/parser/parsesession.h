@@ -41,6 +41,7 @@ public:
 	static KDevelop::IndexedString languageString();
 
 	bool startParsing();
+    void doFreeAst();
 
 	//bool parseExpression(dlang::ExpressionAst **node);
 

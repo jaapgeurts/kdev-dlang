@@ -73,22 +73,27 @@ void UseBuilder::visitTypeName(IType *node)
 void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 {
 	UseBuilderBase::visitPrimaryExpression(node);
-	if(!node->getIdentifierOrTemplateInstance() || !node->getIdentifierOrTemplateInstance()->getIdentifier() || !currentContext())
+
+	if(!node->getIdentifierOrTemplateInstance() || !currentContext())
 		return;
 
-	QualifiedIdentifier id(identifierForNode(node->getIdentifierOrTemplateInstance()->getIdentifier()));
+    // Get the identifier either from the identifier or template
+    IToken* ident = nullptr;
+    if (node->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
+        ident = node->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
+    }
+    if (ident == nullptr) {
+        ident = node->getIdentifierOrTemplateInstance()->getIdentifier();
+    }
+    if (ident == nullptr) {
+        return;
+    }
+
+	QualifiedIdentifier id(identifierForNode(ident));
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-        auto n = node->getIdentifierOrTemplateInstance()->getIdentifier();
-        QString s = n->getText();
-        RangeInRevision r = editorFindRange(n, 0);
-        if (s == QLatin1String("args")) {
-            qCDebug(DUCHAIN) << "trigger";
-            qCDebug(DUCHAIN) << "exp range: " << r;
-            qCDebug(DUCHAIN) << "ctx range: " << currentContext()->range();
-        }
-		context = currentContext()->findContextIncluding(r);
+		context = currentContext()->findContextIncluding(editorFindRange(ident, 0));
 	}
 	if(!context)
 	{

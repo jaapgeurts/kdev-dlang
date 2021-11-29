@@ -71,7 +71,7 @@ KDevelop::RangeInRevision ContextBuilder::editorFindRange(INode *fromNode, INode
 {
 	if(!fromNode)
 		return KDevelop::RangeInRevision();
-	return m_session->findRange(fromNode, toNode? toNode : fromNode);
+	return m_session->findRange(fromNode, toNode ? toNode : fromNode);
 }
 
 KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IToken *node)
@@ -101,12 +101,20 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierOrTem
 	return ident;
 }
 
-KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(ISymbol *node)
+KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode ( IIdentifierOrTemplateInstance* node )
 {
-	if(!node)
-		return QualifiedIdentifier();
-	return identifierForNode(node->getIdentifierOrTemplateChain());
+    if (!node)
+        return QualifiedIdentifier();
+    QualifiedIdentifier ident;
+    if (node->getTemplateInstance())
+        ident.push(Identifier(node->getTemplateInstance()->getIdentifier()->getText()));
+    else
+        ident.push(Identifier(node->getIdentifier()->getText()));
+
+    return ident;
 }
+
+
 
 KDevelop::QualifiedIdentifier ContextBuilder::identifierForIndex(qint64 index)
 {
@@ -305,11 +313,13 @@ void ContextBuilder::visitBaseClass(IBaseClass *node)
 	if(auto n = node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance())
 	{
         // TODO: JG changed from visitSymbol to visitToken
-		if(auto t = n->getIdentifier())
-			visitToken(t);
-		if(auto t = node->getType2()->getType())
-			visitTypeName(t);
+        if (auto ti = n->getTemplateInstance())
+            visitTemplateInstance(ti);
+        else
+			visitToken(n->getIdentifier());
 	}
+//     if(auto t = node->getType2()->getType())
+//         visitTypeName(t);
 }
 
 void ContextBuilder::visitStructBody(IStructBody *node)
@@ -570,9 +580,34 @@ void ContextBuilder::visitCmpExpression(ICmpExpression *node)
 
 void ContextBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 {
-	if(node->getIdentifierOrTemplateInstance())
-		identifierChain.append(QString::fromUtf8(node->getIdentifierOrTemplateInstance()->getIdentifier()->getText()));
+    // TODO: JG primary expressions have many more children
+    if (auto n = node->getIdentifierOrTemplateInstance())
+        visitIdentifierOrTemplateInstance(n);
 }
+
+void ContextBuilder::visitIdentifierOrTemplateInstance(IIdentifierOrTemplateInstance* node )
+{
+    if (auto n = node->getTemplateInstance())
+        visitTemplateInstance(n);
+    if (auto n = node->getIdentifier())
+        visitIdentifier(n);
+}
+
+void ContextBuilder::visitTemplateInstance ( ITemplateInstance* node )
+{
+    visitIdentifier(node->getIdentifier());
+
+    // TODO: JG implement template arguments
+//     if (auto n = node->getTemplateArguments())
+//         visitTemplateArguments(n);
+
+}
+
+void ContextBuilder::visitIdentifier(IToken* node )
+{
+    identifierChain.append(QString::fromUtf8(node->getText()));
+}
+
 
 void ContextBuilder::visitAddExpression(IAddExpression *node)
 {
