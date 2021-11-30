@@ -278,6 +278,9 @@ void ContextBuilder::visitDeclaration(IDeclaration *node)
 		visitInterfaceDeclaration(n);
 	else if(auto n = node->getEnumDeclaration())
 		visitEnumDeclaration(n);
+    else if (auto n = node->getTemplateDeclaration())
+        visitTemplateDeclaration(n);
+
 	for(size_t i=0; i<node->numDeclarations(); i++)
 		visitDeclaration(node->getDeclaration(i));
 }
@@ -592,6 +595,51 @@ void ContextBuilder::visitIdentifierOrTemplateInstance(IIdentifierOrTemplateInst
     if (auto n = node->getIdentifier())
         visitIdentifier(n);
 }
+
+void ContextBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
+{
+    // NOTE: Context must be opened here, because parameter variables
+    // are part of the template context, not of the containing context.
+    openContext(node, editorFindRange(node, 0),DUContext::Template, node->getName());
+
+    // template parameters
+    if (auto tp = node->getTemplateParameters()) {
+        if (auto tpl = tp->getTemplateParameterList()) {
+            for(size_t i =0 ;i<tpl->numItems();i++) {
+                visitTemplateParameter(tpl->getItem(i));
+            }
+        }
+    }
+    for(size_t i=0; i<node->numDeclarations();i++) {
+        visitDeclaration(node->getDeclaration(i));
+    }
+
+	closeContext();
+}
+
+void ContextBuilder::visitTemplateParameter(ITemplateParameter* node)
+{
+    Q_UNUSED(node);
+}
+// {
+//     if (auto n = node->getTemplateTypeParameter()) {
+//
+//         visitToken(n->getIdentifier());
+//     }
+//     if (auto n = node->getTemplateAliasParameter()) {
+//         qCDebug(DUCHAIN) << "Unhandled template alias parameter";
+//     }
+//     if (auto n = node->getTemplateThisParameter()) {
+//         qCDebug(DUCHAIN) << "Unhandled template this parameter";
+//     }
+//     if (auto n = node->getTemplateTupleParameter()) {
+//         qCDebug(DUCHAIN) << "Unhandled template tuple parameter";
+//     }
+//     if (auto n = node->getTemplateValueParameter()) {
+//         qCDebug(DUCHAIN) << "Unhandled template value parameter";
+//     }
+// }
+
 
 void ContextBuilder::visitTemplateInstance ( ITemplateInstance* node )
 {

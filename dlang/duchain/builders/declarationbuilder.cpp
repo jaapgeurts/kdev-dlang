@@ -34,10 +34,12 @@
 #include <language/duchain/classdeclaration.h>
 #include <language/duchain/topducontext.h>
 #include <language/duchain/namespacealiasdeclaration.h>
+#include <language/duchain/templatedeclaration.h>
 #include <language/duchain/duchainutils.h>
 
 #include "helper.h"
 #include "duchaindebug.h"
+
 
 using namespace KDevelop;
 
@@ -120,6 +122,47 @@ void DeclarationBuilder::visitStructDeclaration(IStructDeclaration *node)
 	closeDeclaration();
 	inClassScope = false;
 }
+
+void DeclarationBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
+{
+    // TODO: JG remember template in template scope
+    // inTemplateScope = true;
+    DeclarationBuilderBase::visitTemplateDeclaration(node);
+    if(node->getComment())
+		setComment(node->getComment());
+    DUChainWriteLocker lock;
+    TemplateDeclaration* dec = openDefinition<TemplateDeclaration>(identifierForNode(node->getName()),editorFindRange(node->getName(),0));
+	dec->setKind(Declaration::Template);
+	dec->setInternalContext(lastContext());
+	closeDeclaration();
+    // inTemplateScope = false;
+
+}
+
+void DeclarationBuilder::visitTemplateParameter(ITemplateParameter* node)
+{
+    if (auto n = node->getTemplateTypeParameter()) {
+        DUChainWriteLocker lock;
+        Declaration *parameter = openDeclaration<Declaration>(n->getIdentifier(), node);
+        parameter->setKind(Declaration::Instance);
+        // TODO: JG template parameters have no type
+//         parameter->setAbstractType(lastType());
+        closeDeclaration();
+    }
+    if (auto n = node->getTemplateAliasParameter()) {
+        qCDebug(DUCHAIN) << "Unhandled template alias parameter";
+    }
+    if (auto n = node->getTemplateThisParameter()) {
+        qCDebug(DUCHAIN) << "Unhandled template this parameter";
+    }
+    if (auto n = node->getTemplateTupleParameter()) {
+        qCDebug(DUCHAIN) << "Unhandled template tuple parameter";
+    }
+    if (auto n = node->getTemplateValueParameter()) {
+        qCDebug(DUCHAIN) << "Unhandled template value parameter";
+    }
+}
+
 
 void DeclarationBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 {

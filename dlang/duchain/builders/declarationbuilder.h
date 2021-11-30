@@ -55,6 +55,8 @@ public:
 	virtual void visitParameter(IParameter *node) override;
 	virtual void visitSingleImport(ISingleImport *node) override;
 	virtual void visitStructDeclaration(IStructDeclaration *node) override;
+    virtual void visitTemplateDeclaration(ITemplateDeclaration* node) override;
+    virtual void visitTemplateParameter(ITemplateParameter* node) override;
 	virtual void visitVarDeclaration(IVariableDeclaration *node) override;
 	virtual void visitVersionSpecification(IVersionSpecification *node) override;
 

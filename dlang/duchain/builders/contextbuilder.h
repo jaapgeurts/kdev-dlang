@@ -99,6 +99,7 @@ public:
     virtual void visitFunctionCallExpression(IFunctionCallExpression *node);
     virtual void visitGotoStatement(IGotoStatement *node);
     virtual void visitIdentifier(IToken* node);
+    virtual void visitIdentifierOrTemplateInstance(IIdentifierOrTemplateInstance *node);
     virtual void visitIdentityExpression(IIdentityExpression *node);
     virtual void visitIfStatement(IIfStatement *node);
     virtual void visitImportBind(IImportBind* node);
@@ -126,8 +127,9 @@ public:
     virtual void visitStructDeclaration(IStructDeclaration *node);
     virtual void visitSwitchStatement(ISwitchStatement *node);
     virtual void visitSynchronizedStatement(ISynchronizedStatement *node);
-    virtual void visitIdentifierOrTemplateInstance(IIdentifierOrTemplateInstance *node);
+    virtual void visitTemplateDeclaration(ITemplateDeclaration* node);
     virtual void visitTemplateInstance(ITemplateInstance* node);
+    virtual void visitTemplateParameter(ITemplateParameter* node);
     virtual void visitThrowStatement(IThrowStatement *node);
     virtual void visitToken(IToken *node);
     virtual void visitTryStatement(ITryStatement *node);

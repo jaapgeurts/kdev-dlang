@@ -4,6 +4,7 @@ set(dfmt_plugin_SRCS
     dfmt_preferences.cpp
 )
 
+
 ecm_qt_declare_logging_category(dfmt_plugin_SRCS
     HEADER debug.h
     IDENTIFIER DFMT
@@ -19,6 +20,7 @@ kdevplatform_add_plugin(dfmt_plugin
     JSON kdevdfmt_plugin.json
     SOURCES ${dfmt_plugin_SRCS}
 )
+
 
 target_link_libraries(dfmt_plugin
 #    KF5::CoreAddons

@@ -48,7 +48,7 @@ void UseBuilder::visitTypeName(IType *node)
 	if(!node || !currentContext())
 		return;
 
-    // TODO: fixed here
+    // TODO: JG fixed this for template parameters
 	QualifiedIdentifier id;
     if (node->getType2()->getTypeIdentifierPart()) {
         if (node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()) {
@@ -69,6 +69,33 @@ void UseBuilder::visitTypeName(IType *node)
 	if(decl)
 		newUse(node, decl);
 }
+
+void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
+{
+    if(!node || !currentContext())
+		return;
+
+    // TODO: JG fixed this for template parameters
+	QualifiedIdentifier id;
+    if (auto n = node->getTemplateTypeParameter()) {
+        id = identifierForNode(n->getIdentifier());
+    }
+
+    DUContext *context = nullptr;
+	{
+		DUChainReadLocker lock;
+		context = currentContext()->findContextIncluding(editorFindRange(node, 0));
+	}
+	if(!context)
+	{
+		qCDebug(DUCHAIN) << "visitTemplateParameter: No context found for" << id;
+		return;
+	}
+	DeclarationPointer decl = getDeclaration(id, context);
+	if(decl)
+		newUse(node, decl);
+}
+
 
 void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 {
@@ -133,8 +160,12 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 			id.push(Identifier(str));
 			continue;
 		}
-		for(const QString &part : t->type<AbstractType>()->toString().split("::", Qt::SkipEmptyParts))
-			id.push(Identifier(part));
+		{
+            // TODO: JG here or outside the for loop?
+            DUChainReadLocker lock;
+            for(const QString &part : t->type<AbstractType>()->toString().split("::", Qt::SkipEmptyParts))
+                id.push(Identifier(part));
+        }
 	}
 	id.push(identifierForNode(node->getIdentifierOrTemplateInstance()->getIdentifier()));
 	identifierChain.clear();
@@ -162,6 +193,7 @@ void UseBuilder::visitToken(IToken *node)
 	}
 
 	QualifiedIdentifier id = identifierForNode(node);
+    qCDebug(DUCHAIN) << "UseBuilder::visitToken " << id;
 
 	DeclarationPointer decl = getDeclaration(id, context);
 	if(decl)

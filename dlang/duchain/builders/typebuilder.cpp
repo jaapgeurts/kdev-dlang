@@ -41,7 +41,7 @@ void TypeBuilder::visitTypeName(IType *node)
 		injectType<AbstractType>(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
 		return;
 	}
-	// TODO: JG this must change to visiting
+	// TODO: JG this should change to a visit method
 	ITypeIdentifierPart* identPart = node->getType2()->getTypeIdentifierPart();
 	if(identPart) {
       if (identPart->getIdentifierOrTemplateInstance() && identPart->getIdentifierOrTemplateInstance()->getIdentifier())

@@ -58,7 +58,11 @@ DPlugin::~DPlugin()
 ParseJob *DPlugin::createParseJob(const IndexedString &url)
 {
 	qCDebug(D) << "Creating dlang parse job\n";
-	return new DParseJob(url, this);
+    // TODO: only parse files in source directories (not in build directories)
+    if (url.str().contains("build",Qt::CaseSensitivity::CaseInsensitive))
+        return nullptr;
+
+    return new DParseJob(url, this);
 }
 
 QString DPlugin::name() const

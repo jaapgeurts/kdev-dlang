@@ -169,6 +169,13 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			column = f->getStartColumn() + 1;
 			break;
 		}
+        case Kind::templateDeclaration:
+        {
+            auto f = (ITemplateDeclaration*)from;
+            line = f->getStartLine();
+            column = f->getStartColumn()+1;
+            break;
+        }
 		case Kind::type:
 		{
 			//printf("kind is type\n");
@@ -365,6 +372,13 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			}
 			break;
 		}
+		case Kind::templateDeclaration:
+        {
+            auto f = (ITemplateDeclaration*)from;
+            lineEnd = f->getEndLine();
+            columnEnd = f->getEndColumn()+1;
+            break;
+        }
 		case Kind::structBody:
 		{
 			//printf("kind is structBody\n");
@@ -397,10 +411,10 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 		{
 			//printf("kind is unaryExpression\n");
 			IToken *ident = nullptr;
-			if (auto f = ((IPrimaryExpression *)to)->getIdentifierOrTemplateInstance()->getTemplateInstance())
+			if (auto f = ((IUnaryExpression *)to)->getIdentifierOrTemplateInstance()->getTemplateInstance())
                 ident = f->getIdentifier();
             else
-                ident = ((IPrimaryExpression *)to)->getIdentifierOrTemplateInstance()->getIdentifier();
+                ident = ((IUnaryExpression *)to)->getIdentifierOrTemplateInstance()->getIdentifier();
 			lineEnd = ident->getLine();
 			columnEnd = ident->getColumn() + strlen(ident->getText());
 			break;

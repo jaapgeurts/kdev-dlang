@@ -133,7 +133,7 @@ QString DFormatPlugin::formatSource(const QString& text, const QUrl &url, const 
 
 }
 
-QString DFormatPlugin::formatSourceWithStyle(SourceFormatterStyle style,
+QString DFormatPlugin::formatSourceWithStyle(const KDevelop::SourceFormatterStyle& style,
                                 const QString& text,
                                 const QUrl &url,
                                 const QMimeType& mime,

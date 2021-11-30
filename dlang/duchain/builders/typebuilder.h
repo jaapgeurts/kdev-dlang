@@ -23,6 +23,7 @@
 #include <language/duchain/types/abstracttype.h>
 #include <language/duchain/types/functiontype.h>
 
+
 #include "contextbuilder.h"
 #include "duchain/dduchainexport.h"
 #include "parser/dparser.h"
@@ -45,9 +46,9 @@ public:
 	virtual void visitDestructor(IDestructor *node) override;
 	virtual void visitEnumDeclaration(IEnumDeclaration *node) override;
 	virtual void visitEnumMember(IEnumMember *node) override;
-	
+
 	void buildTypeName(KDevelop::QualifiedIdentifier typeName);
-	
+
 	KDevelop::AbstractType::Ptr getLastType()
 	{
 		return lastType();
@@ -55,9 +56,9 @@ public:
 
 protected:
 	virtual void declareVariable(IToken *id, const KDevelop::AbstractType::Ptr &type) = 0;
-	
+
 	KDevelop::QualifiedIdentifier m_contextIdentifier;
-	
+
 	KDevelop::FunctionType::Ptr currentFunctionType;
 
 private:

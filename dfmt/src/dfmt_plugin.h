@@ -26,7 +26,7 @@ public:
     */
     QString formatSource(const QString& text, const QUrl &url, const QMimeType& mime, const QString& leftContext, const QString& rightContext) const override;
 
-    QString formatSourceWithStyle(KDevelop::SourceFormatterStyle style,
+    QString formatSourceWithStyle(const KDevelop::SourceFormatterStyle& style,
                                 const QString& text,
                                 const QUrl &url,
                                 const QMimeType& mime,
