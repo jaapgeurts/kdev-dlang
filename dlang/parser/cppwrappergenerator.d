@@ -232,6 +232,7 @@ void writeExtras() {
         writeln("\tbool succes();");
         writeln("\tIParseMessage message(size_t index);");
         writeln("\tsize_t messageCount();");
+        writeln("\tvoid release();");
         writeln("}");
         writeln();
 
@@ -314,13 +315,16 @@ void writeExtras() {
         writeln("\tvirtual bool succes() = 0;");
         writeln("\tvirtual IParseMessage* message(uint index) = 0;");
         writeln("\tvirtual uint messageCount() = 0;");
+        writeln("\tvirtual void release() = 0;");
         writeln("protected: //Methods.");
         writeln("\t~IParseResult() = default;");
         writeln("};");
         writeln();
 
-        writeln("IParseResult *parseSourceFile(const char *sourceFile, const char *sourceData);");
-        writeln("void freeAst(IParseResult *parseResult);");
+        writeln("extern \"C\" {");
+        writeln("\tIParseResult *parseSourceFile(const char *sourceFile, const char *sourceData);");
+//        writeln("\tvoid freeAst(const char* sourceFile);");
+        writeln("}");
         writeln();
 
         //Kind enum.

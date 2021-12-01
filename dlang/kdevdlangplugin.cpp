@@ -62,7 +62,11 @@ ParseJob *DPlugin::createParseJob(const IndexedString &url)
     if (url.str().contains("build",Qt::CaseSensitivity::CaseInsensitive))
         return nullptr;
 
+    // Queue jobs so that one 1 is execute at a time
+
     return new DParseJob(url, this);
+//     ParseJob* pj = new DParseJob(url, this);
+//     connect(pj,&ParseJob::
 }
 
 QString DPlugin::name() const

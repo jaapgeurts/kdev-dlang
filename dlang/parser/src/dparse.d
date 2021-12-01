@@ -1,8 +1,10 @@
 module dparser;
 
-import core.stdc.signal;
 import std.stdio;
 import std.string : toStringz;
+
+import core.stdc.signal;
+import core.memory;
 
 import dparse.lexer;
 import dparse.parser;
@@ -222,18 +224,20 @@ extern(C) __gshared string[] rt_options = [ "gcopt=parallel:0 profile:1" ];
 extern(C++) void initDParser()
 {
 	import core.runtime;
+
 	Runtime.initialize();
+    //GC.disable(); // disable the GC, but manually collect memory
+
 	writeln("initDParser()");
 }
 
 extern(C++) void deinitDParser()
 {
-	writeln("deinitDParser()");
 	import core.runtime;
+
+	writeln("deinitDParser()");
 	Runtime.terminate();
 }
-
-
 
 class ParseMessage : IParseMessage {
 
@@ -258,6 +262,12 @@ private:
 
 class ParseResult : IParseResult {
 
+    this () {
+        // Make sure we don't disappear
+        GC.addRoot(cast(void*)this);
+        GC.setAttr(cast(void*)this, GC.BlkAttr.NO_MOVE);
+    }
+
     ~this() {
         writeln("***** Parse result destructor");
     }
@@ -268,10 +278,24 @@ class ParseResult : IParseResult {
          messages ~= new ParseMessage(message,isError ? ParseMsgType.Error : ParseMsgType.Warning,line,column);
     }
 
-	extern(C++) IModule ast() { return root; }
-	extern(C++) bool succes() { return root !is null; }
-	extern(C++) IParseMessage message(size_t index) { return messages[index]; }
-	extern(C++) size_t messageCount() { return messages.length; }
+	extern(C++) override IModule ast() { return root; }
+	extern(C++) override bool succes() { return root !is null; }
+	extern(C++) override IParseMessage message(size_t index) { return messages[index]; }
+	extern(C++) override size_t messageCount() { return messages.length; }
+
+	extern(C++) override void release() {
+        import std.stdio;
+        import core.thread;
+
+        writeln("Releasing back to GC: ", cast(void*)this);
+
+        GC.removeRoot(  cast(void*)this);
+        GC.clrAttr(  cast(void*)this, GC.BlkAttr.NO_MOVE);
+        //GC.collect();
+
+        // Don't enable this. It will crash the app
+//        thread_detachThis();
+	}
 
 
     RollbackAllocator* getAllocator() {
@@ -285,17 +309,15 @@ private:
     RollbackAllocator m_allocator;
 }
 
-extern(C++) IParseResult parseSourceFile(const char* sourceFile, const char * sourceData)
+extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sourceData)
 {
 
 	try
 	{
-		import core.memory;
 		import core.thread;
 		import std.string;
         import std.process;
 
-        GC.disable(); // disable the GC, but manually collect memory
 		thread_attachThis();
 		writefln("Thread acquired: %x", thisThreadID);
 
@@ -311,9 +333,6 @@ extern(C++) IParseResult parseSourceFile(const char* sourceFile, const char * so
 
         ParseResult parseResult = new ParseResult();
 
-        GC.addRoot(cast(void*)parseResult);
-        GC.setAttr(cast(void*)parseResult, GC.BlkAttr.NO_MOVE);
-
 		auto source = cast(ubyte[])fromStringz(sourceData);
 		auto tokens = getTokensForParser(source, config, new StringCache(StringCache.defaultBucketCount));
 		auto mod = parseModule(tokens, config.fileName, parseResult.getAllocator(), &parseResult.addMessage, &errCnt, &wrnCnt);
@@ -323,34 +342,15 @@ extern(C++) IParseResult parseSourceFile(const char* sourceFile, const char * so
 
         parseResult.setAst(new CModule(mod));
 
+        writeln("Create: Parse result is: ", cast(void*)parseResult);
+
         return parseResult;
 	}
 	catch(Throwable e)
 	{
 		writefln("e: %s", e);
-		//raise(SIGABRT);
-		return null;
+		raise(SIGABRT);
+		//return null;
 	}
+	assert(0);
 }
-
-extern(C++) void freeAst(IParseResult parseResult) {
-    import core.memory;
-    import std.stdio;
-    import core.thread;
-    // Remove old AST if existing and remove the parseresult
-    // it won't remove the idup string from above.
-    // TODO: check memory leaks. Suspected are the new CXxxxxXxx object calls
-    // in the AST wrapper classes
-    writeln("Releasing parseresult back to GC");
-    GC.removeRoot(cast(void*)parseResult);
-    GC.clrAttr(cast(void*)parseResult, GC.BlkAttr.NO_MOVE);
-//    GC.free(cast(void*)r);
-//    r.destroy();
-    // TODO: MUST collect lost data
-    //GC.collect();
-//    thread_detachThis();
-}
-
-
-
-//__gshared ParseResult[string] keepAlive;

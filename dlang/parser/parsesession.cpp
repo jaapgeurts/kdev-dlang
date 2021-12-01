@@ -26,6 +26,8 @@
 #include <QProcess>
 #include <QUrl>
 
+#include <QThread>
+
 #include "duchain/duchaindebug.h"
 
 
@@ -49,16 +51,19 @@ ParseSession::ParseSession(const QByteArray &contents, int priority, bool append
 
 ParseSession::~ParseSession()
 {
-    qCDebug(DUCHAIN) << "Freeing parsesession";
+    qCDebug(DUCHAIN) << "Thread: " << QThread::currentThreadId() <<  ", Freeing parsesession: " << m_document;
     if (m_parseresult) {
-        freeAst(m_parseresult);
+        qCDebug(DUCHAIN) << "Sending parseresult: " << Qt::hex << m_parseresult;
+        m_parseresult-> release();
         m_parseresult = nullptr;
     }
 }
 
 bool ParseSession::startParsing()
 {
-    m_parseresult = parseSourceFile(m_document.c_str(),m_contents.data());
+    m_parseresult = parseSourceFile(m_document.str().toLocal8Bit().data(),m_contents.data());
+
+    qCDebug(DUCHAIN) << "received parseresult: " << Qt::hex << m_parseresult;
 
     if (m_parseresult == nullptr) {
         qCDebug(DUCHAIN) << "Failed to parse: " << m_document;
@@ -294,6 +299,16 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			}
 			break;
 		}
+        case Kind::templateParameter:
+        {
+            auto f = (ITemplateParameter*)from;
+			if(f)
+			{
+				line = f->getStartLine();
+				column = f->getStartColumn();
+			}
+			break;
+        }
 		default:
 			printf("Unhandled from kind: %s(%d)\n", kindToString(to->getKind()), (uint8_t)to->getKind());
 
@@ -508,6 +523,8 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 				lineEnd = f->getLine();
                 const char* s = f->getText();
                 if (s == nullptr) { // some tokens have no text.
+                    // TODO: can this be removed
+                    // test with ABORT()
                     printf("******#### token text is NULL on col,line: %d,%d\n",(int)lineEnd,(int)f->getColumn());
                     columnEnd = f->getColumn();
                 } else {
@@ -516,6 +533,16 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			}
 			break;
 		}
+        case Kind::templateParameter:
+        {
+            auto t = (ITemplateParameter*)to;
+			if(t)
+			{
+				lineEnd = t->getEndLine();
+				columnEnd = t->getEndColumn();
+			}
+			break;
+        }
 		default:
 			printf("Unhandled to kind: %s(%d)\n", kindToString(to->getKind()), (uint8_t)to->getKind());
 	}
@@ -556,7 +583,8 @@ void ParseSession::setCurrentDocument(const IndexedString &document)
  */
 QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier package)
 {
-
+    qCDebug(DUCHAIN) << "Thread: " << QThread::currentThreadId() <<  ", contextForImport: " << m_document;
+    qCDebug(DUCHAIN) << "QualifiedIdentifier package: " << package;
 	QStringList files;
 	if(files.empty())
 	{

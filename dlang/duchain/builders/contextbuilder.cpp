@@ -119,7 +119,8 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode ( IIdentifierOrT
 KDevelop::QualifiedIdentifier ContextBuilder::identifierForIndex(qint64 index)
 {
 	Q_UNUSED(index)
-	printf("TODO: Implement indentifierForIndex\n");
+    // TODO: implement
+	qCDebug(DUCHAIN) << "TODO: Implement " << __FUNCTION__ << " (" << __FILE__ << ":" <<__LINE__<< ")";
 	return QualifiedIdentifier();
 }
 
@@ -165,7 +166,6 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(node->getIdentifierChain()));
 	if(contexts.length() > 0 && node->getIdentifierChain()->numIdentifiers() > 0) {
 		currentContext()->addImportedParentContext(contexts[0], CursorInRevision(node->getIdentifierChain()->getIdentifier(0)->getLine(), node->getIdentifierChain()->getIdentifier(0)->getColumn()));
-        qCDebug(DUCHAIN) << "Adding importedParentContext";
     }
 	topContext()->updateImportsCache();
 }
@@ -621,25 +621,6 @@ void ContextBuilder::visitTemplateParameter(ITemplateParameter* node)
 {
     Q_UNUSED(node);
 }
-// {
-//     if (auto n = node->getTemplateTypeParameter()) {
-//
-//         visitToken(n->getIdentifier());
-//     }
-//     if (auto n = node->getTemplateAliasParameter()) {
-//         qCDebug(DUCHAIN) << "Unhandled template alias parameter";
-//     }
-//     if (auto n = node->getTemplateThisParameter()) {
-//         qCDebug(DUCHAIN) << "Unhandled template this parameter";
-//     }
-//     if (auto n = node->getTemplateTupleParameter()) {
-//         qCDebug(DUCHAIN) << "Unhandled template tuple parameter";
-//     }
-//     if (auto n = node->getTemplateValueParameter()) {
-//         qCDebug(DUCHAIN) << "Unhandled template value parameter";
-//     }
-// }
-
 
 void ContextBuilder::visitTemplateInstance ( ITemplateInstance* node )
 {

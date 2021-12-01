@@ -86,7 +86,7 @@ public:
                     KDevelop::IProblem::Severity severity = KDevelop::IProblem::Warning );
 
     /**
-     * Returns the top node of the AST after parsing
+     * Returns the root AST node after parsing
      */
     INode* ast() const;
 

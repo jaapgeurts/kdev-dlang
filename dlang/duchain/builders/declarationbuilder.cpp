@@ -259,10 +259,10 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 	DUChainWriteLocker lock;
 	QualifiedIdentifier import = identifierForNode(node->getIdentifierChain());
     // TODO: JG consider making ImportDeclaration class
+    qCDebug(DUCHAIN) << "Detected import: " << import;
 	NamespaceAliasDeclaration *importDecl = openDefinition<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), editorFindRange(node->getIdentifierChain(), 0));
 	importDecl->setImportIdentifier(import);
-    // TODO: JG should be an import kind
-    //importDecl->setKind(Declaration::Import);
+    importDecl->setKind(Declaration::Import);
 	closeDeclaration();
 	DeclarationBuilderBase::visitSingleImport(node);
 }

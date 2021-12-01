@@ -66,7 +66,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 		return;
 
 	ProblemPointer p = readContents();
-	if(p )
+	if(p) // there are problems
 		return abortJob();
 
 	QByteArray code = contents().contents;
@@ -106,7 +106,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	qCDebug(D) << "Job features: " << newFeatures;
 	qCDebug(D) << "Job priority: " << parsePriority();
 
-	qCDebug(D) << document();
+	qCDebug(D) << "Before D parsing of document: " << document();
 
     // The actual parsing is done in the session
     bool parseSuccess = session.startParsing();
