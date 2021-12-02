@@ -172,10 +172,9 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 
 void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 {
-    // NOTE: Context must be opened here, because parameter variables
-    // are part of the function context, not of the containing context.
+    // NOTE: Context must be opened here(not near the block statement) because
+    // parameter variables are part of the function context, not of the containing context.
     openContext(node, editorFindRange(node->getReturnType(), node->getFunctionBody()),DUContext::Function, node->getName());
-
 
 	if(node->getParameters())
 	{
@@ -253,7 +252,6 @@ void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *
 	}
 }
 
-
 void ContextBuilder::visitDeclaration(IDeclaration *node)
 {
 	if(auto n = node->getClassDeclaration())
@@ -281,12 +279,13 @@ void ContextBuilder::visitDeclaration(IDeclaration *node)
     else if (auto n = node->getTemplateDeclaration())
         visitTemplateDeclaration(n);
 
-	for(size_t i=0; i<node->numDeclarations(); i++)
+    for(size_t i=0; i<node->numDeclarations(); i++)
 		visitDeclaration(node->getDeclaration(i));
 }
 
 void ContextBuilder::visitClassDeclaration(IClassDeclaration *node)
 {
+    // Contexts are opened when block statements are encountered
 	if(auto n = node->getBaseClassList())
 		visitBaseClassList(n);
 	if(auto n = node->getStructBody())
@@ -295,12 +294,14 @@ void ContextBuilder::visitClassDeclaration(IClassDeclaration *node)
 
 void ContextBuilder::visitStructDeclaration(IStructDeclaration *node)
 {
+    // Contexts are opened when block statements are encountered
 	if(auto n = node->getStructBody())
 		visitStructBody(n);
 }
 
 void ContextBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 {
+    // Contexts are opened when block statements are encountered
 	if(auto n = node->getStructBody())
 		visitStructBody(n);
 }
@@ -313,6 +314,7 @@ void ContextBuilder::visitBaseClassList(IBaseClassList *node)
 
 void ContextBuilder::visitBaseClass(IBaseClass *node)
 {
+    // TODO: JG: deal with template here too
 	if(auto n = node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance())
 	{
         // TODO: JG changed from visitSymbol to visitToken

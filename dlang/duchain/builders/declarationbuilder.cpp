@@ -97,11 +97,10 @@ void DeclarationBuilder::visitClassDeclaration(IClassDeclaration *node)
 	if(node->getComment())
 		setComment(node->getComment());
 	DUChainWriteLocker lock;
-    // TODO: JG: class declarations don't have correct name
-	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), 0));
+	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), nullptr));
 	dec->setType(lastType());
 	dec->setKind(Declaration::Type);
-	dec->setInternalContext(lastContext());
+    dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Class);
 	closeDeclaration();
 	inClassScope = false;

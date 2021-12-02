@@ -48,17 +48,25 @@ void UseBuilder::visitTypeName(IType *node)
 	if(!node || !currentContext())
 		return;
 
-    // TODO: JG fixed this for template parameters
-	QualifiedIdentifier id;
-    if (node->getType2()->getTypeIdentifierPart()) {
-        if (node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()) {
-            id = identifierForNode(node->getType2()->getTypeIdentifierPart()->getIdentifierOrTemplateInstance()->getIdentifier());
-        }
+    ITypeIdentifierPart* node2 = node->getType2()->getTypeIdentifierPart();
+
+    // Get the identifier either from the identifier or template
+    IToken* ident = nullptr;
+    if (node2->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
+        ident = node2->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
     }
+    if (ident == nullptr) {
+        ident = node2->getIdentifierOrTemplateInstance()->getIdentifier();
+    }
+    if (ident == nullptr) {
+        return;
+    }
+
+    QualifiedIdentifier id(identifierForNode(ident));
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(node, 0));
+		context = currentContext()->findContextIncluding(editorFindRange(ident, 0));
 	}
 	if(!context)
 	{
@@ -67,7 +75,7 @@ void UseBuilder::visitTypeName(IType *node)
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);
 	if(decl)
-		newUse(node, decl);
+		newUse(ident, decl);
 }
 
 void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
@@ -75,10 +83,12 @@ void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
     if(!node || !currentContext())
 		return;
 
-    // TODO: JG fixed this for template parameters
 	QualifiedIdentifier id;
     if (auto n = node->getTemplateTypeParameter()) {
         id = identifierForNode(n->getIdentifier());
+    }
+    else {
+        qCDebug(DUCHAIN) << "QualifiedIdentifier not found: " << id;
     }
 
     DUContext *context = nullptr;

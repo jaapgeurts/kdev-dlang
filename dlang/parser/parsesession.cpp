@@ -155,6 +155,18 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			}
 			break;
 		}
+		case Kind::interfaceDeclaration:
+		{
+			//printf("kind is classDeclaration\n");
+			auto f = (IInterfaceDeclaration *)from;
+			if(f->getStructBody())
+			{
+				auto g = (IStructBody *)f->getStructBody();
+				line = g->getStartLine();
+				column = g->getStartColumn() + 1;
+			}
+			break;
+		}
 		case Kind::structDeclaration:
 		{
 			auto f = (IStructDeclaration *)from;
@@ -183,7 +195,7 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
         }
 		case Kind::type:
 		{
-			//printf("kind is type\n");
+			// printf("kind is type\n");
 			auto f = (IType *)from;
 			line = f->getStartLine();
 			column = f->getStartColumn();
@@ -368,6 +380,18 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 		{
 			//printf("kind is classDeclaration\n");
 			auto f = (IClassDeclaration *)to;
+			if(f->getStructBody())
+			{
+				auto g = (IStructBody *)f->getStructBody();
+				lineEnd = g->getEndLine();
+				columnEnd = g->getEndColumn()+1;
+			}
+			break;
+		}
+        case Kind::interfaceDeclaration:
+		{
+			//printf("kind is classDeclaration\n");
+			auto f = (IInterfaceDeclaration *)to;
 			if(f->getStructBody())
 			{
 				auto g = (IStructBody *)f->getStructBody();

@@ -55,6 +55,7 @@ DPlugin::~DPlugin()
 	deinitDParser();
 }
 
+// NOTE must not run multithreaded because libdparse is not re-entrant
 ParseJob *DPlugin::createParseJob(const IndexedString &url)
 {
 	qCDebug(D) << "Creating dlang parse job\n";

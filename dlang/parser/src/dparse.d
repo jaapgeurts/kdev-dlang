@@ -291,7 +291,11 @@ class ParseResult : IParseResult {
 
         GC.removeRoot(  cast(void*)this);
         GC.clrAttr(  cast(void*)this, GC.BlkAttr.NO_MOVE);
-        //GC.collect();
+
+        // TODO: Collect here or not? Does it matter for memory available to the OS?
+        // Memory only gets released on an unload of this plugin or a next allocation
+        // when out-of-mem because the D GC is conservative.
+        // GC.collect();
 
         // Don't enable this. It will crash the app
 //        thread_detachThis();
