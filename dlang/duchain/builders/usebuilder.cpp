@@ -48,17 +48,18 @@ void UseBuilder::visitTypeName(IType *node)
 	if(!node || !currentContext())
 		return;
 
-    ITypeIdentifierPart* node2 = node->getType2()->getTypeIdentifierPart();
-
-    // Get the identifier either from the identifier or template
     IToken* ident = nullptr;
-    if (node2->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
-        ident = node2->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
-    }
-    if (ident == nullptr) {
-        ident = node2->getIdentifierOrTemplateInstance()->getIdentifier();
-    }
-    if (ident == nullptr) {
+    if (auto node2 = node->getType2()->getTypeIdentifierPart()) {
+
+        // Get the identifier either from the identifier or template
+        if (node2->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
+            ident = node2->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
+        }
+        if (ident == nullptr) {
+            ident = node2->getIdentifierOrTemplateInstance()->getIdentifier();
+        }
+    } else {
+        // must be built in type
         return;
     }
 

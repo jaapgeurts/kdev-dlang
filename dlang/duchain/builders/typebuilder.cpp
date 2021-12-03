@@ -188,55 +188,33 @@ void TypeBuilder::visitDestructor(IDestructor *node)
 
 void TypeBuilder::visitClassDeclaration(IClassDeclaration *node)
 {
-	openType<KDevelop::StructureType>(KDevelop::StructureType::Ptr(new KDevelop::StructureType));
-	{
-		DUChainWriteLocker lock;
-		openContext(node, editorFindRange(node, 0), DUContext::ContextType::Class, node->getName());
-	}
+
+    StructureType::Ptr structureType = KDevelop::StructureType::Ptr(new KDevelop::StructureType);
+    currentStructureType = structureType;
+    openType<KDevelop::StructureType>(structureType);
+
 	TypeBuilderBase::visitClassDeclaration(node);
-	{
-		DUChainWriteLocker lock;
-		//currentType<KDevelop::StructureType>()->setContext(currentContext());
-		closeContext();
-	}
-	//currentType<KDevelop::StructureType>()->setPrettyName(node->getName()->getString());
-	//currentType<KDevelop::StructureType>()->setStructureType();
 	closeType();
 }
 
 void TypeBuilder::visitStructDeclaration(IStructDeclaration *node)
 {
-	openType<KDevelop::StructureType>(KDevelop::StructureType::Ptr(new KDevelop::StructureType));
-	{
-		DUChainWriteLocker lock;
-		openContext(node, editorFindRange(node, 0), DUContext::ContextType::Class, node->getName());
-	}
+    StructureType::Ptr structureType = KDevelop::StructureType::Ptr(new KDevelop::StructureType);
+    currentStructureType = structureType;
+
+    openType<KDevelop::StructureType>(structureType);
 	TypeBuilderBase::visitStructDeclaration(node);
-	{
-		DUChainWriteLocker lock;
-		//currentType<KDevelop::StructureType>()->setContext(currentContext());
-		closeContext();
-	}
-	//currentType<KDevelop::StructureType>()->setPrettyName(node->getName()->getString());
-	//currentType<KDevelop::StructureType>()->setStructureType();
+
 	closeType();
 }
 
 void TypeBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 {
-	openType<KDevelop::StructureType>(KDevelop::StructureType::Ptr(new KDevelop::StructureType));
-	{
-		DUChainWriteLocker lock;
-		openContext(node, editorFindRange(node, 0), DUContext::ContextType::Class, node->getName());
-	}
+    StructureType::Ptr structureType = KDevelop::StructureType::Ptr(new KDevelop::StructureType);
+    currentStructureType = structureType;
+    openType<KDevelop::StructureType>(structureType);
+
 	TypeBuilderBase::visitInterfaceDeclaration(node);
-	{
-		DUChainWriteLocker lock;
-		//currentType<KDevelop::StructureType>()->setContext(currentContext());
-		closeContext();
-	}
-	//currentType<KDevelop::StructureType>()->setPrettyName(node->getName()->getString());
-	//currentType<KDevelop::StructureType>()->setStructureType();
 	closeType();
 }
 

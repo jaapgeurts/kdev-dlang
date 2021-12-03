@@ -98,7 +98,8 @@ void DeclarationBuilder::visitClassDeclaration(IClassDeclaration *node)
 		setComment(node->getComment());
 	DUChainWriteLocker lock;
 	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), nullptr));
-	dec->setType(lastType());
+    currentStructureType->setDeclaration(dec);
+	dec->setType(currentStructureType);
 	dec->setKind(Declaration::Type);
     dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Class);
@@ -113,8 +114,9 @@ void DeclarationBuilder::visitStructDeclaration(IStructDeclaration *node)
 	if(node->getComment())
 		setComment(node->getComment());
 	DUChainWriteLocker lock;
-	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), 0));
-	dec->setType(lastType());
+	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), nullptr));
+    currentStructureType->setDeclaration(dec);
+	dec->setType(currentStructureType);
 	dec->setKind(Declaration::Type);
 	dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Struct);
@@ -130,7 +132,7 @@ void DeclarationBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
     if(node->getComment())
 		setComment(node->getComment());
     DUChainWriteLocker lock;
-    TemplateDeclaration* dec = openDefinition<TemplateDeclaration>(identifierForNode(node->getName()),editorFindRange(node->getName(),0));
+    TemplateDeclaration* dec = openDefinition<TemplateDeclaration>(identifierForNode(node->getName()),editorFindRange(node->getName(),nullptr));
 	dec->setKind(Declaration::Template);
 	dec->setInternalContext(lastContext());
 	closeDeclaration();
@@ -170,9 +172,12 @@ void DeclarationBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 	if(node->getComment())
 		setComment(node->getComment());
 	DUChainWriteLocker lock;
-	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), 0));
-	dec->setType(lastType());
+	ClassDeclaration *dec = openDefinition<ClassDeclaration>(identifierForNode(node->getName()), editorFindRange(node->getName(), nullptr));
 	dec->setKind(Declaration::Type);
+    // TODO: JG set access visibility
+    //dec->setAccessPolicy();
+    currentStructureType->setDeclaration(dec);
+    dec->setType(currentStructureType);
 	dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Interface);
 	closeDeclaration();

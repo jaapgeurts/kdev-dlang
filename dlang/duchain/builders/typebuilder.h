@@ -60,6 +60,7 @@ protected:
 	KDevelop::QualifiedIdentifier m_contextIdentifier;
 
 	KDevelop::FunctionType::Ptr currentFunctionType;
+    KDevelop::StructureType::Ptr currentStructureType;
 
 private:
 	int enumValueCounter;
