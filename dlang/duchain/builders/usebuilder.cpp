@@ -64,6 +64,9 @@ void UseBuilder::visitTypeName(IType *node)
     }
 
     QualifiedIdentifier id(identifierForNode(ident));
+
+    qCDebug(DUCHAIN) << "Registering use for: " << id;
+
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
@@ -195,7 +198,7 @@ void UseBuilder::visitToken(IToken *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(node, 0));
+		context = currentContext()->findContextIncluding(editorFindRange(node, nullptr));
 	}
 	if(!context)
 	{

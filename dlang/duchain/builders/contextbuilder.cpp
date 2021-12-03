@@ -176,6 +176,8 @@ void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
     // parameter variables are part of the function context, not of the containing context.
     openContext(node, editorFindRange(node->getReturnType(), node->getFunctionBody()),DUContext::ContextType::Function, node->getName());
 
+    visitTypeName(node->getReturnType());
+
 	if(node->getParameters())
 	{
 		for(size_t i=0; i<node->getParameters()->numParameters(); i++)
@@ -287,7 +289,7 @@ void ContextBuilder::visitClassDeclaration(IClassDeclaration *node)
 {
     // open the context here
     DUChainWriteLocker lock;
-    openContext(node, editorFindRange(node, 0), DUContext::ContextType::Class, node->getName());
+    openContext(node, editorFindRange(node, nullptr), DUContext::ContextType::Class, node->getName());
 
     // Contexts are opened when block statements are encountered
 	if(auto n = node->getBaseClassList())
@@ -302,7 +304,7 @@ void ContextBuilder::visitStructDeclaration(IStructDeclaration *node)
 {
     // open the context here
     DUChainWriteLocker lock;
-    openContext(node, editorFindRange(node, 0), DUContext::ContextType::Class, node->getName());
+    openContext(node, editorFindRange(node, nullptr), DUContext::ContextType::Class, node->getName());
 
     // Contexts are opened when block statements are encountered
 	if(auto n = node->getStructBody())
