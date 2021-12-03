@@ -117,14 +117,16 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			//printf("kind is functionBody\n");
 			auto f = (IFunctionBody *)from;
             // TODO: JG deal with SpecifiedFunctionBody and MissingFunctionBody
-            if (f->getSpecifiedFunctionBody()) {
-                if(f->getSpecifiedFunctionBody()->getBlockStatement())
-                {
-                    auto g = (IBlockStatement *)f->getSpecifiedFunctionBody()->getBlockStatement();
-                    line = g->getStartLine();
-                    column = g->getStartColumn() + 1;
-                }
-            }
+            line = f->getStartLine();
+            column = f->getStartColumn();
+//             if (f->getSpecifiedFunctionBody()) {
+//                 if(f->getSpecifiedFunctionBody()->getBlockStatement())
+//                 {
+//                     auto g = (IBlockStatement *)f->getSpecifiedFunctionBody()->getBlockStatement();
+//                     line = g->getStartLine();
+//                     column = g->getStartColumn() + 1;
+//                 }
+//             }
 			break;
 		}
 		case Kind::blockStatement:
@@ -350,14 +352,17 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 			//printf("kind is functionBody\n");
 			auto f = (IFunctionBody *)to;
             // TODO: JG deal with MissingFunctionBody
-            if (f->getSpecifiedFunctionBody()) {
-                if(f->getSpecifiedFunctionBody()->getBlockStatement())
-                {
-                    auto g = (IBlockStatement *)f->getSpecifiedFunctionBody()->getBlockStatement();
-                    lineEnd = g->getEndLine();
-                    columnEnd = g->getEndColumn()+1;
-                }
-            }
+            lineEnd = f->getEndLine();
+            columnEnd = f->getEndColumn();
+
+//             if (f->getSpecifiedFunctionBody()) {
+//                 if(f->getSpecifiedFunctionBody()->getBlockStatement())
+//                 {
+//                     auto g = (IBlockStatement *)f->getSpecifiedFunctionBody()->getBlockStatement();
+//                     lineEnd = g->getEndLine();
+//                     columnEnd = g->getEndColumn()+1;
+//                 }
+//             }
 			break;
 		}
 		case Kind::blockStatement:

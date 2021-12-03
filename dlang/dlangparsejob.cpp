@@ -162,11 +162,11 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
     DUChain::self()->emitUpdateReady(document(), duChain());
 
     // Dumps DU Chain to output
-//     	{
-// 		DUChainReadLocker lock;
-// 		DUChainDumper dumper;
-// 		dumper.dump(context);
-// 	}
+    	{
+		DUChainReadLocker lock;
+		DUChainDumper dumper;
+		dumper.dump(context);
+	}
 
 	// BEGIN JG
 // 	uint count;

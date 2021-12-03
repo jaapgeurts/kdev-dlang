@@ -40,6 +40,7 @@ ReferencedTopDUContext UseBuilder::build(const IndexedString &url, INode *node,c
 
 void UseBuilder::startVisiting(INode *node)
 {
+	qCDebug(DUCHAIN) << "Uses builder startVisiting";
 	UseBuilderBase::startVisiting(node);
 }
 
@@ -64,8 +65,6 @@ void UseBuilder::visitTypeName(IType *node)
     }
 
     QualifiedIdentifier id(identifierForNode(ident));
-
-    qCDebug(DUCHAIN) << "Registering use for: " << id;
 
 	DUContext *context = nullptr;
 	{
@@ -118,6 +117,8 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	if(!node->getIdentifierOrTemplateInstance() || !currentContext())
 		return;
 
+    // TODO: JG instead of this can we skip this and let it descend to visitToken?
+
     // Get the identifier either from the identifier or template
     IToken* ident = nullptr;
     if (node->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
@@ -134,7 +135,7 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(ident, 0));
+		context = currentContext()->findContextIncluding(editorFindRange(ident, nullptr));
 	}
 	if(!context)
 	{
@@ -148,6 +149,7 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 
 void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 {
+    // JG: can also be a new expression
 	UseBuilderBase::visitUnaryExpression(node);
 	if(!node->getIdentifierOrTemplateInstance() || !node->getIdentifierOrTemplateInstance()->getIdentifier() || !currentContext())
 		return;
@@ -155,7 +157,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(node->getIdentifierOrTemplateInstance()->getIdentifier(), 0));
+		context = currentContext()->findContextIncluding(editorFindRange(node->getIdentifierOrTemplateInstance()->getIdentifier(), nullptr));
 	}
 	if(!context)
 	{

@@ -42,7 +42,7 @@ KDevelop::ReferencedTopDUContext ContextBuilder::build(const KDevelop::IndexedSt
 
 void ContextBuilder::startVisiting(INode *node)
 {
-    qCDebug(DUCHAIN) << "StartVisiting";
+    qCDebug(DUCHAIN) << "ContextBuilder StartVisiting";
 	if(!node || node == (INode *)0x1)
 		return;
 
@@ -172,11 +172,18 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 
 void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 {
+
+    // Visit the typename before opening any context
+    visitTypeName(node->getReturnType());
+
     // NOTE: Context must be opened here(not near the block statement) because
     // parameter variables are part of the function context, not of the containing context.
-    openContext(node, editorFindRange(node->getReturnType(), node->getFunctionBody()),DUContext::ContextType::Function, node->getName());
 
-    visitTypeName(node->getReturnType());
+    // TODO: JG: deal with missingFunctionBody
+    bool mustOpenContext = node->getFunctionBody()->getSpecifiedFunctionBody() != nullptr;
+    if(mustOpenContext) {
+        openContext(node, editorFindRange(node->getFunctionBody(), nullptr),DUContext::ContextType::Function, node->getName());
+    }
 
 	if(node->getParameters())
 	{
@@ -189,7 +196,9 @@ void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 
 	if(auto n = node->getFunctionBody())
 		visitBody(n, false);
-	closeContext();
+
+    if (mustOpenContext)
+        closeContext();
 }
 
 void ContextBuilder::visitConstructor(IConstructor *node)
@@ -287,13 +296,13 @@ void ContextBuilder::visitDeclaration(IDeclaration *node)
 
 void ContextBuilder::visitClassDeclaration(IClassDeclaration *node)
 {
-    // open the context here
-    DUChainWriteLocker lock;
-    openContext(node, editorFindRange(node, nullptr), DUContext::ContextType::Class, node->getName());
-
-    // Contexts are opened when block statements are encountered
 	if(auto n = node->getBaseClassList())
 		visitBaseClassList(n);
+
+    // open the context here
+    DUChainWriteLocker lock;
+    openContext(node, editorFindRange(node->getStructBody(), nullptr), DUContext::ContextType::Class, node->getName());
+
 	if(auto n = node->getStructBody())
 		visitStructBody(n);
 
@@ -304,7 +313,7 @@ void ContextBuilder::visitStructDeclaration(IStructDeclaration *node)
 {
     // open the context here
     DUChainWriteLocker lock;
-    openContext(node, editorFindRange(node, nullptr), DUContext::ContextType::Class, node->getName());
+    openContext(node, editorFindRange(node->getStructBody(), nullptr), DUContext::ContextType::Class, node->getName());
 
     // Contexts are opened when block statements are encountered
 	if(auto n = node->getStructBody())
@@ -317,7 +326,7 @@ void ContextBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 {
     // open the context here
     DUChainWriteLocker lock;
-    openContext(node, editorFindRange(node, 0), DUContext::ContextType::Class, node->getName());
+    openContext(node, editorFindRange(node->getStructBody(), nullptr), DUContext::ContextType::Class, node->getName());
 
 	if(auto n = node->getStructBody())
 		visitStructBody(n);
@@ -342,8 +351,6 @@ void ContextBuilder::visitBaseClass(IBaseClass *node)
         else
 			visitToken(n->getIdentifier());
 	}
-//     if(auto t = node->getType2()->getType())
-//         visitTypeName(t);
 }
 
 void ContextBuilder::visitStructBody(IStructBody *node)
