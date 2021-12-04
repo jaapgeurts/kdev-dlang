@@ -151,8 +151,23 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 {
     // JG: can also be a new expression
 	UseBuilderBase::visitUnaryExpression(node);
-	if(!node->getIdentifierOrTemplateInstance() || !node->getIdentifierOrTemplateInstance()->getIdentifier() || !currentContext())
+	if(!node->getIdentifierOrTemplateInstance()
+        || !node->getIdentifierOrTemplateInstance()->getIdentifier()
+        || !currentContext())
 		return;
+
+    // Get the identifier either from the identifier or template
+    IToken* ident = nullptr;
+
+    if (node->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
+        ident = node->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
+    }
+    if (ident == nullptr) {
+        ident = node->getIdentifierOrTemplateInstance()->getIdentifier();
+    }
+    if (ident == nullptr) {
+        return;
+    }
 
 	DUContext *context = nullptr;
 	{

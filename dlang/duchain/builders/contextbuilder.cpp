@@ -686,6 +686,8 @@ void ContextBuilder::visitUnaryExpression(IUnaryExpression *node)
 		visitAssertExpression(n);
     else if (auto n = node->getIndexExpression())
         visitIndexExpression(n);
+    else if (auto n= node->getNewExpression())
+        visitTypeName(n->getType());
 }
 
 void ContextBuilder::visitAssignExpression(IAssignExpression *node)
