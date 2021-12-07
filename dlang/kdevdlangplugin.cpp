@@ -22,9 +22,18 @@
 #include <ddebug.h>
 #include <KPluginFactory>
 #include <KAboutData>
+
 #include <language/codecompletion/codecompletion.h>
+#include <language/duchain/use.h>
+#include <language/duchain/duchainutils.h>
+#include <language/editor/documentcursor.h>
+
 #include <interfaces/icore.h>
 #include <interfaces/ilanguagecontroller.h>
+
+#include "duchain/builders/templatedeclaration.h"
+#include "duchain/navigationwidget.h"
+#include "duchain/helper.h"
 
 #include "codecompletion/model.h"
 #include "dlangparsejob.h"
@@ -42,6 +51,13 @@ DPlugin::DPlugin(QObject *parent, const QVariantList &) : KDevelop::IPlugin("kde
 
 	qCDebug(D) << "D Language Plugin is loaded\n";
 
+    // If this is included: then error:
+    // kf.xmlgui: cannot find .rc file "kdevdlangplugin.rc" for component "kdevdlangplugin"
+
+   // setXMLFile( QStringLiteral("kdevdlangplugin.rc") );
+
+   // dlang::Helper::registerDUChainItems();
+
 	initDParser();
 
 	CodeCompletionModel *codeCompletion = new dlang::CodeCompletionModel(this);
@@ -52,7 +68,16 @@ DPlugin::DPlugin(QObject *parent, const QVariantList &) : KDevelop::IPlugin("kde
 
 DPlugin::~DPlugin()
 {
+
+    // TODO: JG think about the order or destruction
+   //dlang::Helper::unregisterDUChainItems();
+
 	deinitDParser();
+}
+
+QString DPlugin::name() const
+{
+	return "D";
 }
 
 // NOTE must not run multithreaded because libdparse is not re-entrant
@@ -70,9 +95,94 @@ ParseJob *DPlugin::createParseJob(const IndexedString &url)
 //     connect(pj,&ParseJob::
 }
 
-QString DPlugin::name() const
+// TODO: reconsider placement of this code because this pulls in too many
+// dependencies
+QPair<TopDUContextPointer, Use> templateUseForPosition(const QUrl &url, const KTextEditor::Cursor& position)
 {
-	return "D";
+
+    TopDUContext* topContext = DUChainUtils::standardContextForUrl(url);
+
+    if (topContext) {
+        CursorInRevision cursor = topContext->transformToLocalRevision(position);
+        DUContext* context = topContext->findContextAt(cursor,false);
+        int useAt = context->findUseAt(cursor);
+        if (useAt >= 0) {
+            Use use = context->uses()[useAt];
+            if (dynamic_cast<TemplateDeclaration*>(use.usedDeclaration(topContext))) {
+                return {TopDUContextPointer(topContext), use};
+            }
+        }
+    }
+
+    return {{}, Use()};
+}
+
+QPair<TopDUContextPointer, TemplateDeclaration*> templateDeclarationForPosition(const QUrl &url, const KTextEditor::Cursor& position)
+{
+
+    TopDUContext* topContext = DUChainUtils::standardContextForUrl(url);
+
+    if (topContext) {
+        CursorInRevision cursor = topContext->transformToLocalRevision(position);
+        DUContext* context = topContext->findContextAt(cursor,false);
+        if (context)
+            context = context->parentContext();
+        if (context) {
+            Declaration* decl = context->findDeclarationAt(cursor);
+            if (dynamic_cast<TemplateDeclaration*>(decl)) {
+                return {TopDUContextPointer(topContext), dynamic_cast<TemplateDeclaration*>(decl)};
+            }
+        }
+    }
+
+
+    return {{}, nullptr};
+}
+
+KTextEditor::Range DPlugin::specialLanguageObjectRange(const QUrl &url, const KTextEditor::Cursor& position)
+{
+
+    DUChainReadLocker lock;
+    const QPair<TopDUContextPointer, Use> templateDecl = templateUseForPosition(url, position);
+
+    if (templateDecl.first) {
+        return templateDecl.first->transformFromLocalRevision(templateDecl.second.m_range);
+    }
+
+    return KTextEditor::Range::invalid();
+}
+
+QPair<QWidget*, KTextEditor::Range> DPlugin::specialLanguageObjectNavigationWidget(const QUrl& url, const KTextEditor::Cursor& position) {
+
+    DUChainReadLocker lock;
+
+    const QPair<TopDUContextPointer, Use> templateUse = templateUseForPosition(url, position);
+
+    Declaration* declaration = nullptr;
+    TopDUContextPointer pointer;
+    RangeInRevision range;
+    if (templateUse.first) {
+        declaration = templateUse.second.usedDeclaration(templateUse.first.data());
+        pointer = templateUse.first;
+        range = templateUse.second.m_range;
+    } else {
+        const QPair<TopDUContextPointer, TemplateDeclaration*> templateDecl = templateDeclarationForPosition(url, position);
+        if (templateDecl.first) {
+            range = templateDecl.second->range();
+            declaration = templateDecl.second;
+            pointer = templateDecl.first;
+        }
+    }
+
+    if (declaration) {
+        auto rangeInRevision = pointer->transformFromLocalRevision(range.start);
+        return {
+            new DlangNavigationWidget(DeclarationPointer(declaration), DocumentCursor(IndexedString(url), rangeInRevision)),
+            range.castToSimpleRange()
+        };
+    }
+
+    return { nullptr,KTextEditor::Range::invalid() };
 }
 
 KDevelop::ICodeHighlighting *DPlugin::codeHighlighting() const

@@ -33,13 +33,13 @@
 #include <language/duchain/types/pointertype.h>
 #include <language/duchain/classdeclaration.h>
 #include <language/duchain/topducontext.h>
-#include <language/duchain/namespacealiasdeclaration.h>
-#include <language/duchain/templatedeclaration.h>
 #include <language/duchain/duchainutils.h>
+
+#include <language/duchain/namespacealiasdeclaration.h>
 
 #include "helper.h"
 #include "duchaindebug.h"
-
+#include "templatedeclaration.h"
 
 using namespace KDevelop;
 
@@ -133,7 +133,7 @@ void DeclarationBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
 		setComment(node->getComment());
     DUChainWriteLocker lock;
     TemplateDeclaration* dec = openDefinition<TemplateDeclaration>(identifierForNode(node->getName()),editorFindRange(node->getName(),nullptr));
-	dec->setKind(Declaration::Template);
+// 	dec->setKind(Declaration::Template);
 	dec->setInternalContext(lastContext());
 	closeDeclaration();
     // inTemplateScope = false;
@@ -264,18 +264,18 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 	QualifiedIdentifier import = identifierForNode(node->getIdentifierChain());
     // TODO: JG consider making ImportDeclaration class
     qCDebug(DUCHAIN) << "Detected import: " << import;
-	NamespaceAliasDeclaration *importDecl = openDefinition<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), editorFindRange(node->getIdentifierChain(), 0));
-	importDecl->setImportIdentifier(import);
+	Declaration *importDecl = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), editorFindRange(node->getIdentifierChain(), 0));
+//	importDecl->setImportIdentifier(import);
     importDecl->setKind(Declaration::Import);
+//    importDecl->setType();
 	closeDeclaration();
 	DeclarationBuilderBase::visitSingleImport(node);
 }
 
 void DeclarationBuilder::visitModule(IModule *node)
 {
-    // Always open a context here. Modules /do/ require a module statement
-    // but if omitted an AST will still be generated and parsing will crash
-    // because there is no context.
+    Declaration* packageDeclaration = nullptr;
+
 	if(node->getModuleDeclaration())
 	{
 		if(node->getModuleDeclaration()->getComment())
@@ -291,25 +291,28 @@ void DeclarationBuilder::visitModule(IModule *node)
             localId = m_thisPackage.last();
         else
             qCDebug(DUCHAIN) << "openDeclaration() called without identifier";
-		Declaration *packageDeclaration = openDeclaration<Declaration>(localId, range);
-		packageDeclaration->setKind(Declaration::Namespace);
 
+		packageDeclaration = openDeclaration<Declaration>(localId, range);
+
+		packageDeclaration->setKind(Declaration::Namespace);
+        // Always open a context here
 		openContext(node, editorFindRange(node, 0), DUContext::Namespace, m_thisPackage);
-		packageDeclaration->setInternalContext(currentContext());
-		lock.unlock();
+
+        packageDeclaration->setInternalContext(currentContext());
     }
 
-    // TODO: JG this should be inside if statement. If it's inside it will
-    // crash during buildUses because currentContext() is nullptr. Figure out why
+    // always visit: Modules /do/ require a module statement
+    // but if omitted an AST will still be generated and parsing will crash
+    // because there is no context.
     DeclarationBuilderBase::visitModule(node);
+
 
     if(node->getModuleDeclaration())
     {
         closeContext();
         closeDeclaration();
-        topContext()->updateImportsCache();
     }
-
+    topContext()->updateImportsCache();
 
 }
 

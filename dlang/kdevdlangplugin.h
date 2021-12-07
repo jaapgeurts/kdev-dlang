@@ -27,6 +27,7 @@
 
 #include <interfaces/iplugin.h>
 #include <language/interfaces/ilanguagesupport.h>
+#include <QVariantList>
 
 #include "dhighlighting.h"
 
@@ -44,13 +45,23 @@ class DPlugin : public KDevelop::IPlugin, public KDevelop::ILanguageSupport
 
 public:
 	explicit DPlugin(QObject *parent, const QVariantList &args);
-	
+
 	virtual ~DPlugin();
-	
+
+    virtual QString name() const override;
+
 	virtual KDevelop::ParseJob *createParseJob(const KDevelop::IndexedString &url) override;
-	virtual QString name() const override;
-	
-	KDevelop::ICodeHighlighting *codeHighlighting() const override;
+
+    KDevelop::ICodeHighlighting* codeHighlighting() const override;
+//    KDevelop::BasicRefactoring* refactoring() const override;
+//    KDevelop::ICreateClassHelper* createClassHelper() const override;
+
+    //void createActionsForMainWindow(Sublime::MainWindow* window, QString& xmlFile, KActionCollection& actions) override;
+    //KDevelop::ContextMenuExtension contextMenuExtension(KDevelop::Context* context, QWidget* parent) override;
+
+    KTextEditor::Range specialLanguageObjectRange(const QUrl &url, const KTextEditor::Cursor& position) override;
+    //QPair<QUrl, KTextEditor::Cursor> specialLanguageObjectJumpCursor(const QUrl &url, const KTextEditor::Cursor& position) override;
+    QPair<QWidget*, KTextEditor::Range> specialLanguageObjectNavigationWidget(const QUrl& url, const KTextEditor::Cursor& position) override;
 
 private:
 	Highlighting *m_highlighting;

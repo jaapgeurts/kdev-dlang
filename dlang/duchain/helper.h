@@ -26,6 +26,8 @@
 
 using namespace KDevelop;
 
+// TODO: JG clean up this unit
+
 namespace dlang
 {
 
@@ -33,6 +35,8 @@ class KDEVDDUCHAIN_EXPORT Helper
 {
 public:
 	static QList<QString> getSearchPaths(QUrl document=QUrl());
+    static void registerDUChainItems();
+    static void unregisterDUChainItems();
 
 private:
 	static QList<QString> m_CachedSearchPaths;

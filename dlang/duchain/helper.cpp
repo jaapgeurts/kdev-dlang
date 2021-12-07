@@ -22,12 +22,43 @@
 #include <language/duchain/duchainlock.h>
 #include <language/duchain/declaration.h>
 #include <language/duchain/topducontext.h>
+#include <language/duchain/duchainregister.h>
 
 #include <QReadLocker>
 #include <QProcess>
 
+#include "duchain/builders/templatedeclaration.h"
+
 namespace dlang
 {
+
+void Helper::registerDUChainItems() {
+
+    duchainRegisterType<TemplateDeclaration>();
+
+    // TODO: JG cleanup
+    // Copied from Clang support. D doesn't need this.
+//    TypeSystem::self().registerTypeClass<ClassSpecializationType, ClassSpecializationTypeData>();
+
+}
+
+
+void Helper::unregisterDUChainItems()
+{
+    // TODO: JG cleanup
+    // Copied from Clang support. D doesn't need this.
+//     TypeSystem::self().unregisterTypeClass<ClassSpecializationType, ClassSpecializationTypeData>();
+
+    /// FIXME: this is currently not supported by the DUChain code...
+    /// When the items are unregistered on plugin destruction, we'll get hit by
+    /// assertions later on when the DUChain is finalized. There, when the data is getting cleaned up,
+    /// we try to load all kinds of items again which would fail to find our items if we unregister.
+    /// So let's not do it...
+/*
+    duchainUnregisterType<TemplateDeclaration>();
+
+*/
+}
 
 QList<QString> Helper::getSearchPaths(QUrl document)
 {

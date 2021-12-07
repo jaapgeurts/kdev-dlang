@@ -77,8 +77,9 @@ void UseBuilder::visitTypeName(IType *node)
 		return;
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);
-	if(decl)
+	if(decl) {
 		newUse(ident, decl);
+    }
 }
 
 void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
@@ -227,8 +228,9 @@ void UseBuilder::visitToken(IToken *node)
     qCDebug(DUCHAIN) << "UseBuilder::visitToken " << id;
 
 	DeclarationPointer decl = getDeclaration(id, context);
-	if(decl)
+	if(decl) {
 		newUse(node, decl);
+    }
 }
 
 

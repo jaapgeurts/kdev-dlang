@@ -612,8 +612,6 @@ void ParseSession::setCurrentDocument(const IndexedString &document)
  */
 QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier package)
 {
-    qCDebug(DUCHAIN) << "Thread: " << QThread::currentThreadId() <<  ", contextForImport: " << m_document;
-    qCDebug(DUCHAIN) << "QualifiedIdentifier package: " << package;
 	QStringList files;
 	if(files.empty())
 	{

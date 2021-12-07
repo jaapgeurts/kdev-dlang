@@ -55,11 +55,13 @@ void ContextBuilder::startVisiting(INode *node)
 
 void ContextBuilder::visitModule(IModule *node)
 {
+
 	for(size_t i=0; i<node->numDeclarations(); i++)
 	{
 		if(auto n = node->getDeclaration(i))
 			visitDeclaration(n);
 	}
+
 }
 
 KDevelop::DUContext *ContextBuilder::contextFromNode(INode *node)
@@ -163,6 +165,7 @@ ParseSession *ContextBuilder::parseSession()
 void ContextBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
+    // TODO: JG import bindings are ignored
 	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(node->getIdentifierChain()));
 	if(contexts.length() > 0 && node->getIdentifierChain()->numIdentifiers() > 0) {
 		currentContext()->addImportedParentContext(contexts[0], CursorInRevision(node->getIdentifierChain()->getIdentifier(0)->getLine(), node->getIdentifierChain()->getIdentifier(0)->getColumn()));
@@ -628,7 +631,7 @@ void ContextBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
 {
     // NOTE: Context must be opened here, because parameter variables
     // are part of the template context, not of the containing context.
-    openContext(node, editorFindRange(node, 0),DUContext::Template, node->getName());
+    openContext(node, editorFindRange(node, nullptr),DUContext::Template, node->getName());
 
     // template parameters
     if (auto tp = node->getTemplateParameters()) {
