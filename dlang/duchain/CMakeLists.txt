@@ -3,7 +3,7 @@ add_library(kdevdduchain STATIC
 	builders/contextbuilder.cpp
 	builders/typebuilder.cpp
 	builders/usebuilder.cpp
-	builders/templatedeclaration.cpp
+	builders/ddeclaration.cpp
 	navigationcontext.cpp
 	navigationwidget.cpp
 	helper.cpp

@@ -39,7 +39,7 @@
 
 #include "helper.h"
 #include "duchaindebug.h"
-#include "templatedeclaration.h"
+#include "ddeclaration.h"
 
 using namespace KDevelop;
 
@@ -132,8 +132,8 @@ void DeclarationBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
     if(node->getComment())
 		setComment(node->getComment());
     DUChainWriteLocker lock;
-    TemplateDeclaration* dec = openDefinition<TemplateDeclaration>(identifierForNode(node->getName()),editorFindRange(node->getName(),nullptr));
-// 	dec->setKind(Declaration::Template);
+    DDeclaration* dec = openDefinition<DDeclaration>(identifierForNode(node->getName()),editorFindRange(node->getName(),nullptr));
+ 	dec->setDKind(DDeclaration::Kind::Template);
 	dec->setInternalContext(lastContext());
 	closeDeclaration();
     // inTemplateScope = false;
@@ -274,7 +274,7 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 
 void DeclarationBuilder::visitModule(IModule *node)
 {
-    Declaration* packageDeclaration = nullptr;
+    DDeclaration* packageDeclaration = nullptr;
 
 	if(node->getModuleDeclaration())
 	{
@@ -290,13 +290,12 @@ void DeclarationBuilder::visitModule(IModule *node)
         if (!m_thisPackage.isEmpty())
             localId = m_thisPackage.last();
         else
-            qCDebug(DUCHAIN) << "openDeclaration() called without identifier";
+            qCDebug(DUCHAIN) << "visitModule::openDeclaration() called without identifier";
 
-		packageDeclaration = openDeclaration<Declaration>(localId, range);
-
-		packageDeclaration->setKind(Declaration::Namespace);
+		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
+		packageDeclaration->setDKind(DDeclaration::Kind::Import);
         // Always open a context here
-		openContext(node, editorFindRange(node, 0), DUContext::Namespace, m_thisPackage);
+		openContext(node, editorFindRange(node, 0), DUContext::Global, m_thisPackage);
 
         packageDeclaration->setInternalContext(currentContext());
     }

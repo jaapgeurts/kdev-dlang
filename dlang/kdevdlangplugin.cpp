@@ -31,7 +31,7 @@
 #include <interfaces/icore.h>
 #include <interfaces/ilanguagecontroller.h>
 
-#include "duchain/builders/templatedeclaration.h"
+#include "duchain/builders/ddeclaration.h"
 #include "duchain/navigationwidget.h"
 #include "duchain/helper.h"
 
@@ -108,7 +108,7 @@ QPair<TopDUContextPointer, Use> templateUseForPosition(const QUrl &url, const KT
         int useAt = context->findUseAt(cursor);
         if (useAt >= 0) {
             Use use = context->uses()[useAt];
-            if (dynamic_cast<TemplateDeclaration*>(use.usedDeclaration(topContext))) {
+            if (dynamic_cast<DDeclaration*>(use.usedDeclaration(topContext))) {
                 return {TopDUContextPointer(topContext), use};
             }
         }
@@ -117,7 +117,7 @@ QPair<TopDUContextPointer, Use> templateUseForPosition(const QUrl &url, const KT
     return {{}, Use()};
 }
 
-QPair<TopDUContextPointer, TemplateDeclaration*> templateDeclarationForPosition(const QUrl &url, const KTextEditor::Cursor& position)
+QPair<TopDUContextPointer, DDeclaration*> templateDeclarationForPosition(const QUrl &url, const KTextEditor::Cursor& position)
 {
 
     TopDUContext* topContext = DUChainUtils::standardContextForUrl(url);
@@ -129,8 +129,8 @@ QPair<TopDUContextPointer, TemplateDeclaration*> templateDeclarationForPosition(
             context = context->parentContext();
         if (context) {
             Declaration* decl = context->findDeclarationAt(cursor);
-            if (dynamic_cast<TemplateDeclaration*>(decl)) {
-                return {TopDUContextPointer(topContext), dynamic_cast<TemplateDeclaration*>(decl)};
+            if (dynamic_cast<DDeclaration*>(decl)) {
+                return {TopDUContextPointer(topContext), dynamic_cast<DDeclaration*>(decl)};
             }
         }
     }
@@ -166,7 +166,7 @@ QPair<QWidget*, KTextEditor::Range> DPlugin::specialLanguageObjectNavigationWidg
         pointer = templateUse.first;
         range = templateUse.second.m_range;
     } else {
-        const QPair<TopDUContextPointer, TemplateDeclaration*> templateDecl = templateDeclarationForPosition(url, position);
+        const QPair<TopDUContextPointer, DDeclaration*> templateDecl = templateDeclarationForPosition(url, position);
         if (templateDecl.first) {
             range = templateDecl.second->range();
             declaration = templateDecl.second;
@@ -175,9 +175,11 @@ QPair<QWidget*, KTextEditor::Range> DPlugin::specialLanguageObjectNavigationWidg
     }
 
     if (declaration) {
+        const DDeclaration::Ptr ddeclaration(dynamic_cast<DDeclaration*>(declaration));
+
         auto rangeInRevision = pointer->transformFromLocalRevision(range.start);
         return {
-            new DlangNavigationWidget(DeclarationPointer(declaration), DocumentCursor(IndexedString(url), rangeInRevision)),
+            new DlangNavigationWidget(ddeclaration, DocumentCursor(IndexedString(url), rangeInRevision)),
             range.castToSimpleRange()
         };
     }

@@ -27,14 +27,14 @@
 #include <QReadLocker>
 #include <QProcess>
 
-#include "duchain/builders/templatedeclaration.h"
+#include "builders/ddeclaration.h"
 
 namespace dlang
 {
 
 void Helper::registerDUChainItems() {
 
-    duchainRegisterType<TemplateDeclaration>();
+    duchainRegisterType<DDeclaration>();
 
     // TODO: JG cleanup
     // Copied from Clang support. D doesn't need this.
