@@ -93,8 +93,17 @@ void DDeclaration::setDKind(Kind kind)
 
 QString DDeclaration::toString() const
 {
-    // TODO: JG provide usefule name here
-    return "template <insert template name here>";
+    QString s;
+    switch (m_kind) {
+        case Kind::Import:
+            return "Import";
+        case Kind::Template:
+            return "Template";
+        case Kind::Module:
+            return "Module";
+    }
+
+    return "Unspecified kind";
 }
 
 Declaration* DDeclaration::clonePrivate() const {

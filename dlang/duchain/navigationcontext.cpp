@@ -34,10 +34,14 @@ QString DlangNavigationContext::html(bool shorten)
 
     modifyHtml() += QStringLiteral("<html><body><p>");
 
-    if (m_decl->dKind() == DDeclaration::Kind::Template)
-        modifyHtml() += "template ";
-    else if (m_decl->dKind() == DDeclaration::Kind::Import)
-        modifyHtml() += "import ";
+    switch (m_decl->dKind()) {
+        case DDeclaration::Kind::Template:
+            modifyHtml() += "template ";
+        case DDeclaration::Kind::Import:
+            modifyHtml() += "import ";
+        case DDeclaration::Kind::Module:
+            modifyHtml() += "module ";
+    }
 
     modifyHtml() += name();
 

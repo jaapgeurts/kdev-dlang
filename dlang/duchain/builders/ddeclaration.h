@@ -75,7 +75,8 @@ public:
 
     enum class Kind {
         Template,
-        Import
+        Import,
+        Module
    };
 
     DDeclaration(const DDeclaration& rhs);

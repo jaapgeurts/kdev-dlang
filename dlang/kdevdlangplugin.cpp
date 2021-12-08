@@ -135,6 +135,9 @@ QPair<TopDUContextPointer, DDeclaration*> templateDeclarationForPosition(const Q
         }
     }
 
+    // symbol not found here?
+    // Also search PersistentSymbolTable(search modules)
+
 
     return {{}, nullptr};
 }

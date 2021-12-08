@@ -35,7 +35,6 @@
 #include <language/duchain/topducontext.h>
 #include <language/duchain/duchainutils.h>
 
-#include <language/duchain/namespacealiasdeclaration.h>
 
 #include "helper.h"
 #include "duchaindebug.h"
@@ -262,12 +261,9 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
 	QualifiedIdentifier import = identifierForNode(node->getIdentifierChain());
-    // TODO: JG consider making ImportDeclaration class
-    qCDebug(DUCHAIN) << "Detected import: " << import;
-	Declaration *importDecl = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), editorFindRange(node->getIdentifierChain(), 0));
-//	importDecl->setImportIdentifier(import);
-    importDecl->setKind(Declaration::Import);
-//    importDecl->setType();
+	DDeclaration *importDecl = openDeclaration<DDeclaration>(import,editorFindRange(node->getIdentifierChain(), nullptr)); // QualifiedIdentifier(globalImportIdentifier()) => this results in a dynamic_cast to NameSpaceAliasDeclaration  );
+    //importDecl->setKind(Declaration::Import);
+    importDecl->setDKind(DDeclaration::Kind::Import);
 	closeDeclaration();
 	DeclarationBuilderBase::visitSingleImport(node);
 }
@@ -293,11 +289,13 @@ void DeclarationBuilder::visitModule(IModule *node)
             qCDebug(DUCHAIN) << "visitModule::openDeclaration() called without identifier";
 
 		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
-		packageDeclaration->setDKind(DDeclaration::Kind::Import);
+		packageDeclaration->setDKind(DDeclaration::Kind::Module);
+        closeDeclaration();
+        // TODO: JG: Currently don't open a context otherwise symbols in other
+        // modules will not be  not found
         // Always open a context here
-		openContext(node, editorFindRange(node, 0), DUContext::Global, m_thisPackage);
-
-        packageDeclaration->setInternalContext(currentContext());
+		// openContext(node, editorFindRange(node, 0), DUContext::Global, m_thisPackage);
+        // packageDeclaration->setInternalContext(currentContext());
     }
 
     // always visit: Modules /do/ require a module statement
@@ -308,8 +306,8 @@ void DeclarationBuilder::visitModule(IModule *node)
 
     if(node->getModuleDeclaration())
     {
-        closeContext();
-        closeDeclaration();
+    //    closeContext();
+
     }
     topContext()->updateImportsCache();
 

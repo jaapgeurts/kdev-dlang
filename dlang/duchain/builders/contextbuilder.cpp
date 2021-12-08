@@ -927,7 +927,7 @@ void ContextBuilder::visitTryStatement(ITryStatement *node)
 
 void ContextBuilder::visitCatch(ICatch *node)
 {
-	//TODO: Open context.
+	//TODO: JG Open context.
 	if(auto n = node->getDeclarationOrStatement())
 		visitDeclarationOrStatement(n);
 	if(auto n = node->getType())
@@ -936,7 +936,7 @@ void ContextBuilder::visitCatch(ICatch *node)
 
 void ContextBuilder::visitLastCatch(ILastCatch *node)
 {
-	//TODO: Open context.
+	//TODO: JG Open context.
 	if(auto n = node->getStatementNoCaseNoDefault())
 		visitStatementNoCaseNoDefault(n);
 }
