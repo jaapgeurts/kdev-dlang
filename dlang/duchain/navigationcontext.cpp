@@ -37,10 +37,13 @@ QString DlangNavigationContext::html(bool shorten)
     switch (m_decl->dKind()) {
         case DDeclaration::Kind::Template:
             modifyHtml() += "template ";
+            break;
         case DDeclaration::Kind::Import:
             modifyHtml() += "import ";
+            break;
         case DDeclaration::Kind::Module:
             modifyHtml() += "module ";
+            break;
     }
 
     modifyHtml() += name();

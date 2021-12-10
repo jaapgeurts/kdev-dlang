@@ -92,6 +92,7 @@ QList<QString> Helper::getSearchPaths(QUrl document)
 
 DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bool searchInParent)
 {
+    // TODO: jg make it search in parent contexts and resolve types
     Q_UNUSED(searchInParent);
 	DUChainReadLocker lock;
 	if(context)

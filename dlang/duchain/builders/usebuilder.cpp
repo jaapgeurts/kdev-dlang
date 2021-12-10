@@ -69,7 +69,7 @@ void UseBuilder::visitTypeName(IType *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(ident, 0));
+		context = currentContext()->findContextIncluding(editorFindRange(ident, nullptr));
 	}
 	if(!context)
 	{
@@ -77,6 +77,7 @@ void UseBuilder::visitTypeName(IType *node)
 		return;
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);
+    qCDebug(DUCHAIN) << "UseBuilder::visitTypeName " << id;
 	if(decl) {
 		newUse(ident, decl);
     }
@@ -106,10 +107,11 @@ void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
 		return;
 	}
 	DeclarationPointer decl = getDeclaration(id, context);
-	if(decl)
+    qCDebug(DUCHAIN) << "UseBuilder::visitTemplateParam " << id;
+	if(decl) {
 		newUse(node, decl);
+    }
 }
-
 
 void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 {
@@ -118,21 +120,19 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	if(!node->getIdentifierOrTemplateInstance() || !currentContext())
 		return;
 
-    // TODO: JG instead of this can we skip this and let it descend to visitToken?
-
     // Get the identifier either from the identifier or template
     IToken* ident = nullptr;
-    if (node->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
-        ident = node->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
+    if (auto ti = node->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
+        ident = ti->getIdentifier();
     }
     if (ident == nullptr) {
         ident = node->getIdentifierOrTemplateInstance()->getIdentifier();
     }
-    if (ident == nullptr) {
-        return;
-    }
 
-	QualifiedIdentifier id(identifierForNode(ident));
+    QualifiedIdentifier identifier(identifierForNode(ident));
+
+    m_identifier.push(identifier);
+
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
@@ -140,71 +140,68 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
 	}
 	if(!context)
 	{
-		qCDebug(DUCHAIN) << "visitPrimaryExpression: No context found for" << id;
+		qCDebug(DUCHAIN) << "visitPrimaryExpression: No context found for" << m_identifier;
 		return;
 	}
-	DeclarationPointer decl = getDeclaration(id, context);
-	if(decl)
+
+	DeclarationPointer decl = getDeclaration(m_identifier, context);
+    // TODO: JG resolve types
+//    IndexedType type = decl->indexedType();
+
+    qCDebug(DUCHAIN) << "UseBuilder::visitPrimaryExpression " << m_identifier;
+	if(decl) {
+        // A declaration was found!
 		newUse(ident, decl);
+    }
 }
+
+void UseBuilder::visitExpression(IExpression* node)
+{
+    UseBuilderBase::visitExpression(node);
+    m_identifier.clear();
+}
+
 
 void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 {
-    // JG: can also be a new expression
+    // If there are more unary expressions to visit, go there first to build the identifier chain
 	UseBuilderBase::visitUnaryExpression(node);
-	if(!node->getIdentifierOrTemplateInstance()
-        || !node->getIdentifierOrTemplateInstance()->getIdentifier()
-        || !currentContext())
+
+    if(!node->getIdentifierOrTemplateInstance() || !currentContext()) {
 		return;
+    }
 
     // Get the identifier either from the identifier or template
     IToken* ident = nullptr;
 
-    if (node->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
-        ident = node->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
+    if (auto i = node->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
+        ident = i->getIdentifier();
     }
     if (ident == nullptr) {
         ident = node->getIdentifierOrTemplateInstance()->getIdentifier();
-    }
-    if (ident == nullptr) {
-        return;
     }
 
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(node->getIdentifierOrTemplateInstance()->getIdentifier(), nullptr));
+		context = currentContext()->findContextIncluding(editorFindRange(ident, nullptr));
 	}
 	if(!context)
 	{
-		qCDebug(DUCHAIN) << "visitUnaryExpression: No context found for" << node->getIdentifierOrTemplateInstance()->getIdentifier()->getText();
+		qCDebug(DUCHAIN) << "visitUnaryExpression: No context found for" << ident->getText();
 		return;
 	}
 
-	QualifiedIdentifier id;
-	for(const QString &str : identifierChain)
-	{
-		auto t = getTypeOrVarDeclaration(QualifiedIdentifier(str), context);
-		if(!t)
-			continue;
-		if(!t->type<AbstractType>())
-		{
-			id.push(Identifier(str));
-			continue;
-		}
-		{
-            // TODO: JG here or outside the for loop?
-            DUChainReadLocker lock;
-            for(const QString &part : t->type<AbstractType>()->toString().split("::", Qt::SkipEmptyParts))
-                id.push(Identifier(part));
-        }
-	}
-	id.push(identifierForNode(node->getIdentifierOrTemplateInstance()->getIdentifier()));
-	identifierChain.clear();
+	QualifiedIdentifier id(identifierForNode(ident));
+    m_identifier.push(id);
+    qCDebug(DUCHAIN) << "current idchain: " << m_identifier;
 
-	DeclarationPointer decl = getDeclaration(id, context);
-	if(decl)
+
+	DeclarationPointer decl = getDeclaration(m_identifier, context);
+    qCDebug(DUCHAIN) << "UseBuilder::visitUnaryExpression " << id;
+	if(decl) {
 		newUse(node, decl);
+    }
 }
 
 void UseBuilder::visitToken(IToken *node)

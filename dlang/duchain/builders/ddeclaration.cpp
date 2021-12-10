@@ -95,12 +95,12 @@ QString DDeclaration::toString() const
 {
     QString s;
     switch (m_kind) {
-        case Kind::Import:
-            return "Import";
         case Kind::Template:
             return "Template";
         case Kind::Module:
             return "Module";
+        case Kind::Import:
+            return "Import";
     }
 
     return "Unspecified kind";

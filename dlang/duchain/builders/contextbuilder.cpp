@@ -166,10 +166,15 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
     // TODO: JG import bindings are ignored
-	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(node->getIdentifierChain()));
-	if(contexts.length() > 0 && node->getIdentifierChain()->numIdentifiers() > 0) {
-		currentContext()->addImportedParentContext(contexts[0], CursorInRevision(node->getIdentifierChain()->getIdentifier(0)->getLine(), node->getIdentifierChain()->getIdentifier(0)->getColumn()));
+    IIdentifierChain* chain = node->getIdentifierChain();
+	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(chain));
+	if(contexts.length() > 0 && chain->numIdentifiers() > 0) {
+		currentContext()->addImportedParentContext(
+             contexts[0],
+             CursorInRevision(chain->getIdentifier(0)->getLine(),
+                              chain->getIdentifier(0)->getColumn()));
     }
+
 	topContext()->updateImportsCache();
 }
 
@@ -268,6 +273,7 @@ void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *
 
 void ContextBuilder::visitDeclaration(IDeclaration *node)
 {
+
 	if(auto n = node->getClassDeclaration())
 		visitClassDeclaration(n);
 	else if(auto n = node->getFunctionDeclaration())
@@ -623,8 +629,9 @@ void ContextBuilder::visitIdentifierOrTemplateInstance(IIdentifierOrTemplateInst
 {
     if (auto n = node->getTemplateInstance())
         visitTemplateInstance(n);
-    if (auto n = node->getIdentifier())
-        visitIdentifier(n);
+    // TODO: JG fixe
+//    if (auto n = node->getIdentifier())
+//        visitIdentifier(n);
 }
 
 void ContextBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
@@ -655,7 +662,8 @@ void ContextBuilder::visitTemplateParameter(ITemplateParameter* node)
 
 void ContextBuilder::visitTemplateInstance ( ITemplateInstance* node )
 {
-    visitIdentifier(node->getIdentifier());
+    // TODO: JG fix this
+//    visitIdentifier(node->getIdentifier());
 
     // TODO: JG implement template arguments
 //     if (auto n = node->getTemplateArguments())
@@ -663,10 +671,11 @@ void ContextBuilder::visitTemplateInstance ( ITemplateInstance* node )
 
 }
 
-void ContextBuilder::visitIdentifier(IToken* node )
-{
-    identifierChain.append(QString::fromUtf8(node->getText()));
-}
+// TODO: JG Remove
+// void ContextBuilder::visitIdentifier(IToken* node )
+// {
+//     identifierChain.append(QString::fromUtf8(node->getText()));
+// }
 
 
 void ContextBuilder::visitAddExpression(IAddExpression *node)

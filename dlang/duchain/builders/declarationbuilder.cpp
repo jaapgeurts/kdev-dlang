@@ -35,6 +35,7 @@
 #include <language/duchain/topducontext.h>
 #include <language/duchain/duchainutils.h>
 
+#include <language/duchain/persistentsymboltable.h>
 
 #include "helper.h"
 #include "duchaindebug.h"
@@ -73,20 +74,42 @@ void DeclarationBuilder::startVisiting(INode *node)
 	return DeclarationBuilderBase::startVisiting(node);
 }
 
+void DeclarationBuilder::visitDeclaration(IDeclaration* node)
+{
+    m_visibility = Visibility::Public; // this is the default in D
+
+    for (size_t i =0;i<node->numAttributes();i++) {
+        if (auto t = node->getAttribute(i)->getAttribute()) {
+            qCDebug(DUCHAIN) << "DECL: " << QString::fromUtf8(t->getType());
+            if (QStringLiteral("protected") == t->getType())
+                m_visibility = Visibility::Protected;
+            else if (QStringLiteral("private") == t->getType())
+                m_visibility = Visibility::Private;
+        }
+    }
+
+    DeclarationBuilderBase::visitDeclaration(node);
+
+}
+
 void DeclarationBuilder::visitVarDeclaration(IVariableDeclaration *node)
 {
 	DeclarationBuilderBase::visitVarDeclaration(node);
-	for(size_t i=0; i<node->numDeclarators(); i++)
-		declareVariable(node->getDeclarator(i)->getName(), lastType());
+	for(size_t i=0; i<node->numDeclarators(); i++) {
+		declareVariable(node->getDeclarator(i), lastType());
+    }
 }
 
-void DeclarationBuilder::declareVariable(IToken *id, const AbstractType::Ptr &type)
+void DeclarationBuilder::declareVariable(IDeclarator* declarator, const AbstractType::Ptr &type)
 {
+    IToken *id = declarator->getName();
 	DUChainWriteLocker lock;
 	Declaration *dec = openDefinition<Declaration>(identifierForNode(id), editorFindRange(id, id));
 	dec->setType(type);
 	dec->setKind(Declaration::Instance);
-	closeDeclaration();
+    if (auto c = declarator->getComment())
+        dec->setComment(QString::fromUtf8(c));
+    closeDeclaration();
 }
 
 void DeclarationBuilder::visitClassDeclaration(IClassDeclaration *node)
@@ -102,6 +125,13 @@ void DeclarationBuilder::visitClassDeclaration(IClassDeclaration *node)
 	dec->setKind(Declaration::Type);
     dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Class);
+    if (m_visibility == Visibility::Protected)
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Protected);
+    else if (m_visibility == Visibility::Private)
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Private);
+    else {
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Public);
+    }
 	closeDeclaration();
 	inClassScope = false;
 }
@@ -119,6 +149,13 @@ void DeclarationBuilder::visitStructDeclaration(IStructDeclaration *node)
 	dec->setKind(Declaration::Type);
 	dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Struct);
+    if (m_visibility == Visibility::Protected)
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Protected);
+    else if (m_visibility == Visibility::Private)
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Private);
+    else {
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Public);
+    }
 	closeDeclaration();
 	inClassScope = false;
 }
@@ -136,6 +173,7 @@ void DeclarationBuilder::visitTemplateDeclaration ( ITemplateDeclaration* node )
 	dec->setInternalContext(lastContext());
 	closeDeclaration();
     // inTemplateScope = false;
+
 
 }
 
@@ -179,8 +217,16 @@ void DeclarationBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
     dec->setType(currentStructureType);
 	dec->setInternalContext(lastContext());
 	dec->setClassType(ClassDeclarationData::Interface);
+    if (m_visibility == Visibility::Protected)
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Protected);
+    else if (m_visibility == Visibility::Private)
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Private);
+    else {
+        dec->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Public);
+    }
 	closeDeclaration();
 	inClassScope = false;
+
 }
 
 void DeclarationBuilder::visitParameter(IParameter *node)
@@ -209,6 +255,12 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 		closeDeclaration();
 		newMethod->setInternalContext(lastContext());
 		newMethod->setType(currentFunctionType);
+        if (m_visibility == Visibility::Protected)
+            newMethod->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Protected);
+        else if (m_visibility == Visibility::Private)
+            newMethod->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Private);
+        else
+            newMethod->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Public);
 	}
 	else
 	{
@@ -222,7 +274,10 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 		closeDeclaration();
 		newMethod->setInternalContext(lastContext());
 		newMethod->setType(currentFunctionType);
+
+
 	}
+
 }
 
 void DeclarationBuilder::visitConstructor(IConstructor *node)
@@ -259,28 +314,28 @@ void DeclarationBuilder::visitDestructor(IDestructor *node)
 
 void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 {
+	DeclarationBuilderBase::visitSingleImport(node);
 	DUChainWriteLocker lock;
-	QualifiedIdentifier import = identifierForNode(node->getIdentifierChain());
-	DDeclaration *importDecl = openDeclaration<DDeclaration>(import,editorFindRange(node->getIdentifierChain(), nullptr)); // QualifiedIdentifier(globalImportIdentifier()) => this results in a dynamic_cast to NameSpaceAliasDeclaration  );
-    //importDecl->setKind(Declaration::Import);
+	QualifiedIdentifier importId = identifierForNode(node->getIdentifierChain());
+	DDeclaration *importDecl = openDeclaration<DDeclaration>(importId.last(),editorFindRange(node->getIdentifierChain(), nullptr)); // QualifiedIdentifier(globalImportIdentifier()) => this results in a dynamic_cast to NameSpaceAliasDeclaration  );
+    importDecl->setKind(Declaration::Import);
     importDecl->setDKind(DDeclaration::Kind::Import);
 	closeDeclaration();
-	DeclarationBuilderBase::visitSingleImport(node);
 }
 
 void DeclarationBuilder::visitModule(IModule *node)
 {
     DDeclaration* packageDeclaration = nullptr;
 
-	if(node->getModuleDeclaration())
+	if(auto moduleDeclaration = node->getModuleDeclaration())
 	{
-		if(node->getModuleDeclaration()->getComment())
-			setComment(node->getModuleDeclaration()->getComment());
+		if(moduleDeclaration->getComment())
+			setComment(moduleDeclaration->getComment());
 
         DUChainWriteLocker lock;
 
-        auto m_thisPackage = identifierForNode(node->getModuleDeclaration()->getModuleName());
-		RangeInRevision range = editorFindRange(node->getModuleDeclaration()->getModuleName(), node->getModuleDeclaration()->getModuleName());
+        auto m_thisPackage = identifierForNode(moduleDeclaration->getModuleName());
+		RangeInRevision range = editorFindRange(moduleDeclaration->getModuleName(), moduleDeclaration->getModuleName());
 
         Identifier localId;
         if (!m_thisPackage.isEmpty())
@@ -290,24 +345,21 @@ void DeclarationBuilder::visitModule(IModule *node)
 
 		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
 		packageDeclaration->setDKind(DDeclaration::Kind::Module);
-        closeDeclaration();
-        // TODO: JG: Currently don't open a context otherwise symbols in other
-        // modules will not be  not found
         // Always open a context here
-		// openContext(node, editorFindRange(node, 0), DUContext::Global, m_thisPackage);
-        // packageDeclaration->setInternalContext(currentContext());
+		openContext(node, editorFindRange(node, 0), DUContext::Global, m_thisPackage);
+
+        packageDeclaration->setInternalContext(currentContext());
     }
 
     // always visit: Modules /do/ require a module statement
-    // but if omitted an AST will still be generated and parsing will crash
-    // because there is no context.
+    // but if omitted further visiting will crash because of a missing a context.
     DeclarationBuilderBase::visitModule(node);
 
 
     if(node->getModuleDeclaration())
     {
-    //    closeContext();
-
+        closeContext();
+        closeDeclaration();
     }
     topContext()->updateImportsCache();
 

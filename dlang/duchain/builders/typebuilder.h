@@ -55,7 +55,7 @@ public:
 	}
 
 protected:
-	virtual void declareVariable(IToken *id, const KDevelop::AbstractType::Ptr &type) = 0;
+	virtual void declareVariable(IDeclarator* declarator, const KDevelop::AbstractType::Ptr &type) = 0;
 
 	KDevelop::QualifiedIdentifier m_contextIdentifier;
 

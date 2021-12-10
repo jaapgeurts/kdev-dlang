@@ -97,7 +97,7 @@ ParseJob *DPlugin::createParseJob(const IndexedString &url)
 
 // TODO: reconsider placement of this code because this pulls in too many
 // dependencies
-QPair<TopDUContextPointer, Use> templateUseForPosition(const QUrl &url, const KTextEditor::Cursor& position)
+QPair<TopDUContextPointer, Use> useForPosition(const QUrl &url, const KTextEditor::Cursor& position)
 {
 
     TopDUContext* topContext = DUChainUtils::standardContextForUrl(url);
@@ -117,7 +117,7 @@ QPair<TopDUContextPointer, Use> templateUseForPosition(const QUrl &url, const KT
     return {{}, Use()};
 }
 
-QPair<TopDUContextPointer, DDeclaration*> templateDeclarationForPosition(const QUrl &url, const KTextEditor::Cursor& position)
+QPair<TopDUContextPointer, DDeclaration*> declarationForPosition(const QUrl &url, const KTextEditor::Cursor& position)
 {
 
     TopDUContext* topContext = DUChainUtils::standardContextForUrl(url);
@@ -125,13 +125,12 @@ QPair<TopDUContextPointer, DDeclaration*> templateDeclarationForPosition(const Q
     if (topContext) {
         CursorInRevision cursor = topContext->transformToLocalRevision(position);
         DUContext* context = topContext->findContextAt(cursor,false);
-        if (context)
-            context = context->parentContext();
-        if (context) {
+        while (context) {
             Declaration* decl = context->findDeclarationAt(cursor);
             if (dynamic_cast<DDeclaration*>(decl)) {
                 return {TopDUContextPointer(topContext), dynamic_cast<DDeclaration*>(decl)};
             }
+            context = context->parentContext();
         }
     }
 
@@ -146,7 +145,7 @@ KTextEditor::Range DPlugin::specialLanguageObjectRange(const QUrl &url, const KT
 {
 
     DUChainReadLocker lock;
-    const QPair<TopDUContextPointer, Use> templateDecl = templateUseForPosition(url, position);
+    const QPair<TopDUContextPointer, Use> templateDecl = useForPosition(url, position);
 
     if (templateDecl.first) {
         return templateDecl.first->transformFromLocalRevision(templateDecl.second.m_range);
@@ -159,7 +158,7 @@ QPair<QWidget*, KTextEditor::Range> DPlugin::specialLanguageObjectNavigationWidg
 
     DUChainReadLocker lock;
 
-    const QPair<TopDUContextPointer, Use> templateUse = templateUseForPosition(url, position);
+    const QPair<TopDUContextPointer, Use> templateUse = useForPosition(url, position);
 
     Declaration* declaration = nullptr;
     TopDUContextPointer pointer;
@@ -169,7 +168,7 @@ QPair<QWidget*, KTextEditor::Range> DPlugin::specialLanguageObjectNavigationWidg
         pointer = templateUse.first;
         range = templateUse.second.m_range;
     } else {
-        const QPair<TopDUContextPointer, DDeclaration*> templateDecl = templateDeclarationForPosition(url, position);
+        const QPair<TopDUContextPointer, DDeclaration*> templateDecl = declarationForPosition(url, position);
         if (templateDecl.first) {
             range = templateDecl.second->range();
             declaration = templateDecl.second;

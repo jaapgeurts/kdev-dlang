@@ -34,6 +34,14 @@ typedef KDevelop::AbstractDeclarationBuilder<INode, IToken, dlang::TypeBuilder> 
 class KDEVDDUCHAIN_EXPORT DeclarationBuilder : public DeclarationBuilderBase
 {
 public:
+
+    enum class Visibility {
+        Public,
+        Protected,
+        Private,
+
+    };
+
 	DeclarationBuilder(ParseSession *session, bool forExport);
 
 	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
@@ -41,6 +49,7 @@ public:
 	virtual void startVisiting(INode *node) override;
 
     virtual void visitCatch(ICatch *node) override;
+    virtual void visitDeclaration(IDeclaration* node) override;
 	virtual void visitClassDeclaration(IClassDeclaration *node) override;
 	virtual void visitConstructor(IConstructor *node) override;
 	virtual void visitDebugSpecification(IDebugSpecification *node) override;
@@ -64,7 +73,7 @@ private:
 	/**
 	 * Declares variable with identifier @param id of type @param type.
 	 **/
-	virtual void declareVariable(IToken *id, const KDevelop::AbstractType::Ptr &type) override;
+	virtual void declareVariable(IDeclarator* declarator, const KDevelop::AbstractType::Ptr &type) override;
 
 private:
 	bool m_export;
@@ -72,4 +81,7 @@ private:
 
 	bool m_preBuilding;
 	int m_ownPriority;
+
+    Visibility m_visibility;
+
 };

@@ -132,8 +132,12 @@ void main(string[] args) {
 
     // add Token class
     Declaration d = new Declaration();
-    d.classDeclaration = makeClassDeclaration("Token", makeVariableDecl("string", "text"),
-            makeVariableDecl("size_t", "line"), makeVariableDecl("size_t", "column"));
+    // Text accessor
+    d.classDeclaration = makeClassDeclaration("Token",
+        makeVariableDecl("string", "text"), // the token text
+        makeVariableDecl("IdType","type"),
+        makeVariableDecl("size_t", "line"),
+        makeVariableDecl("size_t", "column"));
     mod.declarations ~= d;
 
     // First pass
@@ -728,11 +732,6 @@ class WrapperGenVisitor : ASTVisitor {
                 //    // skip variables that are templates
                 //    continue;
                 // }
-                // if (typename == "IdType") {
-                //     typename = "string";
-                //     return;
-                // }
-                // else
                 if (typename == "size_t" || typename == "string")
                     return;
             }
@@ -824,7 +823,7 @@ class WrapperGenVisitor : ASTVisitor {
                     escapeName(cv.name), typePostfix, escapeName(cv.name), typePostfix);
         else if (cv.type == "string")
             writefln("\t\t\t%s%s = toStringz(dclass.%s%s);", escapeName(cv.name),
-                    typePostfix, escapeName(cv.name), typePostfix);
+                    typePostfix, escapeName(cv.name), typePostfix,escapeName(cv.name), typePostfix);
         else if (cv.type in enumTable)
             writefln("\t\t\t%s%s = dclass.%s%s;", escapeName(cv.name),
                     typePostfix, escapeName(cv.name), typePostfix);
@@ -1420,11 +1419,7 @@ void old(Module mod, string[] args) {
             writeln("\t");
 
             string type;
-            if (declaration.type == "IdType") {
-                type = "string";
-            }
-            //            else if (declaration.type[0].isUpper()) {
-            else if (declaration.isClass) {
+            if (declaration.isClass) {
                 type = "I" ~ declaration.type;
             }
             else
@@ -1530,11 +1525,7 @@ void writeInterfaceDecls(Class classType, ClassVariable[] declarations) {
             continue;
         }
         string type;
-        if (declaration.type == "IdType") {
-            type = "string";
-        }
-        //            else if (declaration.type[0].isUpper()) {
-        else if (declaration.isClass) {
+        if (declaration.isClass) {
             type = "I" ~ declaration.type;
         }
         else

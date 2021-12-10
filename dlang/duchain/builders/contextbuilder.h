@@ -98,7 +98,8 @@ public:
     virtual void visitFuncDeclaration(IFunctionDeclaration *node);
     virtual void visitFunctionCallExpression(IFunctionCallExpression *node);
     virtual void visitGotoStatement(IGotoStatement *node);
-    virtual void visitIdentifier(IToken* node);
+    // TODO: JG remove
+//     virtual void visitIdentifier(IToken* node);
     virtual void visitIdentifierOrTemplateInstance(IIdentifierOrTemplateInstance *node);
     virtual void visitIdentityExpression(IIdentityExpression *node);
     virtual void visitIfStatement(IIfStatement *node);
@@ -169,8 +170,8 @@ public:
 
 protected:
 	ParseSession *m_session;
-	QStringList identifierChain;
 
 	bool m_mapAst; //Make KDevelop::AbstractContextBuilder happy.
 	QScopedPointer<Editor> m_editor; //Make KDevelop::AbstractUseBuilder happy.
+
 };

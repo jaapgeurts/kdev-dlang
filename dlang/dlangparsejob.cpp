@@ -29,6 +29,7 @@
 #include <language/duchain/parsingenvironment.h>
 #include <language/duchain/problem.h>
 #include <language/duchain/duchaindumper.h>
+#include <language/duchain/persistentsymboltable.h>
 #include <language/interfaces/ilanguagesupport.h>
 
 
@@ -166,6 +167,9 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 		DUChainReadLocker lock;
 		DUChainDumper dumper;
 		dumper.dump(context);
+
+        QTextStream out(stdout, QIODevice::WriteOnly);
+        PersistentSymbolTable::self().dump(out);
 	}
 
 	// BEGIN JG
