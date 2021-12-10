@@ -21,25 +21,27 @@
 
 #include <interfaces/icore.h>
 #include <interfaces/ilanguagecontroller.h>
+
 #include <language/backgroundparser/backgroundparser.h>
-#include <language/duchain/duchainlock.h>
+
+#include <language/duchain/classdeclaration.h>
 #include <language/duchain/duchain.h>
-#include <language/duchain/types/integraltype.h>
+#include <language/duchain/duchainlock.h>
+#include <language/duchain/duchainutils.h>
+#include <language/duchain/namespacealiasdeclaration.h>
+#include <language/duchain/topducontext.h>
 #include <language/duchain/types/arraytype.h>
 #include <language/duchain/types/enumerationtype.h>
 #include <language/duchain/types/enumeratortype.h>
 #include <language/duchain/types/functiontype.h>
 #include <language/duchain/types/identifiedtype.h>
+#include <language/duchain/types/integraltype.h>
 #include <language/duchain/types/pointertype.h>
-#include <language/duchain/classdeclaration.h>
-#include <language/duchain/topducontext.h>
-#include <language/duchain/duchainutils.h>
-
-#include <language/duchain/persistentsymboltable.h>
 
 #include "helper.h"
 #include "duchaindebug.h"
 #include "ddeclaration.h"
+#include "dclassfunctiondeclaration.h"
 
 using namespace KDevelop;
 
@@ -274,8 +276,6 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 		closeDeclaration();
 		newMethod->setInternalContext(lastContext());
 		newMethod->setType(currentFunctionType);
-
-
 	}
 
 }
@@ -284,7 +284,7 @@ void DeclarationBuilder::visitConstructor(IConstructor *node)
 {
 	TypeBuilder::visitConstructor(node);
 	DUChainWriteLocker lock;
-	ClassFunctionDeclaration *newMethod = openDefinition<ClassFunctionDeclaration>(QualifiedIdentifier("this"), editorFindRange(node, node));
+	DClassFunctionDeclaration *newMethod = openDefinition<DClassFunctionDeclaration>(QualifiedIdentifier("this"), editorFindRange(node, node));
 	if(node->getComment())
 		newMethod->setComment(QString::fromUtf8(node->getComment()));
 	newMethod->setKind(Declaration::Type);
@@ -294,13 +294,14 @@ void DeclarationBuilder::visitConstructor(IConstructor *node)
 	closeDeclaration();
 	newMethod->setInternalContext(lastContext());
 	newMethod->setType(currentFunctionType);
+    newMethod->setMethodType(DClassFunctionDeclaration::MethodType::Constructor);
 }
 
 void DeclarationBuilder::visitDestructor(IDestructor *node)
 {
 	TypeBuilder::visitDestructor(node);
 	DUChainWriteLocker lock;
-	ClassFunctionDeclaration *newMethod = openDefinition<ClassFunctionDeclaration>(QualifiedIdentifier("~this"), editorFindRange(node, node));
+	DClassFunctionDeclaration *newMethod = openDefinition<DClassFunctionDeclaration>(QualifiedIdentifier("~this"), editorFindRange(node, node));
 	if(node->getComment())
 		newMethod->setComment(QString::fromUtf8(node->getComment()));
 	newMethod->setKind(Declaration::Type);
@@ -310,6 +311,8 @@ void DeclarationBuilder::visitDestructor(IDestructor *node)
 	closeDeclaration();
 	newMethod->setInternalContext(lastContext());
 	newMethod->setType(currentFunctionType);
+    newMethod->setMethodType(DClassFunctionDeclaration::MethodType::Destructor);
+
 }
 
 void DeclarationBuilder::visitSingleImport(ISingleImport *node)
@@ -317,15 +320,17 @@ void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 	DeclarationBuilderBase::visitSingleImport(node);
 	DUChainWriteLocker lock;
 	QualifiedIdentifier importId = identifierForNode(node->getIdentifierChain());
-	DDeclaration *importDecl = openDeclaration<DDeclaration>(importId.last(),editorFindRange(node->getIdentifierChain(), nullptr)); // QualifiedIdentifier(globalImportIdentifier()) => this results in a dynamic_cast to NameSpaceAliasDeclaration  );
-    importDecl->setKind(Declaration::Import);
-    importDecl->setDKind(DDeclaration::Kind::Import);
+
+    NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(globalImportIdentifier(), editorFindRange(node->getIdentifierChain(), nullptr));
+    decl->setImportIdentifier(importId);
+    decl->setKind(Declaration::NamespaceAlias);
+
 	closeDeclaration();
 }
 
 void DeclarationBuilder::visitModule(IModule *node)
 {
-    DDeclaration* packageDeclaration = nullptr;
+    Declaration* packageDeclaration = nullptr;
 
 	if(auto moduleDeclaration = node->getModuleDeclaration())
 	{
@@ -343,10 +348,12 @@ void DeclarationBuilder::visitModule(IModule *node)
         else
             qCDebug(DUCHAIN) << "visitModule::openDeclaration() called without identifier";
 
-		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
-		packageDeclaration->setDKind(DDeclaration::Kind::Module);
+// 		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
+// 		packageDeclaration->setDKind(DDeclaration::Kind::Module);
+        packageDeclaration = openDeclaration<Declaration>(localId,editorFindRange(moduleDeclaration->getModuleName(),nullptr));
+        packageDeclaration->setKind(Declaration::Namespace);
         // Always open a context here
-		openContext(node, editorFindRange(node, 0), DUContext::Global, m_thisPackage);
+		openContext(node, editorFindRange(node, nullptr), DUContext::Namespace, m_thisPackage);
 
         packageDeclaration->setInternalContext(currentContext());
     }

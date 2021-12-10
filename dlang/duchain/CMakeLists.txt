@@ -4,6 +4,7 @@ add_library(kdevdduchain STATIC
 	builders/typebuilder.cpp
 	builders/usebuilder.cpp
 	builders/ddeclaration.cpp
+	builders/dclassfunctiondeclaration.cpp
 	navigationcontext.cpp
 	navigationwidget.cpp
 	helper.cpp
