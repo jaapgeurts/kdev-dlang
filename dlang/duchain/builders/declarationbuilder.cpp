@@ -90,8 +90,6 @@ void DeclarationBuilder::visitAliasInitializer(IAliasInitializer* node, const QS
     aliasDecl->setIsTypeAlias(true);
     closeDeclaration();
 
-    qCDebug(DUCHAIN) << "Alias decl: " << identifier << ", type: " << type->toString();
-
 }
 
 
@@ -101,7 +99,6 @@ void DeclarationBuilder::visitDeclaration(IDeclaration* node)
 
     for (size_t i =0;i<node->numAttributes();i++) {
         if (auto t = node->getAttribute(i)->getAttribute()) {
-            qCDebug(DUCHAIN) << "DECL: " << QString::fromUtf8(t->getType());
             if (QStringLiteral("protected") == t->getType())
                 m_visibility = Visibility::Protected;
             else if (QStringLiteral("private") == t->getType())

@@ -23,11 +23,13 @@
 #include <language/duchain/declaration.h>
 #include <language/duchain/topducontext.h>
 #include <language/duchain/duchainregister.h>
+#include <language/duchain/types/structuretype.h>
 
 #include <QReadLocker>
 #include <QProcess>
 
 #include "builders/ddeclaration.h"
+#include "duchaindebug.h"
 
 namespace dlang
 {
@@ -94,17 +96,50 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
 {
     // TODO: jg make it search in parent contexts and resolve types
     Q_UNUSED(searchInParent);
-	DUChainReadLocker lock;
-	if(context)
+    qCDebug(DUCHAIN) << "Looking for decl: " << id;
+    if (id.count() == 0)
+        return DeclarationPointer();
+
+    if(context)
 	{
-		auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
-		for(Declaration *decl : declarations)
-		{
-			//Import declarations are just decorations and need not be returned.
-			if(decl->kind() == Declaration::Import)
-				continue;
-			return DeclarationPointer(decl);
-		}
+        QualifiedIdentifier newIdentifier;
+        newIdentifier.push(id.at(0));
+        DUChainReadLocker lock;
+        // Find the typename declaration
+        QList<Declaration*> declarations;
+        int maxQualifiers = id.count();
+        for (int i=1;i<maxQualifiers;i++) {
+            // replace variable names with type names
+            qCDebug(DUCHAIN) << "getType:: newIdentifier: " << newIdentifier;
+            DeclarationPointer typeDecl = getTypeOrVarDeclaration(newIdentifier,context);
+            if (typeDecl) {
+                qCDebug(DUCHAIN) << "Decl found: " << typeDecl->toString();
+                StructureType::Ptr type = typeDecl->type<StructureType>();
+                if (type) {
+                    Declaration* decl = type->declaration(context->topContext());
+                    if (decl) {
+                        newIdentifier.pop();
+                        newIdentifier.pop();
+                        newIdentifier.push(decl->identifier());
+                    } else
+                        qCDebug(DUCHAIN) << "Type found but no declaration";
+                } else
+                        qCDebug(DUCHAIN) << "Type not found";
+            } else {
+                qCDebug(DUCHAIN) << "Type decl not found";
+            }
+            newIdentifier.push(id.at(i));
+        }
+        qCDebug(DUCHAIN) << "getDecl:: newIdentifier: " << newIdentifier;
+        // find the declaration that we need
+        declarations = context->findDeclarations(newIdentifier,CursorInRevision(INT_MAX,INT_MAX));
+        for(Declaration *decl : declarations)
+        {
+            //Import declarations are just decorations and need not be returned.
+            if(decl->kind() == Declaration::Import)
+                continue;
+            return DeclarationPointer(decl);
+        }
 	}
 	return DeclarationPointer();
 }
