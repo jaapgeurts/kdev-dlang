@@ -76,6 +76,25 @@ void DeclarationBuilder::startVisiting(INode *node)
 	return DeclarationBuilderBase::startVisiting(node);
 }
 
+void DeclarationBuilder::visitAliasInitializer(IAliasInitializer* node, const QString& comment)
+{
+    QualifiedIdentifier identifier = identifierForNode(node->getName());
+    visitTypeName(node->getType());
+    AbstractType::Ptr type = getLastType();
+
+    DUChainWriteLocker lock;
+    Declaration* aliasDecl = openDeclaration<Declaration>(identifier,editorFindRange(node->getName(),nullptr));
+    aliasDecl->setKind(Declaration::Type);
+    aliasDecl->setAbstractType(type);
+    aliasDecl->setComment(comment);
+    aliasDecl->setIsTypeAlias(true);
+    closeDeclaration();
+
+    qCDebug(DUCHAIN) << "Alias decl: " << identifier << ", type: " << type->toString();
+
+}
+
+
 void DeclarationBuilder::visitDeclaration(IDeclaration* node)
 {
     m_visibility = Visibility::Public; // this is the default in D
@@ -263,6 +282,7 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
             newMethod->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Private);
         else
             newMethod->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Public);
+        // TODO: JG also consider, final and abstract
 	}
 	else
 	{
@@ -348,6 +368,7 @@ void DeclarationBuilder::visitModule(IModule *node)
         else
             qCDebug(DUCHAIN) << "visitModule::openDeclaration() called without identifier";
 
+        qCDebug(DUCHAIN) << "Localid: " << localId << " packageid: " << m_thisPackage;
 // 		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
 // 		packageDeclaration->setDKind(DDeclaration::Kind::Module);
         packageDeclaration = openDeclaration<Declaration>(localId,editorFindRange(moduleDeclaration->getModuleName(),nullptr));

@@ -76,6 +76,7 @@ KDevelop::RangeInRevision ContextBuilder::editorFindRange(INode *fromNode, INode
 	return m_session->findRange(fromNode, toNode ? toNode : fromNode);
 }
 
+// TODO: JG Should return an identifier; not QualifiedIdentifier
 KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IToken *node)
 {
 	if(!node || node == (IToken *)0x1)
@@ -274,7 +275,9 @@ void ContextBuilder::visitDeclarationsAndStatements(IDeclarationsAndStatements *
 void ContextBuilder::visitDeclaration(IDeclaration *node)
 {
 
-	if(auto n = node->getClassDeclaration())
+    if (auto n= node->getAliasDeclaration())
+        visitAliasDeclaration(n);
+	else if(auto n = node->getClassDeclaration())
 		visitClassDeclaration(n);
 	else if(auto n = node->getFunctionDeclaration())
 		visitFuncDeclaration(n);
@@ -302,6 +305,23 @@ void ContextBuilder::visitDeclaration(IDeclaration *node)
     for(size_t i=0; i<node->numDeclarations(); i++)
 		visitDeclaration(node->getDeclaration(i));
 }
+
+void ContextBuilder::visitAliasDeclaration(IAliasDeclaration* node)
+{
+    for (size_t i=0;i<node->numInitializers();i++) {
+        visitAliasInitializer(node->getInitializer(i), QString::fromUtf8(node->getComment()));
+    }
+    // TODO: JG also deal with declaratorIdentifier list
+    // TODO: JG also deal with type identifier
+
+}
+
+void ContextBuilder::visitAliasInitializer(IAliasInitializer* node, const QString& comment)
+{
+    Q_UNUSED(node);
+    Q_UNUSED(comment);
+}
+
 
 void ContextBuilder::visitClassDeclaration(IClassDeclaration *node)
 {

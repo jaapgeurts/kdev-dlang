@@ -49,6 +49,7 @@ public:
 	virtual void startVisiting(INode *node) override;
 
     virtual void visitCatch(ICatch *node) override;
+    virtual void visitAliasInitializer(IAliasInitializer* node, const QString& comment) override;
     virtual void visitDeclaration(IDeclaration* node) override;
 	virtual void visitClassDeclaration(IClassDeclaration *node) override;
 	virtual void visitConstructor(IConstructor *node) override;

@@ -55,6 +55,8 @@ public:
 	virtual void startVisiting(INode *node) override;
 
     virtual void visitAddExpression(IAddExpression *node);
+    virtual void visitAliasDeclaration(IAliasDeclaration* node);
+    virtual void visitAliasInitializer(IAliasInitializer* node, const QString& comment);
     virtual void visitArguments(IArguments *node);
     virtual void visitAsmStatement(IAsmStatement *node);
     virtual void visitAssertArguments(IAssertArguments *node); // TODO: added
