@@ -31,6 +31,8 @@
 
 using namespace KDevelop;
 
+#include "duchaindebug.h"
+
 namespace dlang
 {
 
@@ -42,15 +44,21 @@ void TypeBuilder::visitTypeName(IType *node)
 		return;
 	}
 	// TODO: JG this should change to a visit method
-	ITypeIdentifierPart* identPart = node->getType2()->getTypeIdentifierPart();
-	if(identPart) {
-      if (identPart->getIdentifierOrTemplateInstance() && identPart->getIdentifierOrTemplateInstance()->getIdentifier())
-		buildTypeName(identifierForNode(identPart->getIdentifierOrTemplateInstance()->getIdentifier()));
-	else if(identPart->getIdentifierOrTemplateInstance()->getTemplateInstance())
-		buildTypeName(identifierForNode(identPart->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier()));
+	QualifiedIdentifier ident;
+	if(auto identPart = node->getType2()->getTypeIdentifierPart()) {
+        if(auto templateInstance = identPart->getIdentifierOrTemplateInstance()->getTemplateInstance())
+            ident = identifierForNode(templateInstance->getIdentifier());
+        else if (auto templateInstance = identPart->getIdentifierOrTemplateInstance())
+            ident = identifierForNode(templateInstance->getIdentifier());
     } else {
-		buildTypeName(QualifiedIdentifier(node->getType2()->getBuiltinType()));
+		ident = QualifiedIdentifier(node->getType2()->getBuiltinType());
     }
+    if (ident.isEmpty()) {
+        qCDebug(DUCHAIN) << "Empty identifier for node at line : " << node->getStartLine();
+        return;
+    }
+    buildTypeName(ident);
+
 	for(size_t i=0; i<node->numTypeSuffixes(); i++)
 	{
 		if(node->getTypeSuffix(i)->getArray())
@@ -111,9 +119,11 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 	if(type == IntegralType::TypeNone)
 	{
 		DeclarationPointer decl = dlang::getTypeDeclaration(typeName, currentContext());
+        qCDebug(DUCHAIN) << "TypeBuilder: getting decl for: " << typeName;
 		if(decl)
 		{
 			DUChainReadLocker lock;
+            qCDebug(DUCHAIN) << "TypeBuilder: Found " << decl->qualifiedIdentifier();
 			StructureType *type = new StructureType();
 			type->setDeclaration(decl.data());
 			injectType<AbstractType>(AbstractType::Ptr(type));

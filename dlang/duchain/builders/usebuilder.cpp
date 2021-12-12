@@ -79,6 +79,7 @@ void UseBuilder::visitTypeName(IType *node)
 	DeclarationPointer decl = getTypeDeclaration(id, context);
     qCDebug(DUCHAIN) << "UseBuilder::visitTypeName " << id;
 	if(decl) {
+        qCDebug(DUCHAIN) << "UseBuilder::Decl found for typename: " << id;
 		newUse(ident, decl);
     }
 }

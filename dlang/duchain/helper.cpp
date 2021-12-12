@@ -92,41 +92,68 @@ QList<QString> Helper::getSearchPaths(QUrl document)
 	return paths;
 }
 
+DeclarationPointer resolveTypeDeclarationForIdentifier(QualifiedIdentifier newIdentifier, DUContext *context)
+{
+    DeclarationPointer typeDecl = getTypeOrVarDeclaration(newIdentifier,context);
+    if (typeDecl) {
+        qCDebug(DUCHAIN) << "Decl found: " << typeDecl->toString();
+        StructureType::Ptr type = typeDecl->type<StructureType>();
+        if (type) {
+            Declaration* decl = type->declaration(nullptr);
+            if (decl) {
+                return DeclarationPointer(decl);
+            } else {
+                qCDebug(DUCHAIN) << "Type found but declaration not found: " << type->toString();
+            }
+        } else {
+                qCDebug(DUCHAIN) << "Type not found";
+        }
+    } else {
+        qCDebug(DUCHAIN) << "Type decl not found; check to see if it's an import decl";
+//         typeDecl = context->findDeclarations(newIdentifier,)
+    }
+    return DeclarationPointer();
+}
+
 DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bool searchInParent)
 {
     // TODO: jg make it search in parent contexts and resolve types
     Q_UNUSED(searchInParent);
     qCDebug(DUCHAIN) << "Looking for decl: " << id;
-    if (id.count() == 0)
+    if (id.count() == 0) {
+        qCDebug(DUCHAIN) << "ERROR: lookup for empty declaration requested." << id;
         return DeclarationPointer();
+    }
 
     if(context)
 	{
-        QualifiedIdentifier newIdentifier;
-        newIdentifier.push(id.at(0));
+        // Try to find the full qualifiedidentifier
         DUChainReadLocker lock;
+        QList<Declaration*> declarations = context->findDeclarations(id,CursorInRevision(INT_MAX,INT_MAX));
+        for(Declaration *decl : declarations)
+        {
+            //Import declarations are just decorations and need not be returned.
+            if(decl->kind() == Declaration::Import)
+                continue;
+            return DeclarationPointer(decl);
+        }
+        // Not found? Try to resolve identifier to type names
+        QualifiedIdentifier newIdentifier;
+        newIdentifier.push(id.at(0)); // start with the left part first
         // Find the typename declaration
-        QList<Declaration*> declarations;
         int maxQualifiers = id.count();
         for (int i=1;i<maxQualifiers;i++) {
             // replace variable names with type names
             qCDebug(DUCHAIN) << "getType:: newIdentifier: " << newIdentifier;
-            DeclarationPointer typeDecl = getTypeOrVarDeclaration(newIdentifier,context);
+            DeclarationPointer typeDecl = resolveTypeDeclarationForIdentifier(newIdentifier,context);
             if (typeDecl) {
-                qCDebug(DUCHAIN) << "Decl found: " << typeDecl->toString();
-                StructureType::Ptr type = typeDecl->type<StructureType>();
-                if (type) {
-                    Declaration* decl = type->declaration(context->topContext());
-                    if (decl) {
-                        newIdentifier.pop();
-                        newIdentifier.pop();
-                        newIdentifier.push(decl->identifier());
-                    } else
-                        qCDebug(DUCHAIN) << "Type found but no declaration";
-                } else
-                        qCDebug(DUCHAIN) << "Type not found";
+                // Found
+                newIdentifier.clear();
+                newIdentifier.push(typeDecl->identifier());
             } else {
-                qCDebug(DUCHAIN) << "Type decl not found";
+                // not found
+                qCDebug(DUCHAIN) << "Couldn't resolve type for identifier " << newIdentifier;
+                break;
             }
             newIdentifier.push(id.at(i));
         }
@@ -140,6 +167,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
                 continue;
             return DeclarationPointer(decl);
         }
+
 	}
 	return DeclarationPointer();
 }
