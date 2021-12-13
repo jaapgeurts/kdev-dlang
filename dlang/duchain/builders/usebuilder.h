@@ -39,6 +39,7 @@ public:
 	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
 	virtual void startVisiting(INode *node) override;
     virtual void visitExpression(IExpression* node) override;
+    virtual void visitFunctionCallExpression(IFunctionCallExpression *node) override;
 	virtual void visitPrimaryExpression(IPrimaryExpression *node) override;
     virtual void visitTemplateParameter(ITemplateParameter* node) override;
 	virtual void visitToken(IToken *node) override;

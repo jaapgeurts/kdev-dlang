@@ -167,7 +167,9 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
     // TODO: JG import bindings are ignored
+    // Lives in importdeclaration.
     IIdentifierChain* chain = node->getIdentifierChain();
+    qCDebug(DUCHAIN) << "Import chain: " << identifierForNode(chain).toString();
 	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(chain));
 	if(contexts.length() > 0 && chain->numIdentifiers() > 0) {
 		currentContext()->addImportedParentContext(

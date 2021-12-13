@@ -53,18 +53,22 @@ void UseBuilder::visitTypeName(IType *node)
     if (auto node2 = node->getType2()->getTypeIdentifierPart()) {
 
         // Get the identifier either from the identifier or template
-        if (node2->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
-            ident = node2->getIdentifierOrTemplateInstance()->getTemplateInstance()->getIdentifier();
+        if (auto templateInstance = node2->getIdentifierOrTemplateInstance()->getTemplateInstance()) {
+            ident = templateInstance->getIdentifier();
         }
         if (ident == nullptr) {
             ident = node2->getIdentifierOrTemplateInstance()->getIdentifier();
         }
     } else {
-        // must be built in type
+        // must be built in type or template argument
         return;
     }
 
     QualifiedIdentifier id(identifierForNode(ident));
+
+    if (id.isEmpty()) {
+        qCDebug(DUCHAIN) << "ERROR: No identifier at line: " << node->getStartLine();
+    }
 
 	DUContext *context = nullptr;
 	{
@@ -94,7 +98,8 @@ void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
         id = identifierForNode(n->getIdentifier());
     }
     else {
-        qCDebug(DUCHAIN) << "QualifiedIdentifier not found: " << id;
+        qCDebug(DUCHAIN) << "ERROR: QualifiedIdentifier not found: " << id;
+        return;
     }
 
     DUContext *context = nullptr;
@@ -130,9 +135,7 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
         ident = node->getIdentifierOrTemplateInstance()->getIdentifier();
     }
 
-    QualifiedIdentifier identifier(identifierForNode(ident));
-
-    m_identifier.push(identifier);
+    m_identifier.push(identifierForNode(ident));
 
 	DUContext *context = nullptr;
 	{
@@ -162,6 +165,19 @@ void UseBuilder::visitExpression(IExpression* node)
     m_identifier.clear();
 }
 
+void UseBuilder::visitFunctionCallExpression(IFunctionCallExpression *node)
+{
+    visitUnaryExpression(node->getUnaryExpression());
+
+    if (IArgumentList* argsList = node->getArguments()->getArgumentList()) {
+        size_t numArgs = argsList->numItems();
+        for(size_t i=0;i<numArgs;i++) {
+            m_identifier.clear(); // each time start with clear identfier chain
+            UseBuilder::visitExpressionNode(argsList->getItem(i));
+        }
+    }
+    m_identifier.clear();
+}
 
 void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 {
@@ -201,7 +217,7 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 	DeclarationPointer decl = getDeclaration(m_identifier, context);
     qCDebug(DUCHAIN) << "UseBuilder::visitUnaryExpression " << id;
 	if(decl) {
-		newUse(node, decl);
+		newUse(ident, decl);
     }
 }
 
