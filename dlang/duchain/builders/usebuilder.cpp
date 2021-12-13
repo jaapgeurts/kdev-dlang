@@ -159,26 +159,6 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
     }
 }
 
-void UseBuilder::visitExpression(IExpression* node)
-{
-    UseBuilderBase::visitExpression(node);
-    m_identifier.clear();
-}
-
-void UseBuilder::visitFunctionCallExpression(IFunctionCallExpression *node)
-{
-    visitUnaryExpression(node->getUnaryExpression());
-
-    if (IArgumentList* argsList = node->getArguments()->getArgumentList()) {
-        size_t numArgs = argsList->numItems();
-        for(size_t i=0;i<numArgs;i++) {
-            m_identifier.clear(); // each time start with clear identfier chain
-            UseBuilder::visitExpressionNode(argsList->getItem(i));
-        }
-    }
-    m_identifier.clear();
-}
-
 void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 {
     // If there are more unary expressions to visit, go there first to build the identifier chain

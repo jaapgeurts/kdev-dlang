@@ -55,14 +55,21 @@ void ContextBuilder::startVisiting(INode *node)
 
 void ContextBuilder::visitModule(IModule *node)
 {
-
 	for(size_t i=0; i<node->numDeclarations(); i++)
 	{
 		if(auto n = node->getDeclaration(i))
 			visitDeclaration(n);
 	}
-
 }
+
+void ContextBuilder::visitMulExpression(IMulExpression* node)
+{
+	if(auto n = node->getLeft())
+		visitExpressionNode(n);
+	if(auto n = node->getRight())
+		visitExpressionNode(n);
+}
+
 
 KDevelop::DUContext *ContextBuilder::contextFromNode(INode *node)
 {
@@ -573,6 +580,8 @@ void ContextBuilder::visitExpressionNode(IExpressionNode *node)
 		visitPrimaryExpression(n);
 	else if(auto n = node->getAddExpression())
 		visitAddExpression(n);
+    else if (auto n = node->getMulExpression())
+        visitMulExpression(n);
 	else if(auto n = node->getAssignExpression())
 		visitAssignExpression(n);
 	else if(auto n = node->getFunctionCallExpression())
@@ -593,12 +602,18 @@ void ContextBuilder::visitExpressionNode(IExpressionNode *node)
 		visitIdentityExpression(n);
 	else if(auto n = node->getInExpression())
 		visitInExpression(n);
+    else if (auto n = node->getTernaryExpression())
+        visitTernaryExpression(n);
+
+    //qCDebug(DUCHAIN) << "Clearing identifier chain: " << m_identifier;
+    m_identifier.clear();
 }
 
 void ContextBuilder::visitExpression(IExpression *node)
 {
-	for(size_t i=0; i<node->numItems(); i++)
+	for(size_t i=0; i<node->numItems(); i++) {
 		visitExpressionNode(node->getItem(i));
+    }
 }
 
 void ContextBuilder::visitInExpression(IInExpression *node)
@@ -699,11 +714,19 @@ void ContextBuilder::visitTemplateInstance ( ITemplateInstance* node )
 //     identifierChain.append(QString::fromUtf8(node->getText()));
 // }
 
+void ContextBuilder::visitTernaryExpression(ITernaryExpression* node)
+{
+
+    // TODO: JG Implement this
+   Q_UNUSED(node);
+}
+
 
 void ContextBuilder::visitAddExpression(IAddExpression *node)
 {
 	if(auto n = node->getLeft())
 		visitExpressionNode(n);
+
 	if(auto n = node->getRight())
 		visitExpressionNode(n);
 }
@@ -790,6 +813,7 @@ void ContextBuilder::visitFunctionCallExpression(IFunctionCallExpression *node)
 {
 	if(auto n = node->getUnaryExpression())
 		visitUnaryExpression(n);
+    m_identifier.clear();
 	if(auto n = node->getType())
 		visitTypeName(n);
 	if(auto n = node->getArguments())
@@ -801,8 +825,9 @@ void ContextBuilder::visitArguments(IArguments *node)
 	auto list = node->getArgumentList();
 	if(!list)
 		return;
-	for(size_t i=0; i<list->numItems(); i++)
+	for(size_t i=0; i<list->numItems(); i++) {
 		visitExpressionNode(list->getItem(i));
+    }
 }
 
 void ContextBuilder::visitReturnStatement(IReturnStatement *node)

@@ -115,6 +115,7 @@ public:
     virtual void visitLabeledStatement(ILabeledStatement *node);
     virtual void visitLastCatch(ILastCatch *node);
     virtual void visitModule(IModule *node);
+    virtual void visitMulExpression(IMulExpression* node);
     virtual void visitParameter(IParameter *node);
     virtual void visitPrimaryExpression(IPrimaryExpression *node);
     virtual void visitRelExpression(IRelExpression *node);
@@ -133,6 +134,7 @@ public:
     virtual void visitTemplateDeclaration(ITemplateDeclaration* node);
     virtual void visitTemplateInstance(ITemplateInstance* node);
     virtual void visitTemplateParameter(ITemplateParameter* node);
+    virtual void visitTernaryExpression(ITernaryExpression* node);
     virtual void visitThrowStatement(IThrowStatement *node);
     virtual void visitToken(IToken *node);
     virtual void visitTryStatement(ITryStatement *node);
@@ -175,5 +177,6 @@ protected:
 
 	bool m_mapAst; //Make KDevelop::AbstractContextBuilder happy.
 	QScopedPointer<Editor> m_editor; //Make KDevelop::AbstractUseBuilder happy.
+	KDevelop::QualifiedIdentifier m_identifier; // Keeps track of the current identifier
 
 };
