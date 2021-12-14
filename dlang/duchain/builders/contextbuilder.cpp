@@ -948,7 +948,8 @@ void ContextBuilder::visitLabeledStatement(ILabeledStatement *node)
 void ContextBuilder::visitBreakStatement(IBreakStatement *node)
 {
 	if(auto n = node->getLabel())
-		visitToken(n);
+        if (n->getText() != nullptr)
+            visitToken(n);
 }
 
 void ContextBuilder::visitContinueStatement(IContinueStatement *node)

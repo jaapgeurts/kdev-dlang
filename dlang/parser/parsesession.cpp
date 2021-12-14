@@ -548,7 +548,7 @@ RangeInRevision ParseSession::findRange(INode *from, INode *to)
 				lineEnd = f->getLine();
                 const char* s = f->getText();
                 if (s == nullptr) { // some tokens have no text.
-                    // TODO: can this be removed
+                    // TODO: JG can this be removed
                     // test with ABORT()
                     printf("******#### token text is NULL on col,line: %d,%d\n",(int)lineEnd,(int)f->getColumn());
                     columnEnd = f->getColumn();

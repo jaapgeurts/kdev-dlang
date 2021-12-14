@@ -48,10 +48,14 @@ void TypeBuilder::visitTypeName(IType *node)
         else if (auto templateInstance = identPart->getIdentifierOrTemplateInstance())
             ident = identifierForNode(templateInstance->getIdentifier());
     } else {
-		ident = QualifiedIdentifier(node->getType2()->getBuiltinType());
+        if (auto t = node->getType2()->getBuiltinType()) {
+            ident = QualifiedIdentifier(t);
+        } else if (auto t  = node->getType2()->getType()->getType2()->getBuiltinType()) {
+            ident = QualifiedIdentifier(t);
+        }
     }
     if (ident.isEmpty()) {
-        qCDebug(DUCHAIN) << "Empty identifier for node at line : " << node->getStartLine();
+        qCDebug(DUCHAIN) << "ERROR: Empty identifier for node at line : " << node->getStartLine();
         return;
     }
     buildTypeName(ident);
@@ -66,7 +70,7 @@ void TypeBuilder::visitTypeName(IType *node)
 			injectType(array);
 		}
 
-		if(QString(node->getTypeSuffix(i)->getStar()->getText()) != "")
+		if(QString::fromUtf8(node->getTypeSuffix(i)->getStar()->getType()) != "")
 		{
 			KDevelop::PointerType::Ptr pointer(new KDevelop::PointerType());
 			pointer->setBaseType(lastType());
@@ -85,7 +89,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 	else if(name == "ubyte")
 		type = KDevelop::IntegralType::TypeSbyte;
 	else if(name == "ushort")
-		type = KDevelop::IntegralType::TypeShort;
+		type = KDevelop::IntegralType::TypeShort; // TODO: JG Type short is not supported by kdevelop
 	else if(name == "uint")
 		type = KDevelop::IntegralType::TypeInt;
 	else if(name == "ulong")
