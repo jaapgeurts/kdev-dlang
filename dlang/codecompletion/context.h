@@ -26,13 +26,11 @@
 #include <QStack>
 #include <language/duchain/declaration.h>
 
-namespace dlang
-{
 
-class DLANGCOMPLETION_EXPORT CodeCompletionContext : public KDevelop::CodeCompletionContext
+class DLANGCOMPLETION_EXPORT DCodeCompletionContext : public KDevelop::CodeCompletionContext
 {
 public:
-	CodeCompletionContext(const KDevelop::DUContextPointer &context, const QString &text,
+	DCodeCompletionContext(const KDevelop::DUContextPointer &context, const QString &text,
 	                      const KDevelop::CursorInRevision &position, int depth = 0);
 
 	virtual QList<KDevelop::CompletionTreeItemPointer> completionItems(bool &abort, bool fullCompletion = true) override;
@@ -85,4 +83,3 @@ private:
 	QString m_fullText;
 };
 
-}

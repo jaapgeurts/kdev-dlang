@@ -23,9 +23,6 @@
 #include <KTextEditor/Document>
 #include <language/codecompletion/codecompletionmodel.h>
 
-namespace dlang
-{
-
 ImportCompletionItem::ImportCompletionItem(QString packagename) : KDevelop::NormalDeclarationCompletionItem(KDevelop::DeclarationPointer(),
     QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0), m_packageName(packagename)
 {
@@ -48,6 +45,4 @@ void ImportCompletionItem::execute(KTextEditor::View *view, const KTextEditor::R
 	if(document->text(checkSuffix).startsWith('"'))
 		suffix.clear();
 	document->replaceText(word, m_packageName + suffix);
-}
-
 }

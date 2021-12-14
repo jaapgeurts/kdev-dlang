@@ -23,8 +23,6 @@
 
 using namespace KDevelop;
 
-namespace dlang
-{
 
 class FunctionCompletionItem : public CompletionItem
 {
@@ -47,4 +45,3 @@ private:
 	QString m_arguments;
 };
 
-}

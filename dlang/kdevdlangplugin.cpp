@@ -60,7 +60,7 @@ DPlugin::DPlugin(QObject *parent, const QVariantList &) : KDevelop::IPlugin("kde
 
 	initDParser();
 
-	CodeCompletionModel *codeCompletion = new dlang::CodeCompletionModel(this);
+	CodeCompletionModel *codeCompletion = new DCodeCompletionModel(this);
 	new CodeCompletion(this, codeCompletion, name());
 
 	m_highlighting = new Highlighting(this);

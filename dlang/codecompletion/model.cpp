@@ -21,17 +21,13 @@
 
 #include "worker.h"
 
-namespace dlang
+DCodeCompletionModel::DCodeCompletionModel(QObject *parent) : KDevelop::CodeCompletionModel(parent)
 {
 
-CodeCompletionModel::CodeCompletionModel(QObject *parent) : KDevelop::CodeCompletionModel(parent)
-{
-	
 }
 
-KDevelop::CodeCompletionWorker *CodeCompletionModel::createCompletionWorker()
+KDevelop::CodeCompletionWorker *DCodeCompletionModel::createCompletionWorker()
 {
 	return new CodeCompletionWorker(this);
 }
 
-}

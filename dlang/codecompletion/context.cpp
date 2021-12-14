@@ -38,16 +38,13 @@
 
 using namespace KDevelop;
 
-namespace dlang
-{
-
-CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer &context, const QString &text, const KDevelop::CursorInRevision &position, int depth) :
+DCodeCompletionContext::DCodeCompletionContext(const KDevelop::DUContextPointer &context, const QString &text, const KDevelop::CursorInRevision &position, int depth) :
     KDevelop::CodeCompletionContext(context, extractLastLine(text), position, depth), m_fullText(text)
 {
 
 }
 
-QList<CompletionTreeItemPointer> CodeCompletionContext::completionItems(bool &abort, bool fullCompletion)
+QList<CompletionTreeItemPointer> DCodeCompletionContext::completionItems(bool &abort, bool fullCompletion)
 {
     Q_UNUSED(abort);
     Q_UNUSED(fullCompletion);
@@ -81,7 +78,7 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::completionItems(bool &ab
 	return items;
 }
 
-QList<CompletionTreeItemPointer> CodeCompletionContext::normalCompletion()
+QList<CompletionTreeItemPointer> DCodeCompletionContext::normalCompletion()
 {
 	//All declarations.
 	QList<CompletionTreeItemPointer> items;
@@ -98,7 +95,7 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::normalCompletion()
 	return items;
 }
 
-QList<CompletionTreeItemPointer> CodeCompletionContext::functionCallTips()
+QList<CompletionTreeItemPointer> DCodeCompletionContext::functionCallTips()
 {
 	QStack<ExpressionStackEntry> stack = expressionStack(m_text);
 	QList<CompletionTreeItemPointer> items;
@@ -133,7 +130,7 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::functionCallTips()
 	return items;
 }
 
-QList<CompletionTreeItemPointer> CodeCompletionContext::importAndMemberCompletion()
+QList<CompletionTreeItemPointer> DCodeCompletionContext::importAndMemberCompletion()
 {
 	QList<CompletionTreeItemPointer> items;
 	AbstractType::Ptr lasttype = lastType(m_text.left(m_text.size()-1));
@@ -206,7 +203,7 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::importAndMemberCompletio
 	return items;
 }
 
-QList<CompletionTreeItemPointer> CodeCompletionContext::importCompletion()
+QList<CompletionTreeItemPointer> DCodeCompletionContext::importCompletion()
 {
 	auto searchPaths = Helper::getSearchPaths();
 	QList<CompletionTreeItemPointer> items;
@@ -241,10 +238,10 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::importCompletion()
 }
 
 
-QStack<CodeCompletionContext::ExpressionStackEntry> CodeCompletionContext::expressionStack(const QString &expression)
+QStack<DCodeCompletionContext::ExpressionStackEntry> DCodeCompletionContext::expressionStack(const QString &expression)
 {
 	//For details see similar function in QmlJS KDevelop plugin.
-	QStack<CodeCompletionContext::ExpressionStackEntry> stack;
+	QStack<DCodeCompletionContext::ExpressionStackEntry> stack;
 	QByteArray expr(expression.toUtf8());
 	/*KDevPG::QByteArrayIterator iter(expr);
 	Lexer lexer(iter);
@@ -316,7 +313,7 @@ QStack<CodeCompletionContext::ExpressionStackEntry> CodeCompletionContext::expre
 	return stack;
 }
 
-AbstractType::Ptr CodeCompletionContext::lastType(const QString &expression)
+AbstractType::Ptr DCodeCompletionContext::lastType(const QString &expression)
 {
         // TODO: JG investigate
     Q_UNUSED(expression);
@@ -342,7 +339,7 @@ AbstractType::Ptr CodeCompletionContext::lastType(const QString &expression)
 	return AbstractType::Ptr();
 }
 
-DeclarationPointer CodeCompletionContext::lastDeclaration(const QString &expression)
+DeclarationPointer DCodeCompletionContext::lastDeclaration(const QString &expression)
 {
     // TODO: JG investigate
     Q_UNUSED(expression);
@@ -363,14 +360,14 @@ DeclarationPointer CodeCompletionContext::lastDeclaration(const QString &express
 	return DeclarationPointer();
 }
 
-CompletionTreeItemPointer CodeCompletionContext::itemForDeclaration(QPair<Declaration *, int> declaration)
+CompletionTreeItemPointer DCodeCompletionContext::itemForDeclaration(QPair<Declaration *, int> declaration)
 {
 	if(declaration.first->isFunctionDeclaration())
 		return CompletionTreeItemPointer(new FunctionCompletionItem(DeclarationPointer(declaration.first)));
-	return CompletionTreeItemPointer(new dlang::CompletionItem(DeclarationPointer(declaration.first), QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), declaration.second));
+	return CompletionTreeItemPointer(new CompletionItem(DeclarationPointer(declaration.first), QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), declaration.second));
 }
 
-bool CodeCompletionContext::isInsideCommentOrString()
+bool DCodeCompletionContext::isInsideCommentOrString()
 {
 	bool inLineComment = false;
 	bool inComment = false;
@@ -452,4 +449,4 @@ bool CodeCompletionContext::isInsideCommentOrString()
 	return false;
 }
 
-}
+

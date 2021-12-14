@@ -23,9 +23,6 @@
 
 using namespace KDevelop;
 
-namespace dlang
-{
-
 class CompletionItem : public NormalDeclarationCompletionItem
 {
 public:
@@ -39,5 +36,5 @@ private:
 	QString m_prefix;
 };
 
-}
+
 

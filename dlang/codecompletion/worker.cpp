@@ -22,21 +22,20 @@
 #include "context.h"
 #include "completiondebug.h"
 
-namespace dlang
-{
+
 CodeCompletionWorker::CodeCompletionWorker(KDevelop::CodeCompletionModel *model): KDevelop::CodeCompletionWorker(model)
 {
 
 }
 
-KDevelop::CodeCompletionContext *CodeCompletionWorker::createCompletionContext(KDevelop::DUContextPointer context,
+KDevelop::CodeCompletionContext *CodeCompletionWorker::createCompletionContext(const KDevelop::DUContextPointer& context,
         const QString &contextText,
         const QString &followingText,
         const KDevelop::CursorInRevision &position) const
 {
     Q_UNUSED(followingText);
 	qCDebug(COMPLETION) << "Completion test";
-	return new dlang::CodeCompletionContext(context, contextText, position);
+	return new DCodeCompletionContext(context, contextText, position);
 }
 
-}
+

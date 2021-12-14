@@ -26,8 +26,6 @@
 #include <language/codecompletion/codecompletionmodel.h>
 #include <language/duchain/types/functiontype.h>
 
-namespace dlang
-{
 
 FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int depth, int atArgument) :
     CompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
@@ -37,7 +35,7 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
 	KDevelop::FunctionType::Ptr type(fastCast<KDevelop::FunctionType *>(decl->abstractType().constData()));
 	if(!type)
 		return;
-	
+
 	DUContext *argsContext = 0;
 	if(function)
 		argsContext = function->internalContext();
@@ -120,7 +118,7 @@ QVariant FunctionCompletionItem::data(const QModelIndex &index, int role, const 
 		}
 		case CodeCompletionModel::CompletionRole:
 			return (int)completionProperties();
-			
+
 		case CodeCompletionModel::HighlightingMethod:
 			if(index.column() == CodeCompletionModel::Arguments)
 				return (int)CodeCompletionModel::CustomHighlighting;
@@ -130,10 +128,10 @@ QVariant FunctionCompletionItem::data(const QModelIndex &index, int role, const 
 			if(index.column() == CodeCompletionModel::Arguments && m_atArgument != -1)
 			{
 				QTextFormat format;
-				
+
 				format.setBackground(QBrush(QColor::fromRgb(142, 186, 255))); //Same color as kdev-python.
 				format.setProperty(QTextFormat::FontWeight, 99);
-				
+
 				return QVariantList()
 				       << m_currentArgStart
 				       << m_currentArgEnd - m_currentArgStart
@@ -157,6 +155,4 @@ int FunctionCompletionItem::argumentHintDepth() const
 int FunctionCompletionItem::inheritanceDepth() const
 {
 	return 0;
-}
-
 }

@@ -23,16 +23,14 @@
 
 #include "dcompletionexport.h"
 
-namespace dlang
-{
 
-class DLANGCOMPLETION_EXPORT CodeCompletionModel : public KDevelop::CodeCompletionModel
+class DLANGCOMPLETION_EXPORT DCodeCompletionModel : public KDevelop::CodeCompletionModel
 {
 public:
-	CodeCompletionModel(QObject *parent);
+	DCodeCompletionModel(QObject *parent);
 
 protected:
 	virtual KDevelop::CodeCompletionWorker *createCompletionWorker() override;
 };
 
-}
+

@@ -25,9 +25,6 @@
 
 #include "context.h"
 
-namespace dlang
-{
-
 CompletionItem::CompletionItem(KDevelop::DeclarationPointer decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext> context, int inheritanceDepth) :
     NormalDeclarationCompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
     m_prefix("")
@@ -45,6 +42,4 @@ CompletionItem::CompletionItem(KDevelop::DeclarationPointer decl, QExplicitlySha
 QVariant CompletionItem::data(const QModelIndex &index, int role, const KDevelop::CodeCompletionModel *model) const
 {
 	return NormalDeclarationCompletionItem::data(index, role, model);
-}
-
 }

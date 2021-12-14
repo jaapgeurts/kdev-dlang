@@ -113,6 +113,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 	else if(name == "bool")
 		type = KDevelop::IntegralType::TypeBoolean;
 
+
 	if(type == IntegralType::TypeNone)
 	{
 		DeclarationPointer decl = getTypeDeclaration(typeName, currentContext());

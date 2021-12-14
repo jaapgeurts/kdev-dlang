@@ -365,7 +365,6 @@ void DeclarationBuilder::visitModule(IModule *node)
         else
             qCDebug(DUCHAIN) << "visitModule::openDeclaration() called without identifier";
 
-        qCDebug(DUCHAIN) << "Localid: " << localId << " packageid: " << m_thisPackage;
 // 		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
 // 		packageDeclaration->setDKind(DDeclaration::Kind::Module);
         packageDeclaration = openDeclaration<Declaration>(localId,editorFindRange(moduleDeclaration->getModuleName(),nullptr));
@@ -376,8 +375,9 @@ void DeclarationBuilder::visitModule(IModule *node)
         packageDeclaration->setInternalContext(currentContext());
     }
 
-    // always visit: Modules /do/ require a module statement
-    // but if omitted further visiting will crash because of a missing a context.
+    // TODO: JG always import object.d (this is the default D behaviour)
+
+    // always visit: files do NOT require a module statement
     DeclarationBuilderBase::visitModule(node);
 
 

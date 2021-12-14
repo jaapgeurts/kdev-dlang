@@ -23,9 +23,6 @@
 
 using namespace KDevelop;
 
-namespace dlang
-{
-
 class ImportCompletionItem : public KDevelop::NormalDeclarationCompletionItem
 {
 public:
@@ -37,4 +34,3 @@ private:
 	QString m_packageName;
 };
 
-}
