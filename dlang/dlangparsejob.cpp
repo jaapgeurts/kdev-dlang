@@ -59,7 +59,7 @@ DParseJob::DParseJob(const KDevelop::IndexedString &url, KDevelop::ILanguageSupp
 void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
     Q_UNUSED(self);
-	qCDebug(D) << "DParseJob succesfully created for document " << document();
+	qCDebug(DPLUGIN) << "DParseJob succesfully created for document " << document();
 
 	UrlParseLock urlLock(document());
 	if(abortRequested())
@@ -99,12 +99,12 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	newFeatures = (TopDUContext::Features)(newFeatures & TopDUContext::AllDeclarationsContextsAndUses);
 
 	if(newFeatures & TopDUContext::ForceUpdate)
-		qCDebug(D) << "update enforced";
+		qCDebug(DPLUGIN) << "update enforced";
 
 	session.setFeatures(newFeatures);
 
-	qCDebug(D) << "Job features: " << newFeatures;
-	qCDebug(D) << "Job priority: " << parsePriority();
+	qCDebug(DPLUGIN) << "Job features: " << newFeatures;
+	qCDebug(DPLUGIN) << "Job priority: " << parsePriority();
 
 
     // The actual parsing is done in the session
@@ -118,9 +118,9 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 		forExport = true;
 
 	if(!forExport)
-		session.setIncludePaths(dlang::Helper::getSearchPaths(document().toUrl()));
+		session.setIncludePaths(Helper::getSearchPaths(document().toUrl()));
 	else
-		session.setIncludePaths(dlang::Helper::getSearchPaths());
+		session.setIncludePaths(Helper::getSearchPaths());
 
 	if(parseSuccess)
 	{
@@ -134,7 +134,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 
 		if(!forExport && (newFeatures & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsContextsAndUses)
 		{
-			dlang::UseBuilder useBuilder(&session);
+			UseBuilder useBuilder(&session);
 			useBuilder.buildUses(session.ast());
 		}
 		//This notifies other opened files of changes.
@@ -182,14 +182,14 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 //     for (uint i = 0; i < count; ++i) {
 //         const CodeModelItem* thisItem = items++;
 //
-//         qCDebug(D) << thisItem->id;
+//         qCDebug(DPLUGIN) << thisItem->id;
 //
 //     }
         // END JG
 
 
 	if(parseSuccess)
-		qCDebug(D) << "===Success===" << document().str();
+		qCDebug(DPLUGIN) << "===Success===" << document().str();
 	else
-		qCDebug(D) << "===Failed===" << document().str();
+		qCDebug(DPLUGIN) << "===Failed===" << document().str();
 }

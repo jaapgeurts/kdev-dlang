@@ -28,8 +28,6 @@
 #include "duchain/dduchainexport.h"
 #include "parser/dparser.h"
 
-namespace dlang
-{
 
 typedef KDevelop::AbstractTypeBuilder<INode, IToken, ContextBuilder> TypeBuilderBase;
 
@@ -66,4 +64,3 @@ private:
 	int enumValueCounter;
 };
 
-}

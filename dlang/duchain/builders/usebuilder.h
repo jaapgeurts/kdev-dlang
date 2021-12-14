@@ -26,8 +26,6 @@
 
 #include "contextbuilder.h"
 
-namespace dlang
-{
 
 typedef KDevelop::AbstractUseBuilder<INode, IToken, ContextBuilder> UseBuilderBase;
 
@@ -49,4 +47,3 @@ private:
 
 };
 
-}

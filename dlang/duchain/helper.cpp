@@ -31,8 +31,6 @@
 #include "builders/ddeclaration.h"
 #include "duchaindebug.h"
 
-namespace dlang
-{
 
 void Helper::registerDUChainItems() {
 
@@ -96,7 +94,7 @@ DeclarationPointer resolveTypeDeclarationForIdentifier(QualifiedIdentifier newId
 {
     DeclarationPointer typeDecl = getTypeOrVarDeclaration(newIdentifier,context);
     if (typeDecl) {
-        qCDebug(DUCHAIN) << "Decl found: " << typeDecl->toString();
+//         qCDebug(DUCHAIN) << "Decl found: " << typeDecl->toString();
         StructureType::Ptr type = typeDecl->type<StructureType>();
         if (type) {
             Declaration* decl = type->declaration(nullptr);
@@ -119,7 +117,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
 {
     // TODO: jg make it search in parent contexts and resolve types
     Q_UNUSED(searchInParent);
-    qCDebug(DUCHAIN) << "Looking for decl: " << id;
+//    qCDebug(DUCHAIN) << "Looking for decl: " << id;
     if (id.count() == 0) {
         qCDebug(DUCHAIN) << "ERROR: lookup for empty declaration requested." << id;
         return DeclarationPointer();
@@ -144,7 +142,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
         int maxQualifiers = id.count();
         for (int i=1;i<maxQualifiers;i++) {
             // replace variable names with type names
-            qCDebug(DUCHAIN) << "getType:: newIdentifier: " << newIdentifier;
+//             qCDebug(DUCHAIN) << "getType:: newIdentifier: " << newIdentifier;
             DeclarationPointer typeDecl = resolveTypeDeclarationForIdentifier(newIdentifier,context);
             if (typeDecl) {
                 // Found
@@ -157,7 +155,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
             }
             newIdentifier.push(id.at(i));
         }
-        qCDebug(DUCHAIN) << "getDecl:: newIdentifier: " << newIdentifier;
+//         qCDebug(DUCHAIN) << "getDecl:: newIdentifier: " << newIdentifier;
         // find the declaration that we need
         declarations = context->findDeclarations(newIdentifier,CursorInRevision(INT_MAX,INT_MAX));
         for(Declaration *decl : declarations)
@@ -243,4 +241,3 @@ DeclarationPointer checkPackageDeclaration(Identifier id, TopDUContext *context)
 	return DeclarationPointer();
 }
 
-}

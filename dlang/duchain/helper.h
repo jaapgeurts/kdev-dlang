@@ -28,9 +28,6 @@ using namespace KDevelop;
 
 // TODO: JG clean up this unit
 
-namespace dlang
-{
-
 class KDEVDDUCHAIN_EXPORT Helper
 {
 public:
@@ -65,5 +62,3 @@ KDEVDDUCHAIN_EXPORT DeclarationPointer getFirstDeclaration(DUContext *context, b
  * Checks if topContext declares package @param id.
  */
 KDEVDDUCHAIN_EXPORT DeclarationPointer checkPackageDeclaration(Identifier id, TopDUContext *context);
-
-}

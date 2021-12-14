@@ -6,6 +6,7 @@ add_custom_command(OUTPUT libdparser.so COMMAND ./build.sh WORKING_DIRECTORY ${C
 add_custom_target(libdparser ALL DEPENDS libdparser.so)
 
 set(d_parser_lib_SRC
+    debug.cpp
     parsesession.cpp
 )
 

@@ -33,9 +33,6 @@ using namespace KDevelop;
 
 #include "duchaindebug.h"
 
-namespace dlang
-{
-
 void TypeBuilder::visitTypeName(IType *node)
 {
 	if(!node)
@@ -118,7 +115,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 
 	if(type == IntegralType::TypeNone)
 	{
-		DeclarationPointer decl = dlang::getTypeDeclaration(typeName, currentContext());
+		DeclarationPointer decl = getTypeDeclaration(typeName, currentContext());
 //        qCDebug(DUCHAIN) << "TypeBuilder: getting decl for: " << typeName;
 		if(decl)
 		{
@@ -247,6 +244,4 @@ void TypeBuilder::visitEnumMember(IEnumMember *node)
 	TypeBuilderBase::visitEnumMember(node);
 	closeType();
 	enumValueCounter++;
-}
-
 }

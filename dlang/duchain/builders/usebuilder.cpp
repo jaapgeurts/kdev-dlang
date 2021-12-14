@@ -24,8 +24,6 @@
 
 using namespace KDevelop;
 
-namespace dlang
-{
 
 UseBuilder::UseBuilder(ParseSession *session)
 {
@@ -81,9 +79,9 @@ void UseBuilder::visitTypeName(IType *node)
 		return;
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);
-    qCDebug(DUCHAIN) << "UseBuilder::visitTypeName " << id;
+//     qCDebug(DUCHAIN) << "UseBuilder::visitTypeName " << id;
 	if(decl) {
-        qCDebug(DUCHAIN) << "UseBuilder::Decl found for typename: " << id;
+//         qCDebug(DUCHAIN) << "UseBuilder::Decl found for typename: " << id;
 		newUse(ident, decl);
     }
 }
@@ -113,7 +111,7 @@ void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
 		return;
 	}
 	DeclarationPointer decl = getDeclaration(id, context);
-    qCDebug(DUCHAIN) << "UseBuilder::visitTemplateParam " << id;
+//     qCDebug(DUCHAIN) << "UseBuilder::visitTemplateParam " << id;
 	if(decl) {
 		newUse(node, decl);
     }
@@ -152,7 +150,7 @@ void UseBuilder::visitPrimaryExpression(IPrimaryExpression *node)
     // TODO: JG resolve types
 //    IndexedType type = decl->indexedType();
 
-    qCDebug(DUCHAIN) << "UseBuilder::visitPrimaryExpression " << m_identifier;
+//     qCDebug(DUCHAIN) << "UseBuilder::visitPrimaryExpression " << m_identifier;
 	if(decl) {
         // A declaration was found!
 		newUse(ident, decl);
@@ -191,11 +189,11 @@ void UseBuilder::visitUnaryExpression(IUnaryExpression *node)
 
 	QualifiedIdentifier id(identifierForNode(ident));
     m_identifier.push(id);
-    qCDebug(DUCHAIN) << "current idchain: " << m_identifier;
+//     qCDebug(DUCHAIN) << "current idchain: " << m_identifier;
 
 
 	DeclarationPointer decl = getDeclaration(m_identifier, context);
-    qCDebug(DUCHAIN) << "UseBuilder::visitUnaryExpression " << id;
+//     qCDebug(DUCHAIN) << "UseBuilder::visitUnaryExpression " << id;
 	if(decl) {
 		newUse(ident, decl);
     }
@@ -228,4 +226,3 @@ void UseBuilder::visitToken(IToken *node)
 }
 
 
-}

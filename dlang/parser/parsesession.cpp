@@ -28,7 +28,7 @@
 
 #include <QThread>
 
-#include "duchain/duchaindebug.h"
+#include "debug.h"
 
 
 using namespace KDevelop;
@@ -51,7 +51,6 @@ ParseSession::ParseSession(const QByteArray &contents, int priority, bool append
 
 ParseSession::~ParseSession()
 {
-    qCDebug(DUCHAIN) << "Thread: " << QThread::currentThreadId() <<  ", Freeing parsesession: " << m_document;
     if (m_parseresult) {
         m_parseresult-> release();
         m_parseresult = nullptr;
@@ -63,7 +62,7 @@ bool ParseSession::startParsing()
     m_parseresult = parseSourceFile(m_document.str().toLocal8Bit().data(),m_contents.data());
 
     if (m_parseresult == nullptr) {
-        qCDebug(DUCHAIN) << "Failed to parse: " << m_document;
+        qCDebug(DPARSER) << "Failed to parse: " << m_document;
         return false;
     }
 
@@ -656,7 +655,7 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier
 		if(!file.exists())
 			continue;
 
-        qCDebug(DUCHAIN) << "File needs parsing after import statement: " << filename;
+//         qCDebug(DPARSER) << "File needs parsing after import statement: " << filename;
 
 		IndexedString url(filename);
 		DUChainReadLocker lock;
@@ -715,7 +714,7 @@ void ParseSession::reparseImporters(DUContext *context)
 
 QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedString package)
 {
-    qCDebug(DUCHAIN) << "Ctxt for this pack: " << package;
+    qCDebug(DPARSER) << "Ctxt for this pack: " << package;
 	QList<ReferencedTopDUContext> contexts;
 	QUrl url = package.toUrl();
 	QDir path(url.adjusted(QUrl::RemoveFilename).path());

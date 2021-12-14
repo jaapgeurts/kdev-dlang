@@ -29,7 +29,7 @@
 #include "typebuilder.h"
 #include "parser/dparser.h"
 
-typedef KDevelop::AbstractDeclarationBuilder<INode, IToken, dlang::TypeBuilder> DeclarationBuilderBase;
+typedef KDevelop::AbstractDeclarationBuilder<INode, IToken, TypeBuilder> DeclarationBuilderBase;
 
 class KDEVDDUCHAIN_EXPORT DeclarationBuilder : public DeclarationBuilderBase
 {

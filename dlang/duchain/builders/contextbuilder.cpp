@@ -176,7 +176,7 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
     // TODO: JG import bindings are ignored
     // Lives in importdeclaration.
     IIdentifierChain* chain = node->getIdentifierChain();
-    qCDebug(DUCHAIN) << "Import chain: " << identifierForNode(chain).toString();
+//     qCDebug(DUCHAIN) << "Import chain: " << identifierForNode(chain).toString();
 	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(chain));
 	if(contexts.length() > 0 && chain->numIdentifiers() > 0) {
 		currentContext()->addImportedParentContext(
@@ -805,7 +805,7 @@ void ContextBuilder::visitImportDeclaration(IImportDeclaration *node)
 void ContextBuilder::visitImportBind ( IImportBind* node )
 {
     Q_UNUSED(node);
-    qCDebug(DUCHAIN) << "visitImportBind() not implemented";
+//     qCDebug(DUCHAIN) << "visitImportBind() not implemented";
 }
 
 

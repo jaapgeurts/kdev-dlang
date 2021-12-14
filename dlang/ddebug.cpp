@@ -19,4 +19,4 @@
 
 #include <ddebug.h>
 
-Q_LOGGING_CATEGORY(D, "kdev.dlang")
+Q_LOGGING_CATEGORY(DPLUGIN, "kdev.dlang.plugin")

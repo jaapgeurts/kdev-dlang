@@ -49,7 +49,7 @@ DPlugin::DPlugin(QObject *parent, const QVariantList &) : KDevelop::IPlugin("kde
 {
 //	KDEV_USE_EXTENSION_INTERFACE(ILanguageSupport)
 
-	qCDebug(D) << "D Language Plugin is loaded\n";
+	qCDebug(DPLUGIN) << "D Language Plugin is loaded\n";
 
     // If this is included: then error:
     // kf.xmlgui: cannot find .rc file "kdevdlangplugin.rc" for component "kdevdlangplugin"
@@ -82,7 +82,7 @@ QString DPlugin::name() const
 // NOTE must not run multithreaded because libdparse is not re-entrant
 ParseJob *DPlugin::createParseJob(const IndexedString &url)
 {
-	qCDebug(D) << "Creating dlang parse job\n";
+	qCDebug(DPLUGIN) << "Creating dlang parse job\n";
     // TODO: only parse files in source directories (not in build directories)
     if (url.str().contains("build",Qt::CaseSensitivity::CaseInsensitive))
         return nullptr;

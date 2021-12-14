@@ -221,14 +221,14 @@ extern(C++) void initDParser()
 
 	Runtime.initialize();
 
-	writeln("initDParser()");
+	writeln("kdev.dlang.parser: initDParser()");
 }
 
 extern(C++) void deinitDParser()
 {
 	import core.runtime;
 
-	writeln("deinitDParser()");
+	writeln("kdev.dlang.parser: deinitDParser()");
 	Runtime.terminate();
 }
 
@@ -283,7 +283,7 @@ class ParseResult : IParseResult {
 	extern(C++) override void release() {
         import std.stdio;
 
-        writeln("libdparse: Releasing back to GC: ", cast(void*)this);
+        writeln("kdev.dlang.parser: Releasing back to GC: ", cast(void*)this);
 
         GC.removeRoot(cast(void*)this);
         GC.clrAttr(cast(void*)this, GC.BlkAttr.NO_MOVE);
@@ -322,10 +322,10 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
         import std.process;
 
 		thread_attachThis();
-		writefln("libdparse: Thread acquired: %x", thisThreadID);
+		writefln("kdev.dlang.parser: Thread acquired: %x", thisThreadID);
 
         string fileName = cast(string)fromStringz(sourceFile);
-        writefln("libdparse: parseSourceFile(%s)", fileName);
+        writefln("kdev.dlang.parser: parseSourceFile(%s)", fileName);
 
         //auto file = File(fileName.replace("/", ".")~".ast").idup, "w");
 
@@ -340,7 +340,7 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
 		auto tokens = getTokensForParser(source, config, parseResult.getStringCache());
 		auto mod = parseModule(tokens, config.fileName, parseResult.getAllocator(), &parseResult.addMessage, &errCnt, &wrnCnt);
 
-		writeln("libdparse: Parsing complete: ",fromStringz(sourceFile));
+		writeln("kdev.dlang.parser: Parsing complete: ",fromStringz(sourceFile));
 
         //new ASTPrinter(file, true).visit(mod);
 
@@ -351,7 +351,7 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
 	}
 	catch(Throwable e)
 	{
-		writefln("e: %s", e);
+		writefln("kdev.dlang.parser: d-exception: %s", e);
 		raise(SIGABRT);
 		//return null;
 	}
