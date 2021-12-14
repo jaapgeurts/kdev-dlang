@@ -69,9 +69,8 @@ DPlugin::DPlugin(QObject *parent, const QVariantList &) : KDevelop::IPlugin("kde
 DPlugin::~DPlugin()
 {
 
-    // TODO: JG think about the order or destruction
+    // TODO: JG think about the order of destruction
    //dlang::Helper::unregisterDUChainItems();
-
 	deinitDParser();
 }
 

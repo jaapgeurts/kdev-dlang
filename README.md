@@ -6,8 +6,6 @@ KDevDlang is a plugin which adds D language ([dlang](https://dlang.org/)) featur
 
 This project is in beta stage. It is work in progress. Expect things to fail. Help by posting issues or sending pull requests is greatly appreciated.
 
-<span style="color:red">NOTE: There are multi threading issues! Make sure to set the number of background parser threads to 1 in. Settings -> Configure Kdevelop -> Language Support -> Background Parser -> Maximum number of threads: 1.</span>
-
 ## Features
 
 * Autocompletion and Problem reporting
