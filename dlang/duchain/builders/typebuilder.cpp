@@ -119,11 +119,11 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 	if(type == IntegralType::TypeNone)
 	{
 		DeclarationPointer decl = dlang::getTypeDeclaration(typeName, currentContext());
-        qCDebug(DUCHAIN) << "TypeBuilder: getting decl for: " << typeName;
+//        qCDebug(DUCHAIN) << "TypeBuilder: getting decl for: " << typeName;
 		if(decl)
 		{
 			DUChainReadLocker lock;
-            qCDebug(DUCHAIN) << "TypeBuilder: Found " << decl->qualifiedIdentifier();
+//            qCDebug(DUCHAIN) << "TypeBuilder: Found " << decl->qualifiedIdentifier();
 			StructureType *type = new StructureType();
 			type->setDeclaration(decl.data());
 			injectType<AbstractType>(AbstractType::Ptr(type));

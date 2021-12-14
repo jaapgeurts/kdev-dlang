@@ -60,7 +60,6 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
     Q_UNUSED(self);
 	qCDebug(D) << "DParseJob succesfully created for document " << document();
-    qCDebug(D) << "DParseJob threadid: " << Qt::hex << thread->id();
 
 	UrlParseLock urlLock(document());
 	if(abortRequested())
@@ -107,7 +106,6 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	qCDebug(D) << "Job features: " << newFeatures;
 	qCDebug(D) << "Job priority: " << parsePriority();
 
-	qCDebug(D) << "Before D parsing of document: " << document();
 
     // The actual parsing is done in the session
     bool parseSuccess = session.startParsing();
@@ -163,14 +161,14 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
     DUChain::self()->emitUpdateReady(document(), duChain());
 
     // Dumps DU Chain to output
-    	{
-		DUChainReadLocker lock;
-		DUChainDumper dumper;
-		dumper.dump(context);
-
-        QTextStream out(stdout, QIODevice::WriteOnly);
-        PersistentSymbolTable::self().dump(out);
-	}
+//     	{
+// 		DUChainReadLocker lock;
+// 		DUChainDumper dumper;
+// 		dumper.dump(context);
+//
+//         QTextStream out(stdout, QIODevice::WriteOnly);
+//         PersistentSymbolTable::self().dump(out);
+// 	}
 
 	// BEGIN JG
 // 	uint count;

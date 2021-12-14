@@ -53,7 +53,6 @@ ParseSession::~ParseSession()
 {
     qCDebug(DUCHAIN) << "Thread: " << QThread::currentThreadId() <<  ", Freeing parsesession: " << m_document;
     if (m_parseresult) {
-        qCDebug(DUCHAIN) << "Sending parseresult: " << Qt::hex << m_parseresult;
         m_parseresult-> release();
         m_parseresult = nullptr;
     }
@@ -62,8 +61,6 @@ ParseSession::~ParseSession()
 bool ParseSession::startParsing()
 {
     m_parseresult = parseSourceFile(m_document.str().toLocal8Bit().data(),m_contents.data());
-
-    qCDebug(DUCHAIN) << "received parseresult: " << Qt::hex << m_parseresult;
 
     if (m_parseresult == nullptr) {
         qCDebug(DUCHAIN) << "Failed to parse: " << m_document;

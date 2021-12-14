@@ -766,6 +766,8 @@ class WrapperGenVisitor : ASTVisitor {
             writefln("\t\treturn Kind.%s;", escapeAndLowerName(classname));
         writeln("\t}");
         writeln("\t");
+//         writefln("\t~this() { writeln(\"DESTRUCT: %s\"); } ",classname);
+//         writeln("\t");
         writeln("\tmixin ContextMethods;");
         writeln();
 

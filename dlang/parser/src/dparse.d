@@ -214,19 +214,12 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const WithStatement withStatement) { file.writefln("%sWithStatement", indentationLevel()); if(traverse) { indentation++; withStatement.accept(this); indentation--; } }
     /** */ override void visit(const XorExpression xorExpression) { file.writefln("%sXorExpression", indentationLevel()); if(traverse) { indentation++; xorExpression.accept(this); indentation--; } }
 }
-/*
-TODO: doesn't seem to have any effect.
-extern(C) __gshared bool rt_envvars_enabled = true;
-
-extern(C) __gshared string[] rt_options = [ "gcopt=parallel:0 profile:1" ];
-*/
 
 extern(C++) void initDParser()
 {
 	import core.runtime;
 
 	Runtime.initialize();
-    //GC.disable(); // disable the GC, but manually collect memory
 
 	writeln("initDParser()");
 }
@@ -263,16 +256,20 @@ private:
 class ParseResult : IParseResult {
 
     this () {
+        m_stringCache = new StringCache(StringCache.defaultBucketCount);
+
         // Make sure we don't disappear
         GC.addRoot(cast(void*)this);
         GC.setAttr(cast(void*)this, GC.BlkAttr.NO_MOVE);
     }
 
-    ~this() {
-        writeln("***** Parse result destructor");
-    }
+//     ~this() {
+//        writeln("***** Parse result destructor");
+//     }
 
-    void setAst(IModule root) { this.root = root; }
+    void setAst(CModule root) {
+        this.root = root;
+    }
 
     void addMessage(string fileName , size_t line, size_t column, string message, bool isError) {
          messages ~= new ParseMessage(message,isError ? ParseMsgType.Error : ParseMsgType.Warning,line,column);
@@ -285,20 +282,17 @@ class ParseResult : IParseResult {
 
 	extern(C++) override void release() {
         import std.stdio;
-        import core.thread;
 
-        writeln("Releasing back to GC: ", cast(void*)this);
+        writeln("libdparse: Releasing back to GC: ", cast(void*)this);
 
-        GC.removeRoot(  cast(void*)this);
-        GC.clrAttr(  cast(void*)this, GC.BlkAttr.NO_MOVE);
+        GC.removeRoot(cast(void*)this);
+        GC.clrAttr(cast(void*)this, GC.BlkAttr.NO_MOVE);
 
         // TODO: Collect here or not? Does it matter for memory available to the OS?
         // Memory only gets released on an unload of this plugin or a next allocation
         // when out-of-mem because the D GC is conservative.
-        // GC.collect();
+        GC.collect();
 
-        // Don't enable this. It will crash the app
-//        thread_detachThis();
 	}
 
 
@@ -306,11 +300,16 @@ class ParseResult : IParseResult {
         return &m_allocator;
     }
 
+    StringCache* getStringCache() {
+        return m_stringCache;
+    }
+
 private:
-    IModule root;
-    IParseMessage[] messages;
+    CModule root;
+    ParseMessage[] messages;
 
     RollbackAllocator m_allocator;
+    StringCache* m_stringCache;
 }
 
 extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sourceData)
@@ -323,12 +322,12 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
         import std.process;
 
 		thread_attachThis();
-		writefln("Thread acquired: %x", thisThreadID);
+		writefln("libdparse: Thread acquired: %x", thisThreadID);
 
         string fileName = cast(string)fromStringz(sourceFile);
-        writefln("parseSourceFile(%s)", fileName);
+        writefln("libdparse: parseSourceFile(%s)", fileName);
 
-		//auto file = File(fileName.replace("/", ".")~".ast").idup, "w");
+        //auto file = File(fileName.replace("/", ".")~".ast").idup, "w");
 
 		LexerConfig config;
 		config.fileName = fileName;
@@ -338,15 +337,15 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
         ParseResult parseResult = new ParseResult();
 
 		auto source = cast(ubyte[])fromStringz(sourceData);
-		auto tokens = getTokensForParser(source, config, new StringCache(StringCache.defaultBucketCount));
+		auto tokens = getTokensForParser(source, config, parseResult.getStringCache());
 		auto mod = parseModule(tokens, config.fileName, parseResult.getAllocator(), &parseResult.addMessage, &errCnt, &wrnCnt);
-        // TODO: report back error and warning counts
-        writeln("Parsing complete: ",fromStringz(sourceFile));
-		//new ASTPrinter(file, true).visit(mod);
 
-        parseResult.setAst(new CModule(mod));
+		writeln("libdparse: Parsing complete: ",fromStringz(sourceFile));
 
-        writeln("Create: Parse result is: ", cast(void*)parseResult);
+        //new ASTPrinter(file, true).visit(mod);
+
+		CModule astRoot = new CModule(mod);
+        parseResult.setAst(astRoot);
 
         return parseResult;
 	}
