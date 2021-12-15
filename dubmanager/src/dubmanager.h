@@ -3,11 +3,13 @@
 
 #include <project/interfaces/ibuildsystemmanager.h>
 #include <project/abstractfilemanagerplugin.h>
+#include <project/projectconfigpage.h>
 
 #include "dubbuilder.h"
 
+using namespace KDevelop;
 
-class DUBProjectManager : public KDevelop::AbstractFileManagerPlugin, public KDevelop::IBuildSystemManager
+class DUBProjectManager : public AbstractFileManagerPlugin, public IBuildSystemManager
 {
     Q_OBJECT
     Q_INTERFACES( KDevelop::IBuildSystemManager )
@@ -18,60 +20,72 @@ public:
 
      ~DUBProjectManager() override;
 
+     // BEGIN IPlugin
+
+//      int configPages() const override;
+//      ConfigPage * configPage(int number, QWidget * parent) override;
+
+     // END IPlugin
+
      //
     //BEGIN AbstractFileManager
-    KDevelop::ProjectFolderItem* import( KDevelop::IProject* project ) override;
-    KDevelop::ProjectFolderItem* createFolderItem( KDevelop::IProject* project, const KDevelop::Path& path,
-                                                   KDevelop::ProjectBaseItem* parent = nullptr ) override;
+    ProjectFolderItem* import( IProject* project ) override;
+    ProjectFolderItem* createFolderItem( IProject* project, const Path& path,
+                                                   ProjectBaseItem* parent = nullptr ) override;
     Features features() const override;
-    bool isValid( const KDevelop::Path& path, const bool isFolder, KDevelop::IProject* project ) const override;
+    bool isValid( const Path& path, const bool isFolder, IProject* project ) const override;
     //END AbstractFileManager
 
  //BEGIN IBuildSystemManager
     //TODO
-    KDevelop::IProjectBuilder*  builder() const override;
-    KDevelop::Path buildDirectory(KDevelop::ProjectBaseItem*) const override;
-    KDevelop::Path::List collectDirectories(KDevelop::ProjectBaseItem*, const bool collectIncludes=true) const;
-    KDevelop::Path::List includeDirectories(KDevelop::ProjectBaseItem*) const override;
-    KDevelop::Path::List frameworkDirectories(KDevelop::ProjectBaseItem* item) const override;
-    QHash<QString,QString> defines(KDevelop::ProjectBaseItem*) const override;
-    QString extraArguments(KDevelop::ProjectBaseItem *item) const override;
-    bool hasBuildInfo(KDevelop::ProjectBaseItem*) const override;
+    IProjectBuilder*  builder() const override;
+    Path buildDirectory(ProjectBaseItem*) const override;
+    Path::List collectDirectories(ProjectBaseItem*, const bool collectIncludes=true) const;
+    Path::List includeDirectories(ProjectBaseItem*) const override;
+    Path::List frameworkDirectories(ProjectBaseItem* item) const override;
+    QHash<QString,QString> defines(ProjectBaseItem*) const override;
+    QString extraArguments(ProjectBaseItem *item) const override;
+    bool hasBuildInfo(ProjectBaseItem*) const override;
 
-    KDevelop::ProjectTargetItem* createTarget( const QString&, KDevelop::ProjectFolderItem* ) override
+    ProjectTargetItem* createTarget( const QString&, ProjectFolderItem* ) override
     {
         return nullptr;
     }
 
-    bool addFilesToTarget(const QList<KDevelop::ProjectFileItem*>&, KDevelop::ProjectTargetItem*) override
+    bool addFilesToTarget(const QList<ProjectFileItem*>&, ProjectTargetItem*) override
     {
         return false;
     }
 
-    bool removeTarget( KDevelop::ProjectTargetItem* ) override
+    bool removeTarget( ProjectTargetItem* ) override
     {
         return false;
     }
 
-    bool removeFilesFromTargets(const QList<KDevelop::ProjectFileItem*>&) override
+    bool removeFilesFromTargets(const QList<ProjectFileItem*>&) override
     {
         return false;
     }
 
-    QList<KDevelop::ProjectTargetItem*> targets(KDevelop::ProjectFolderItem*) const override;
+    QList<ProjectTargetItem*> targets(ProjectFolderItem*) const override;
 
-    KDevelop::Path compiler(KDevelop::ProjectTargetItem* item) const override;
+    Path compiler(ProjectTargetItem* item) const override;
+
+
+    int perProjectConfigPages() const override;
+    ConfigPage * perProjectConfigPage(int number, const ProjectConfigOptions & options, QWidget * parent) override;
+
     //END IBuildSystemManager
 
 private Q_SLOTS:
-    void slotFolderAdded( KDevelop::ProjectFolderItem* folder );
+    void slotFolderAdded( ProjectFolderItem* folder );
     void slotRunQMake();
     void slotDirty(const QString& path);
 
 private:
-    KDevelop::IProjectBuilder* m_builder;
-//     KDevelop::ProjectFolderItem* projectRootItem( KDevelop::IProject* project, const KDevelop::Path& path );
-//     KDevelop::ProjectFolderItem* buildFolderItem( KDevelop::IProject* project, const KDevelop::Path& path, KDevelop::ProjectBaseItem* parent );
+    IProjectBuilder* m_builder;
+//     ProjectFolderItem* projectRootItem( IProject* project, const Path& path );
+//     ProjectFolderItem* buildFolderItem( IProject* project, const Path& path, ProjectBaseItem* parent );
 };
 
 #endif // DUBMANAGER_H

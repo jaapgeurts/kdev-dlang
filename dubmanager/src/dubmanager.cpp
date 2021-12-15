@@ -9,9 +9,12 @@
 #include <interfaces/icore.h>
 #include <interfaces/iproject.h>
 #include <interfaces/iplugincontroller.h>
+#include <interfaces/configpage.h>
 
 #include <project/interfaces/iprojectbuilder.h>
 #include <project/projectmodel.h>
+
+#include <dubpreferences.h>
 
 #include "dubbuilder.h"
 
@@ -31,6 +34,25 @@ DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
 
 DUBProjectManager::~DUBProjectManager() {
 }
+
+ // BEGIN IPlugin
+
+// int DUBProjectManager::configPages() const
+// {
+//     return 1;
+// }
+//
+// ConfigPage* DUBProjectManager::configPage(int number, QWidget * parent)
+// {
+//     if (number == 0) {
+//         ConfigPage* page = new DubPreferences(parent);
+//         return page;
+//     }
+//     return nullptr;
+// }
+
+     // END IPlugin
+
 
 //BEGIN AbstractFileManager
 ProjectFolderItem* DUBProjectManager::import( IProject* project )
@@ -168,6 +190,24 @@ void DUBProjectManager::slotDirty(const QString& path)
 {
     Q_UNUSED(path);
 }
+
+int DUBProjectManager::perProjectConfigPages() const
+{
+    qCDebug(DUB) << "perProjectConfigPages()";
+    return 1;
+}
+
+ConfigPage * DUBProjectManager::perProjectConfigPage(int number, const ProjectConfigOptions& options, QWidget* parent)
+{
+    qCDebug(DUB) << "perProjectConfigPage()";
+    if (number == 0) {
+        ConfigPage* page = new DubPreferences(this,nullptr,parent);
+        return page;
+    }
+    return nullptr;
+}
+
+
 
 
 //END IBuildSystemManager

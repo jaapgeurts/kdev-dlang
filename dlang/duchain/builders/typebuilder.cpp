@@ -57,8 +57,10 @@ void TypeBuilder::visitTypeName(IType *node)
         // TODO: JG fix this
         if (auto t = node->getType2()->getBuiltinType()) {
             ident = QualifiedIdentifier(t);
-        } else if (auto t  = node->getType2()->getType()->getType2()->getBuiltinType()) {
-            ident = QualifiedIdentifier(t);
+        } else if (auto t  = node->getType2()->getType()) {
+            if (auto t2= t->getType2())
+                if (auto t3 = t2->getBuiltinType())
+                    ident = QualifiedIdentifier(t3);
         }
     }
     if (ident.isEmpty()) {
