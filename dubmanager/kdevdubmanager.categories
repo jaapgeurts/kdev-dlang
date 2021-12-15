@@ -2,4 +2,4 @@
 # Format:
 # logname<space>description
 
-kdevelop.plugins.kdevdubmanager KDevelop plugin: kdevdubmanager
+kdev.dlang.dubmanager KDevelop plugin: kdevdubmanager

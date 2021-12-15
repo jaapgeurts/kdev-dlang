@@ -8,7 +8,8 @@ set(kdevdubmanager_SRCS
 ecm_qt_declare_logging_category(kdevdubmanager_SRCS
     HEADER debug.h
     IDENTIFIER DUB
-    CATEGORY_NAME "kdevelop.plugins.kdevdubmanager"
+    CATEGORY_NAME "kdev.dlang.dubmanager"
+    DEFAULT_SEVERITY Debug
 )
 
 set(dubpreferences_UI

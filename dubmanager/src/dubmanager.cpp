@@ -29,7 +29,7 @@ DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
 {
     Q_UNUSED(args);
 
-    qCDebug(DUB) << "DUBProjectManager(QObject *, const QVariantList&";
+    qCDebug(DUB) << "DUBProjectManager(QObject *, const QVariantList&)";
 }
 
 DUBProjectManager::~DUBProjectManager() {
@@ -55,11 +55,26 @@ DUBProjectManager::~DUBProjectManager() {
 
 
 //BEGIN AbstractFileManager
-ProjectFolderItem* DUBProjectManager::import( IProject* project )
+ProjectFolderItem* DUBProjectManager::import(IProject* project )
 {
-    qCDebug(DUB) << "import( IProject*)";
+    qCDebug(DUB) << "Importing project at: "<< project->path();
 
     ProjectFolderItem* item = AbstractFileManagerPlugin::import(project);
+
+    // check standard locations for project file.
+    QString sdlFileName = project->path().toLocalFile() + QStringLiteral("/dub.sdl");
+    QString jsonFileName = project->path().toLocalFile() + QStringLiteral("/dub.json");
+    if (QFile::exists(sdlFileName)) {
+        m_fileName = sdlFileName;
+        m_dubType = DubType::Sdlang;
+        parseProjectFileSdl(m_fileName);
+    }
+    else if (QFile::exists(jsonFileName)) {
+        m_fileName = jsonFileName;
+        m_dubType = DubType::Json;
+        parseProjectFileJson(m_fileName);
+    }
+
     // TODO: connect
     return item;
 }
@@ -87,6 +102,8 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
 {
     Q_UNUSED(isFolder);
     Q_UNUSED(project);
+
+
 //    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
     return path.lastPathSegment()[0] != '.';
 }
@@ -182,10 +199,6 @@ void DUBProjectManager::slotFolderAdded( KDevelop::ProjectFolderItem* folder )
     Q_UNUSED(folder);
 }
 
-void DUBProjectManager::slotRunQMake()
-{
-}
-
 void DUBProjectManager::slotDirty(const QString& path)
 {
     Q_UNUSED(path);
@@ -207,10 +220,19 @@ ConfigPage * DUBProjectManager::perProjectConfigPage(int number, const ProjectCo
     return nullptr;
 }
 
-
-
-
 //END IBuildSystemManager
+
+
+void DUBProjectManager::parseProjectFileSdl(const QString& path)
+{
+}
+
+
+void DUBProjectManager::parseProjectFileJson(const QString& path)
+{
+}
+
+
 /*
 ProjectFolderItem* DUBProjectManager::projectRootItem(IProject* project, const Path& path)
 {

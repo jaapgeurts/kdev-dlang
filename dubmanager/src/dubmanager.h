@@ -15,6 +15,12 @@ class DUBProjectManager : public AbstractFileManagerPlugin, public IBuildSystemM
     Q_INTERFACES( KDevelop::IBuildSystemManager )
 
 public:
+
+    enum class DubType {
+        Sdlang,
+        Json
+    };
+
     // KPluginFactory-based plugin wants constructor with this signature
     explicit DUBProjectManager(QObject* parent, const QVariantList& args);
 
@@ -36,7 +42,7 @@ public:
     bool isValid( const Path& path, const bool isFolder, IProject* project ) const override;
     //END AbstractFileManager
 
- //BEGIN IBuildSystemManager
+    //BEGIN IBuildSystemManager
     //TODO
     IProjectBuilder*  builder() const override;
     Path buildDirectory(ProjectBaseItem*) const override;
@@ -77,15 +83,21 @@ public:
 
     //END IBuildSystemManager
 
+    void parseProjectFileSdl(const QString& path);
+    void parseProjectFileJson(const QString& path);
+
 private Q_SLOTS:
     void slotFolderAdded( ProjectFolderItem* folder );
-    void slotRunQMake();
     void slotDirty(const QString& path);
 
 private:
     IProjectBuilder* m_builder;
 //     ProjectFolderItem* projectRootItem( IProject* project, const Path& path );
 //     ProjectFolderItem* buildFolderItem( IProject* project, const Path& path, ProjectBaseItem* parent );
+
+    QString m_fileName;
+    DubType m_dubType;
+
 };
 
 #endif // DUBMANAGER_H

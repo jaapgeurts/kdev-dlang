@@ -6,8 +6,9 @@
 #include "dubbuilder.h"
 
 
-DUBBuilder::DUBBuilder::DUBBuilder()
+DUBBuilder::DUBBuilder()
 {
+    qCDebug(DUB) << "DUBBuilder started";
 }
 
 
