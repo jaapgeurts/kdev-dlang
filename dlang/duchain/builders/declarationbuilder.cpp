@@ -92,7 +92,6 @@ void DeclarationBuilder::visitAliasInitializer(IAliasInitializer* node, const QS
 
 }
 
-
 void DeclarationBuilder::visitDeclaration(IDeclaration* node)
 {
     m_visibility = Visibility::Public; // this is the default in D

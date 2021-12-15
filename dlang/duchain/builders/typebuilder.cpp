@@ -27,6 +27,8 @@
 #include <language/duchain/types/pointertype.h>
 #include <language/duchain/types/structuretype.h>
 
+#include "dintegraltype.h"
+
 #include "helper.h"
 
 using namespace KDevelop;
@@ -40,6 +42,10 @@ void TypeBuilder::visitTypeName(IType *node)
 		injectType<AbstractType>(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
 		return;
 	}
+	if (node->getType2()->getTypeofExpression()) {
+        qCDebug(DUCHAIN) << "WARNING: typeof() expressions not implemented";
+        return;
+    }
 	// TODO: JG this should change to a visit method
 	QualifiedIdentifier ident;
 	if(auto identPart = node->getType2()->getTypeIdentifierPart()) {
@@ -48,6 +54,7 @@ void TypeBuilder::visitTypeName(IType *node)
         else if (auto templateInstance = identPart->getIdentifierOrTemplateInstance())
             ident = identifierForNode(templateInstance->getIdentifier());
     } else {
+        // TODO: JG fix this
         if (auto t = node->getType2()->getBuiltinType()) {
             ident = QualifiedIdentifier(t);
         } else if (auto t  = node->getType2()->getType()->getType2()->getBuiltinType()) {
@@ -87,19 +94,19 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 	if(name == "void")
 		type = KDevelop::IntegralType::TypeVoid;
 	else if(name == "ubyte")
-		type = KDevelop::IntegralType::TypeSbyte;
-	else if(name == "ushort")
-		type = KDevelop::IntegralType::TypeShort; // TODO: JG Type short is not supported by kdevelop
-	else if(name == "uint")
-		type = KDevelop::IntegralType::TypeInt;
-	else if(name == "ulong")
-		type = KDevelop::IntegralType::TypeLong;
-	else if(name == "byte")
 		type = KDevelop::IntegralType::TypeByte;
+	else if(name == "byte")
+		type = KDevelop::IntegralType::TypeSbyte;
+    else if(name == "ushort")
+		type = DIntegralType::TypeUshort;
 	else if(name == "short")
 		type = KDevelop::IntegralType::TypeShort;
+    else if(name == "uint")
+		type = DIntegralType::TypeUint;
 	else if(name == "int")
 		type = KDevelop::IntegralType::TypeInt;
+    else if(name == "ulong")
+		type = DIntegralType::TypeUlong;
 	else if(name == "long")
 		type = KDevelop::IntegralType::TypeLong;
 	else if(name == "float")
@@ -107,7 +114,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 	else if(name == "double")
 		type = KDevelop::IntegralType::TypeDouble;
 	else if(name == "real")
-		type = KDevelop::IntegralType::TypeDouble;
+		type = DIntegralType::TypeReal;
 	else if(name == "char")
 		type = KDevelop::IntegralType::TypeChar;
 	else if(name == "wchar")
@@ -142,8 +149,9 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 		injectType<AbstractType>(AbstractType::Ptr(unknown));
 		return;
 	}
-	if(type != IntegralType::TypeNone)
-		injectType<AbstractType>(AbstractType::Ptr(new KDevelop::IntegralType(type)));
+	if(type != IntegralType::TypeNone) {
+		injectType<AbstractType>(AbstractType::Ptr(new DIntegralType(type)));
+    }
 }
 
 void TypeBuilder::visitParameter(IParameter *node)
