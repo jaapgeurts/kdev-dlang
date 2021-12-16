@@ -26,6 +26,8 @@ kdevplatform_add_plugin(kdevdubmanager
 
 
 target_link_libraries(kdevdubmanager
+# Ideally this is linked to the project itself, not the file
+    sdlang
     KDev::Interfaces
     KDev::Project
     KDev::Util

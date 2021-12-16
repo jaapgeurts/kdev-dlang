@@ -17,6 +17,7 @@
 #include <dubpreferences.h>
 
 #include "dubbuilder.h"
+#include "../libsdlang/sdlang.h"
 
 K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "kdevdubmanager.json", registerPlugin<DUBProjectManager>(); )
 
@@ -222,9 +223,18 @@ ConfigPage * DUBProjectManager::perProjectConfigPage(int number, const ProjectCo
 
 //END IBuildSystemManager
 
+static size_t read(void* ptr, size_t size, void* user)
+{
+    FILE* file = (FILE*)user;
+    return fread(ptr, 1, size, file);
+}
 
 void DUBProjectManager::parseProjectFileSdl(const QString& path)
 {
+    QFile file(path);
+    file.open(QIODevice::ReadOnly);
+    FILE* fp = fdopen(file.handle(),"rb");
+    const int result = sdlang_parse(read,fp);
 }
 
 

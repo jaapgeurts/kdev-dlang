@@ -4,6 +4,7 @@ include(ECMInstallIcons)
 
 find_package(KF5 COMPONENTS CoreAddons REQUIRED)
 
+add_subdirectory(libsdlang)
 add_subdirectory(src)
 add_subdirectory(icons)
 
