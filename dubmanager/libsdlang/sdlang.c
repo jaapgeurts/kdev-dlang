@@ -246,15 +246,16 @@ static void emit(enum sdlang_token_type_t type, const char* ts,
     (*sdlang_user_emit_token)(&token, user);
 }
 
-static void sdlang_report_error(enum sdlang_error_t error, int line)
+static void sdlang_report_error(enum sdlang_error_t error, int line, void* user)
 {
     (void)error;
     (void)line;
+
 }
 
-static void (*sdlang_user_report_error)(enum sdlang_error_t error, int line) = sdlang_report_error;
+static void (*sdlang_user_report_error)(enum sdlang_error_t error, int line, void* user) = sdlang_report_error;
 
-void sdlang_set_report_error(void (*report_error)(enum sdlang_error_t error, int line))
+void sdlang_set_report_error(void (*report_error)(enum sdlang_error_t error, int line, void* user))
 {
     sdlang_user_report_error = report_error != NULL ? report_error : sdlang_report_error;
 }

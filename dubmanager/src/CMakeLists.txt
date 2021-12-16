@@ -1,5 +1,7 @@
 set(kdevdubmanager_SRCS
     dubmanager.cpp
+    dubsettings.cpp
+    dubparser.cpp
     dubbuilder.cpp
     dubpreferences.cpp
     dubjob.cpp

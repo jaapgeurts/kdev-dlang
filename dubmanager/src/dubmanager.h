@@ -6,6 +6,8 @@
 #include <project/projectconfigpage.h>
 
 #include "dubbuilder.h"
+#include "dubparser.h"
+#include "dubsettings.h"
 
 using namespace KDevelop;
 
@@ -16,10 +18,6 @@ class DUBProjectManager : public AbstractFileManagerPlugin, public IBuildSystemM
 
 public:
 
-    enum class DubType {
-        Sdlang,
-        Json
-    };
 
     // KPluginFactory-based plugin wants constructor with this signature
     explicit DUBProjectManager(QObject* parent, const QVariantList& args);
@@ -83,9 +81,6 @@ public:
 
     //END IBuildSystemManager
 
-    void parseProjectFileSdl(const QString& path);
-    void parseProjectFileJson(const QString& path);
-
 private Q_SLOTS:
     void slotFolderAdded( ProjectFolderItem* folder );
     void slotDirty(const QString& path);
@@ -95,8 +90,6 @@ private:
 //     ProjectFolderItem* projectRootItem( IProject* project, const Path& path );
 //     ProjectFolderItem* buildFolderItem( IProject* project, const Path& path, ProjectBaseItem* parent );
 
-    QString m_fileName;
-    DubType m_dubType;
 
 };
 

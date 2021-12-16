@@ -6,11 +6,11 @@
 #define DUBPREFERENCES_H
 
 #include <interfaces/configpage.h>
+#include <interfaces/iproject.h>
+
 #include <project/projectconfigpage.h>
 
-#include <KCoreConfigSkeleton>
-
-#include <QScopedPointer>
+#include "dubparser.h"
 
 
 namespace Ui
@@ -26,15 +26,25 @@ class DubPreferences : public KDevelop::ConfigPage
     Q_OBJECT
 
 public:
+
+    enum class DubType {
+        Sdlang,
+        Json
+    };
+
     /**
      * Default constructor
      */
-    DubPreferences(KDevelop::IPlugin* plugin, KCoreConfigSkeleton* config = nullptr, QWidget* parent = nullptr);
+    DubPreferences(KDevelop::IPlugin* plugin, KDevelop::IProject* project, QWidget* parent = nullptr);
 
     /**
      * Destructor
      */
     ~DubPreferences();
+
+    void init();
+
+    void updateWidgets();
 
     /**
      * @todo write docs
@@ -80,6 +90,12 @@ public:
 
 private:
     QScopedPointer<Ui::DubPreferences> m_ui;
+
+
+    DubParser m_Parser;
+    QSharedPointer<DubSettings> m_dubSettings;
+    DubType m_dubType;
+
 };
 
 #endif // DUBPREFERENCES_H

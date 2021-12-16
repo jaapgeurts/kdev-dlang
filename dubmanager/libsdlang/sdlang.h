@@ -102,7 +102,7 @@ struct sdlang_token_t
 
     Node and attribute names are null-terminated. Any other string values are
     not - the caller needs to ensure to not read past `len` characters.
-    
+
     Any node names, attribute names and character buffers addressed by `ptr`
     are only valid during callbacks, and can/will be overwritten by the parser
     afterwards.
@@ -221,7 +221,7 @@ extern void sdlang_set_emit_functions(struct sdlang_functions_t* emit_functions)
 
     See __samples/parser.c__ for an example.
 #*/
-extern void sdlang_set_report_error(void (*report_error)(enum sdlang_error_t error, int line));
+extern void sdlang_set_report_error(void (*report_error)(enum sdlang_error_t error, int line, void* user));
 
 /*#
     ### sdlang_parse

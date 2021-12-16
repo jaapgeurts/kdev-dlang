@@ -17,11 +17,15 @@
 #include <dubpreferences.h>
 
 #include "dubbuilder.h"
-#include "../libsdlang/sdlang.h"
+
 
 K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "kdevdubmanager.json", registerPlugin<DUBProjectManager>(); )
 
 using namespace KDevelop;
+
+static void sdl_emit_token(const struct sdlang_token_t* token, void* user);
+static size_t sdl_read(void* ptr, size_t size, void* user);
+static void sdl_report_error(enum sdlang_error_t error, int line, void* user);
 
 DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
     : AbstractFileManagerPlugin(QStringLiteral("kdevdubmanager"), parent),
@@ -31,6 +35,9 @@ DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
     Q_UNUSED(args);
 
     qCDebug(DUB) << "DUBProjectManager(QObject *, const QVariantList&)";
+
+
+
 }
 
 DUBProjectManager::~DUBProjectManager() {
@@ -62,19 +69,6 @@ ProjectFolderItem* DUBProjectManager::import(IProject* project )
 
     ProjectFolderItem* item = AbstractFileManagerPlugin::import(project);
 
-    // check standard locations for project file.
-    QString sdlFileName = project->path().toLocalFile() + QStringLiteral("/dub.sdl");
-    QString jsonFileName = project->path().toLocalFile() + QStringLiteral("/dub.json");
-    if (QFile::exists(sdlFileName)) {
-        m_fileName = sdlFileName;
-        m_dubType = DubType::Sdlang;
-        parseProjectFileSdl(m_fileName);
-    }
-    else if (QFile::exists(jsonFileName)) {
-        m_fileName = jsonFileName;
-        m_dubType = DubType::Json;
-        parseProjectFileJson(m_fileName);
-    }
 
     // TODO: connect
     return item;
@@ -211,11 +205,11 @@ int DUBProjectManager::perProjectConfigPages() const
     return 1;
 }
 
-ConfigPage * DUBProjectManager::perProjectConfigPage(int number, const ProjectConfigOptions& options, QWidget* parent)
+ConfigPage* DUBProjectManager::perProjectConfigPage(int number, const ProjectConfigOptions& options, QWidget* parent)
 {
     qCDebug(DUB) << "perProjectConfigPage()";
     if (number == 0) {
-        ConfigPage* page = new DubPreferences(this,nullptr,parent);
+        ConfigPage* page = new DubPreferences(this,options.project, parent);
         return page;
     }
     return nullptr;
@@ -223,24 +217,6 @@ ConfigPage * DUBProjectManager::perProjectConfigPage(int number, const ProjectCo
 
 //END IBuildSystemManager
 
-static size_t read(void* ptr, size_t size, void* user)
-{
-    FILE* file = (FILE*)user;
-    return fread(ptr, 1, size, file);
-}
-
-void DUBProjectManager::parseProjectFileSdl(const QString& path)
-{
-    QFile file(path);
-    file.open(QIODevice::ReadOnly);
-    FILE* fp = fdopen(file.handle(),"rb");
-    const int result = sdlang_parse(read,fp);
-}
-
-
-void DUBProjectManager::parseProjectFileJson(const QString& path)
-{
-}
 
 
 /*
