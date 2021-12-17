@@ -41,13 +41,38 @@ void DubPreferences::init()
 
 void DubPreferences::updateWidgets()
 {
-    m_ui->lblGlobalName->setText(m_dubSettings->getValue<QString>("name"));
-    m_ui->lblGlobalDescription->document()->setPlainText(m_dubSettings->getValue<QString>("description"));
+    // Global tab
+    m_ui->leGlobalName->setText(m_dubSettings->getValue<QString>("name"));
+    m_ui->leGlobalDescription->document()->setPlainText(m_dubSettings->getValue<QString>("description"));
+
+    m_ui->cmbGlobalLicense->setCurrentText(m_dubSettings->getValue<QString>("license"));
+    m_ui->leGlobalCopyright->setText(m_dubSettings->getValue<QString>("copyright"));
+    m_ui->leGlobalHomepage->setText(m_dubSettings->getValue<QString>("homepage"));
 
     m_ui->lstGlobalAuthors->clear();
     for(const QVariant& author : m_dubSettings->getValues("authors")) {
         m_ui->lstGlobalAuthors->addItem(author.toString());
     }
+    // set all items editable
+    for(int i =0 ;i < m_ui->lstGlobalAuthors->count(); i++) {
+        QListWidgetItem* item = m_ui->lstGlobalAuthors->item(i);
+        item->setFlags(item->flags() | Qt::ItemIsEditable);
+    }
+
+    // Build tab
+    m_ui->leBuildTargetName->setText(m_dubSettings->getValue<QString>("targetName"));
+    m_ui->cmbBuildTargetType->setCurrentText(m_dubSettings->getValue<QString>("targetType"));
+
+    const QList<QVariant>& values = m_dubSettings->getValues("buildOptions");
+    if (values.contains("debugMode"))
+        m_ui->rbBuildDebug->setChecked(true);
+    else if (values.contains("releaseMode"))
+        m_ui->rbBuildRelease->setChecked(true);
+
+    // dependencies
+    m_dubSettings->getValue<QString>("dependency"); // this can return a list
+
+
 }
 
 

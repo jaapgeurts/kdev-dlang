@@ -233,6 +233,7 @@ SDLNode * SDLNode::addNode(const QString& name)
 {
     SDLNode* node = new SDLNode(name);
 
+    // TODO: JG a node with the same name can appear more than once
     m_nodes.insert(name,QSharedPointer<SDLNode>(node));
 
     return node;
