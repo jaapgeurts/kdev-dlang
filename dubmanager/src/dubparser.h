@@ -22,7 +22,13 @@ public:
     SDLNode();
     SDLNode(const QString& name);
 
+    /** Adds a value to this member */
     void addValue(const QVariant& value);
+    /** Will delete all values and replace with this one */
+    void setValue(const QVariant& value);
+
+    /** Replace all values wih the new ones */
+    void replaceValues(const QList<QVariant>& values);
 
     void addAtrrib(const QString& name);
     SDLNode* addNode(const QString& name);
@@ -42,8 +48,6 @@ private:
 
     bool m_isAttrib;
     QString m_attribName;
-
-    bool m_isDirty;
 
 };
 

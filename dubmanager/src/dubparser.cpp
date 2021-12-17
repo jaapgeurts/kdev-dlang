@@ -201,16 +201,14 @@ void DubParser::parseProjectFileJson(const QString& path)
 
 SDLNode::SDLNode() :
 m_name("<root>"),
-m_isAttrib(false),
-m_isDirty(false)
+m_isAttrib(false)
 {
 }
 
 
 SDLNode::SDLNode(const QString& name) :
 m_name(name),
-m_isAttrib(false),
-m_isDirty(false)
+m_isAttrib(false)
 {
 }
 
@@ -220,9 +218,16 @@ void SDLNode::addValue(const QVariant& value)
         m_attribs.insert(m_attribName,value);
         m_isAttrib = false;
     } else {
+        // TODO: don't allow two values.
         m_values.append(value);
     }
 }
+
+void SDLNode::setValue(const QVariant& value) {
+    m_values.clear();
+    m_values.append(value);
+}
+
 
 SDLNode * SDLNode::addNode(const QString& name)
 {
@@ -247,6 +252,11 @@ const QString& SDLNode::name()
 const QList<QVariant>& SDLNode::values()
 {
     return m_values;
+}
+
+void SDLNode::replaceValues(const QList<QVariant>& values) {
+    m_values.clear();
+    m_values.append(values);
 }
 
 const QVariant& SDLNode::valueAt(int i)

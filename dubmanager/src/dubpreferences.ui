@@ -117,7 +117,7 @@
         <widget class="QLineEdit" name="lblGlobalHomepage"/>
        </item>
        <item row="2" column="2">
-        <widget class="QListWidget" name="listWidget"/>
+        <widget class="QListWidget" name="lstGlobalAuthors"/>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="lblCopyright">
@@ -317,7 +317,7 @@
   <tabstop>lblGlobalHomepage</tabstop>
   <tabstop>lblGlobalCopyright</tabstop>
   <tabstop>cmbGlobalLicense</tabstop>
-  <tabstop>listWidget</tabstop>
+  <tabstop>lstGlobalAuthors</tabstop>
   <tabstop>checkBox_7</tabstop>
   <tabstop>lineEdit_2</tabstop>
   <tabstop>checkBox</tabstop>

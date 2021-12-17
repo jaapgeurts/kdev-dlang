@@ -9,7 +9,8 @@ DubSettings::DubSettings(const QSharedPointer<SDLNode>& root) :
 {
 }
 
-const QVariant& DubSettings::findValue(const QString& path)
+// TODO: error handling in case nothing found
+SDLNode* DubSettings::findNode(const QString& path)
 {
     QStringList sections = path.split(QLatin1Char('/'), Qt::SkipEmptyParts);
     SDLNode* node = m_root.data();
@@ -18,24 +19,43 @@ const QVariant& DubSettings::findValue(const QString& path)
     for(int i=0;i<count; i++ ) {
         node = node->nodes().value(sections.at(i)).data();
     }
-    return node->values().at(0);
+    return node;
 }
 
 template<>
-QString DubSettings::getValue<QString>(const QString& path)
+QString DubSettings::getValue<QString>(const QString& path, int i)
 {
-    return findValue(path).toString();
+    return findNode(path)->values().at(i).toString();
 }
 
 template<>
-int DubSettings::getValue<int>(const QString& path)
+int DubSettings::getValue<int>(const QString& path, int i)
 {
-    return findValue(path).toInt();
+    return findNode(path)->values().at(i).toInt();
 }
 
 template<>
-bool DubSettings::getValue<bool>(const QString& path)
+bool DubSettings::getValue<bool>(const QString& path,int i)
 {
-    return findValue(path).toBool();
+    return findNode(path)->values().at(i).toBool();
 }
+
+const QList<QVariant>& DubSettings::getValues(const QString& path)
+{
+        return findNode(path)->values();
+}
+
+void DubSettings::setValues(const QString& path, const QList<QVariant>& values)
+{
+    SDLNode* node = findNode(path);
+    node->replaceValues(values);
+
+}
+
+template<>
+void DubSettings::setValue(const QString& path, QString value) {
+    SDLNode* node = findNode(path);
+    node->setValue(value);
+}
+
 

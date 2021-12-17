@@ -43,6 +43,11 @@ void DubPreferences::updateWidgets()
 {
     m_ui->lblGlobalName->setText(m_dubSettings->getValue<QString>("name"));
     m_ui->lblGlobalDescription->document()->setPlainText(m_dubSettings->getValue<QString>("description"));
+
+    m_ui->lstGlobalAuthors->clear();
+    for(const QVariant& author : m_dubSettings->getValues("authors")) {
+        m_ui->lstGlobalAuthors->addItem(author.toString());
+    }
 }
 
 
