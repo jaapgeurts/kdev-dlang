@@ -8,9 +8,44 @@
 #include <QString>
 #include <QFile>
 #include <QSharedPointer>
+#include <QList>
+#include <QList>
+#include <QVariant>
+#include <QStack>
 
 #include "../libsdlang/sdlang.h"
 #include "dubsettings.h"
+
+class SDLNode {
+
+public:
+    SDLNode();
+    SDLNode(const QString& name);
+
+    void addValue(const QVariant& value);
+
+    void addAtrrib(const QString& name);
+    SDLNode* addNode(const QString& name);
+
+    const QString& name();
+    const QList<QVariant>& values();
+    const QVariant& valueAt(int i);
+    const QHash<QString, QVariant> attribs();
+    const QHash<QString,QSharedPointer<SDLNode>>& nodes();
+
+
+private:
+    QString m_name;
+    QList<QVariant> m_values;
+    QHash<QString,QVariant> m_attribs;
+    QHash<QString,QSharedPointer<SDLNode>> m_nodes;
+
+    bool m_isAttrib;
+    QString m_attribName;
+
+    bool m_isDirty;
+
+};
 
 /**
  * @todo write docs
@@ -42,13 +77,15 @@ private:
 
     QFile m_dubFile;
     QString m_fileName;
-    QString m_currentNode;
 
-    QSharedPointer<DubSettings> m_dubSettings;
+    QSharedPointer<SDLNode> m_root;
+    SDLNode* m_currentNode;
+    SDLNode* m_lastNode;
+
+    QStack<SDLNode*> m_nodeStack;
 
     // for the sdlang parsing process
     bool is_node = false;
-    bool is_attribute = false;
     int depth = 0;
 
 };

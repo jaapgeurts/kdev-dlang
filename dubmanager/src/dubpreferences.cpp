@@ -41,8 +41,8 @@ void DubPreferences::init()
 
 void DubPreferences::updateWidgets()
 {
-    m_ui->lblGlobalName->setText(m_dubSettings->name);
-    m_ui->lblGlobalDescription->document()->setPlainText(m_dubSettings->description);
+    m_ui->lblGlobalName->setText(m_dubSettings->getValue<QString>("name"));
+    m_ui->lblGlobalDescription->document()->setPlainText(m_dubSettings->getValue<QString>("description"));
 }
 
 
