@@ -7,6 +7,8 @@
 #include "dubpreferences.h"
 #include "ui_dubpreferences.h"
 
+#include "debug.h"
+
 using namespace KDevelop;
 
 DubPreferences::DubPreferences(IPlugin* plugin, IProject* project , QWidget* parent) :
@@ -69,10 +71,16 @@ void DubPreferences::updateWidgets()
     else if (values.contains("releaseMode"))
         m_ui->rbBuildRelease->setChecked(true);
 
+    int index = m_ui->cmbBuildTargetType->findText(m_dubSettings->getValue<QString>("targetType"),Qt::MatchFixedString);
+    m_ui->cmbBuildTargetType->setCurrentIndex(index);
+
     // dependencies
-    m_dubSettings->getValue<QString>("dependency"); // this can return a list
-
-
+    int count = m_dubSettings->numNodes("dependency");
+    for (int i=0;i<count;i++ ) {
+        QString dep = m_dubSettings->getValue<QString>("dependency", i);
+        QString item = dep + " " + m_dubSettings->getAttribute<QString>("dependency", "version", i);
+        m_ui->lbBuildDependencies->addItem(item);
+    }
 }
 
 

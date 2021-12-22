@@ -233,8 +233,8 @@ SDLNode * SDLNode::addNode(const QString& name)
 {
     SDLNode* node = new SDLNode(name);
 
-    // TODO: JG a node with the same name can appear more than once
-    m_nodes.insert(name,QSharedPointer<SDLNode>(node));
+    // Nodes with the same name are allowed
+    m_nodes.append(QSharedPointer<SDLNode>(node));
 
     return node;
 }
@@ -270,7 +270,7 @@ const QHash<QString, QVariant> SDLNode::attribs()
     return m_attribs;
 }
 
-const QHash<QString, QSharedPointer<SDLNode>>& SDLNode::nodes()
+const QList<QSharedPointer<SDLNode>>& SDLNode::nodes()
 {
     return m_nodes;
 }

@@ -37,14 +37,14 @@ public:
     const QList<QVariant>& values();
     const QVariant& valueAt(int i);
     const QHash<QString, QVariant> attribs();
-    const QHash<QString,QSharedPointer<SDLNode>>& nodes();
+    const QList<QSharedPointer<SDLNode>>& nodes();
 
 
 private:
     QString m_name;
     QList<QVariant> m_values;
     QHash<QString,QVariant> m_attribs;
-    QHash<QString,QSharedPointer<SDLNode>> m_nodes;
+    QList<QSharedPointer<SDLNode>> m_nodes;
 
     bool m_isAttrib;
     QString m_attribName;

@@ -178,7 +178,10 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="1" colspan="2">
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="leBuildTargetName"/>
+       </item>
+       <item row="0" column="2" rowspan="3">
         <widget class="QGroupBox" name="gbBuildDependencies">
          <property name="title">
           <string>Dependencies</string>
@@ -199,30 +202,7 @@
            </widget>
           </item>
           <item row="0" column="0" rowspan="3">
-           <widget class="QListWidget" name="lbBuildDependencies"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="0" column="2" rowspan="2">
-        <widget class="QGroupBox" name="gbTargetType">
-         <property name="title">
-          <string>Target type</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="QRadioButton" name="rbBuildDebug">
-            <property name="text">
-             <string>Debug</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rbBuildRelease">
-            <property name="text">
-             <string>Release</string>
-            </property>
-           </widget>
+           <widget class="QListWidget" name="lwBuildDependencies"/>
           </item>
          </layout>
         </widget>
@@ -233,9 +213,6 @@
           <string>Target Type</string>
          </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="leBuildTargetName"/>
        </item>
        <item row="1" column="1">
         <widget class="QComboBox" name="cmbBuildTargetType">
@@ -276,6 +253,55 @@
          </item>
         </widget>
        </item>
+       <item row="2" column="1">
+        <widget class="QGroupBox" name="gbTargetType">
+         <property name="title">
+          <string>Target type</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QRadioButton" name="rbBuildDebug">
+            <property name="text">
+             <string>Debug</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="rbBuildRelease">
+            <property name="text">
+             <string>Release</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Excluded files</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <item row="0" column="0" rowspan="3">
+           <widget class="QListWidget" name="listWidget"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>PushButton</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pushButton_2">
+            <property name="text">
+             <string>PushButton</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tabCompilerSettings">
@@ -294,12 +320,18 @@
             <property name="text">
              <string>Disallow optimization</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="cbBuildAllowWarnings">
             <property name="text">
              <string>Allow warnings</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -308,12 +340,18 @@
             <property name="text">
              <string>Require bounds check</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="cbBuildSilenceWarnings">
             <property name="text">
              <string>Silence warnings</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -322,12 +360,18 @@
             <property name="text">
              <string>Require contracts</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="cbBuildDisallowDeprecations">
             <property name="text">
              <string>Disallow deprecations</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -336,6 +380,9 @@
             <property name="text">
              <string>No default flags</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
@@ -343,12 +390,18 @@
             <property name="text">
              <string>Silence deprecatoins</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="cbBuildDisallowInlining">
             <property name="text">
              <string>Disallow inlining</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -379,12 +432,18 @@
             <property name="text">
              <string>Always stack frame</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="6" column="0">
            <widget class="QCheckBox" name="cbCompilerNoBoundsCheck">
             <property name="text">
              <string>No bounds check</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -393,12 +452,18 @@
             <property name="text">
              <string>Ignore deprecations</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QCheckBox" name="cbCompilerIgnoreUnknownPragmas">
             <property name="text">
              <string>Ignore unknown pragmas</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -407,12 +472,18 @@
             <property name="text">
              <string>Inline</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="7" column="1">
            <widget class="QCheckBox" name="cbCompilerDeprecationsErrors">
             <property name="text">
              <string>Deprecations errors</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -421,12 +492,18 @@
             <property name="text">
              <string>Warnings</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="11" column="1">
            <widget class="QCheckBox" name="cbCompilerLowmem">
             <property name="text">
              <string>Lowmem</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -435,12 +512,18 @@
             <property name="text">
              <string>Profile</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="11" column="0">
            <widget class="QCheckBox" name="cbCompilerUnittests">
             <property name="text">
              <string>Unittests</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -449,12 +532,18 @@
             <property name="text">
              <string>Property</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="0" column="0">
            <widget class="QCheckBox" name="cbCompilerCoverage">
             <property name="text">
              <string>Coverage</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -463,12 +552,18 @@
             <property name="text">
              <string>Debug info C</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QCheckBox" name="cbCompilerVerbose">
             <property name="text">
              <string>Verbose</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -477,12 +572,18 @@
             <property name="text">
              <string>Deprecations warnings</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QCheckBox" name="cbCompilerDebugInfo">
             <property name="text">
              <string>Debug info</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -491,12 +592,18 @@
             <property name="text">
              <string>Syntax check only</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="10" column="1">
            <widget class="QCheckBox" name="cbCompilerBetterC">
             <property name="text">
              <string>Better C</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -505,12 +612,18 @@
             <property name="text">
              <string>Warnings as errors</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="7" column="0" rowspan="2">
            <widget class="QCheckBox" name="cbCompilerOptimize">
             <property name="text">
              <string>Optimize</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -519,12 +632,18 @@
             <property name="text">
              <string>Profile GC</string>
             </property>
+            <property name="tristate">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="4" column="0">
            <widget class="QCheckBox" name="cbCompilerStackStomping">
             <property name="text">
              <string>Stack stomping</string>
+            </property>
+            <property name="tristate">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -564,7 +683,6 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>tbCategories</tabstop>
   <tabstop>leGlobalName</tabstop>
   <tabstop>leGlobalDescription</tabstop>
   <tabstop>cmbGlobalLicense</tabstop>
@@ -577,9 +695,12 @@
   <tabstop>cmbBuildTargetType</tabstop>
   <tabstop>rbBuildDebug</tabstop>
   <tabstop>rbBuildRelease</tabstop>
-  <tabstop>lbBuildDependencies</tabstop>
+  <tabstop>lwBuildDependencies</tabstop>
   <tabstop>pbBuildAddDependency</tabstop>
   <tabstop>pbBuildDependencyRemove</tabstop>
+  <tabstop>listWidget</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>pushButton_2</tabstop>
   <tabstop>cbBuildDisallowOptimizations</tabstop>
   <tabstop>cbBuildAllowWarnings</tabstop>
   <tabstop>cbBuildRequireBoundsCheck</tabstop>
@@ -611,6 +732,7 @@
   <tabstop>cbCompilerProperty</tabstop>
   <tabstop>cbCompilerBetterC</tabstop>
   <tabstop>cbCompilerLowmem</tabstop>
+  <tabstop>tbCategories</tabstop>
  </tabstops>
  <resources/>
  <connections/>
