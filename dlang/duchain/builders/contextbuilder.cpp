@@ -758,7 +758,7 @@ void ContextBuilder::visitUnaryExpression(IUnaryExpression *node)
     else if (auto n = node->getIndexExpression())
         visitIndexExpression(n);
     else if (auto n= node->getNewExpression())
-        visitTypeName(n->getType());
+        visitNewExpression(n);
 }
 
 void ContextBuilder::visitAssignExpression(IAssignExpression *node)
@@ -783,7 +783,11 @@ void ContextBuilder::visitIndex ( IIndex* node )
         visitExpressionNode(n);
     if (auto n = node->getHigh())
         visitExpressionNode(n);
+}
 
+void ContextBuilder::visitNewExpression(INewExpression* node) {
+    visitTypeName(node->getType());
+    visitArguments(node->getArguments());
 }
 
 void ContextBuilder::visitDeclarator(IDeclarator *node)

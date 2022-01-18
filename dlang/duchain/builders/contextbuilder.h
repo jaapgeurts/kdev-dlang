@@ -116,6 +116,7 @@ public:
     virtual void visitLastCatch(ILastCatch *node);
     virtual void visitModule(IModule *node);
     virtual void visitMulExpression(IMulExpression* node);
+    virtual void visitNewExpression(INewExpression* node);
     virtual void visitParameter(IParameter *node);
     virtual void visitPrimaryExpression(IPrimaryExpression *node);
     virtual void visitRelExpression(IRelExpression *node);
