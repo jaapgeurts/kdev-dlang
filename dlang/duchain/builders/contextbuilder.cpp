@@ -773,6 +773,7 @@ void ContextBuilder::visitIndexExpression ( IIndexExpression* node )
 {
     if (auto n = node->getUnaryExpression())
         visitUnaryExpression(n);
+    m_identifier.clear();
     for(size_t i=0; i<node->numIndexes(); i++)
         visitIndex(node->getIndex(i));
 }
