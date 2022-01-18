@@ -44,7 +44,6 @@ DUBJob::DUBJob( QObject* parent, const QUrl& buildDir,
         OutputExecuteJob::NeedWorkingDirectory |
         OutputExecuteJob::DisplayStderr |
         OutputExecuteJob::DisplayStdout |
-        //OutputExecuteJob::PostProcessOutput |
         OutputExecuteJob::IsBuilderHint );
 
 }
