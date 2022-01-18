@@ -53,7 +53,6 @@ bool DIntegralType::equals(const KDevelop::AbstractType* _rhs) const
 
 QString DIntegralType::toString() const
 {
-    qCDebug(DUCHAIN) << "INTEGRALTYPE: called??";
     switch (dataType()) {
         case KDevelop::IntegralType::TypeSbyte:
             return QStringLiteral("byte");

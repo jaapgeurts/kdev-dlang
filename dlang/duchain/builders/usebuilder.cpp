@@ -58,7 +58,7 @@ void UseBuilder::visitTypeName(IType *node)
             ident = node2->getIdentifierOrTemplateInstance()->getIdentifier();
         }
     } else {
-        // must be built in type or template argument
+        // must be built-in type or template argument
         return;
     }
 
@@ -71,11 +71,11 @@ void UseBuilder::visitTypeName(IType *node)
 	DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(ident, nullptr));
+        context = findContextRecursive(editorFindRange(ident, nullptr));
 	}
 	if(!context)
 	{
-		qCDebug(DUCHAIN) << "visitTypeName: No context found for" << id;
+		qCDebug(DUCHAIN) << "UseBuilder::visitTypeName: No context found for" << id;
 		return;
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);

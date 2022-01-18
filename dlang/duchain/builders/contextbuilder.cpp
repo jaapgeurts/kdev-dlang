@@ -35,9 +35,9 @@ ContextBuilder::~ContextBuilder()
 
 }
 
-KDevelop::ReferencedTopDUContext ContextBuilder::build(const KDevelop::IndexedString &url, INode *node,const KDevelop::ReferencedTopDUContext& updateContext)
+ReferencedTopDUContext ContextBuilder::build(const IndexedString &url, INode *node,const ReferencedTopDUContext& updateContext)
 {
-	return KDevelop::AbstractContextBuilder<INode, IToken>::build(url, node, updateContext);
+	return AbstractContextBuilder<INode, IToken>::build(url, node, updateContext);
 }
 
 void ContextBuilder::startVisiting(INode *node)
@@ -71,27 +71,40 @@ void ContextBuilder::visitMulExpression(IMulExpression* node)
 }
 
 
-KDevelop::DUContext *ContextBuilder::contextFromNode(INode *node)
-{
-	return (KDevelop::DUContext *)node->getContext();
+DUContext* ContextBuilder::findContextRecursive(const RangeInRevision& range) const {
+    DUContext* context = currentContext();
+    while (context != nullptr) {
+        DUContext* result = context->findContextIncluding(range);
+        if (result != nullptr)
+            return result;
+        context = context->parentContext();
+    }
+
+    return context;
 }
 
-KDevelop::RangeInRevision ContextBuilder::editorFindRange(INode *fromNode, INode *toNode)
+
+DUContext *ContextBuilder::contextFromNode(INode *node)
+{
+	return (DUContext *)node->getContext();
+}
+
+RangeInRevision ContextBuilder::editorFindRange(INode *fromNode, INode *toNode)
 {
 	if(!fromNode)
-		return KDevelop::RangeInRevision();
+		return RangeInRevision();
 	return m_session->findRange(fromNode, toNode ? toNode : fromNode);
 }
 
 // TODO: JG Should return an identifier; not QualifiedIdentifier
-KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IToken *node)
+QualifiedIdentifier ContextBuilder::identifierForNode(IToken *node)
 {
 	if(!node || node == (IToken *)0x1)
 		return QualifiedIdentifier();
 	return QualifiedIdentifier(node->getText());
 }
 
-KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierChain *node)
+QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierChain *node)
 {
 	if(!node)
 		return QualifiedIdentifier();
@@ -101,7 +114,7 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierChain
 	return ident;
 }
 
-KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierOrTemplateChain *node)
+QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierOrTemplateChain *node)
 {
 	if(!node)
 		return QualifiedIdentifier();
@@ -111,7 +124,7 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierOrTem
 	return ident;
 }
 
-KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode ( IIdentifierOrTemplateInstance* node )
+QualifiedIdentifier ContextBuilder::identifierForNode ( IIdentifierOrTemplateInstance* node )
 {
     if (!node)
         return QualifiedIdentifier();
@@ -126,7 +139,7 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode ( IIdentifierOrT
 
 
 
-KDevelop::QualifiedIdentifier ContextBuilder::identifierForIndex(qint64 index)
+QualifiedIdentifier ContextBuilder::identifierForIndex(qint64 index)
 {
 	Q_UNUSED(index)
     // TODO: implement
@@ -134,7 +147,7 @@ KDevelop::QualifiedIdentifier ContextBuilder::identifierForIndex(qint64 index)
 	return QualifiedIdentifier();
 }
 
-void ContextBuilder::setContextOnNode(INode *node, KDevelop::DUContext *context)
+void ContextBuilder::setContextOnNode(INode *node, DUContext *context)
 {
     node->setContext(context);
 }
@@ -151,12 +164,12 @@ TopDUContext *ContextBuilder::newTopContext(const RangeInRevision &range, Parsin
 		file = new ParsingEnvironmentFile(m_session->currentDocument());
 		file->setLanguage(ParseSession::languageString());
 	}
-	return new KDevelop::TopDUContext(m_session->currentDocument(), range, file);
+	return new TopDUContext(m_session->currentDocument(), range, file);
 }
 
 DUContext *ContextBuilder::newContext(const RangeInRevision &range)
 {
-	return new KDevelop::DUContext(range, currentContext());
+	return new DUContext(range, currentContext());
 }
 
 QualifiedIdentifier ContextBuilder::createFullName(IToken *package, IToken *typeName)
@@ -547,7 +560,8 @@ void ContextBuilder::visitDebugSpecification(IDebugSpecification *node)
 void ContextBuilder::visitDebugCondition(IDebugCondition *node)
 {
 	if(auto n = node->getIdentifierOrInteger())
-		visitToken(n);
+        if (n->getText() != nullptr)
+            visitToken(n);
 }
 
 void ContextBuilder::visitStaticIfCondition(IStaticIfCondition *node)
@@ -864,6 +878,8 @@ void ContextBuilder::visitForeachStatement(IForeachStatement *node)
 {
     // TODO: JG adjust to new foreach style with indexer
     // also add foreach_reverse by accessing the token!
+    qCDebug(DUCHAIN) << __PRETTY_FUNCTION__;
+
 	ContextBuilder::openContext(node, DUContext::Other);
 	if(auto n = node->getForeachType())
 		visitForeachType(n);
@@ -876,6 +892,8 @@ void ContextBuilder::visitForeachStatement(IForeachStatement *node)
 		visitExpression(n);
 	if(auto n = node->getHigh()) // high side of range
 		visitExpression(n);
+
+    // The content block
 	if(auto n = node->getDeclarationOrStatement())
 		visitDeclarationOrStatement(n);
 	closeContext();
@@ -955,13 +973,15 @@ void ContextBuilder::visitBreakStatement(IBreakStatement *node)
 void ContextBuilder::visitContinueStatement(IContinueStatement *node)
 {
 	if(auto n = node->getLabel())
-		visitToken(n);
+        if (n->getText() != nullptr)
+            visitToken(n);
 }
 
 void ContextBuilder::visitGotoStatement(IGotoStatement *node)
 {
 	if(auto n = node->getLabel())
-		visitToken(n);
+        if (n->getText() != nullptr)
+            visitToken(n);
 	if(auto n = node->getExpression())
 		visitExpression(n);
 }

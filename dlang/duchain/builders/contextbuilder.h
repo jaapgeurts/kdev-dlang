@@ -146,6 +146,8 @@ public:
     virtual void visitWhileStatement(IWhileStatement *node);
     virtual void visitWithStatement(IWithStatement *node);
 
+    /** Find the most appropriate context from current to global */
+    virtual KDevelop::DUContext* findContextRecursive(const KDevelop::RangeInRevision& range) const;
 	virtual KDevelop::DUContext *contextFromNode(INode *node) override;
 	virtual void setContextOnNode(INode *node, KDevelop::DUContext *context) override;
 

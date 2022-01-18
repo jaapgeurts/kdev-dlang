@@ -1,4 +1,5 @@
 set(kdevdubmanager_SRCS
+    dcompilerfilterstrategy.cpp
     dubmanager.cpp
     dubsettings.cpp
     dubparser.cpp

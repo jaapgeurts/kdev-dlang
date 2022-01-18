@@ -84,5 +84,6 @@ private:
 	int m_ownPriority;
 
     Visibility m_visibility;
+    bool m_static = false;
 
 };

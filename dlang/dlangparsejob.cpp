@@ -161,14 +161,14 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
     DUChain::self()->emitUpdateReady(document(), duChain());
 
     // Dumps DU Chain to output
-//     	{
-// 		DUChainReadLocker lock;
-// 		DUChainDumper dumper;
-// 		dumper.dump(context);
-//
+    	{
+		DUChainReadLocker lock;
+ 		DUChainDumper dumper;
+ 		dumper.dump(context);
+
 //         QTextStream out(stdout, QIODevice::WriteOnly);
 //         PersistentSymbolTable::self().dump(out);
-// 	}
+	}
 
 	// BEGIN JG
 // 	uint count;

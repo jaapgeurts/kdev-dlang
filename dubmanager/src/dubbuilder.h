@@ -6,7 +6,7 @@
 #include <project/projectmodel.h>
 #include <project/interfaces/iprojectbuilder.h>
 
-
+#include "dubjob.h"
 
 class DUBBuilder :  public QObject, public KDevelop::IProjectBuilder
 {
@@ -33,6 +33,8 @@ public:
     */
     KJob* clean(KDevelop::ProjectBaseItem *item) override;
 
+private:
+    KJob* createJobForAction(KDevelop::ProjectBaseItem *item, DUBJob::CommandType cmdType);
 };
 
 #endif // DUBBUILDER_H

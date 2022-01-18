@@ -142,7 +142,7 @@
            </widget>
           </item>
           <item row="0" column="0" rowspan="3">
-           <widget class="QListWidget" name="lstGlobalAuthors"/>
+           <widget class="QListWidget" name="lwGlobalAuthors"/>
           </item>
           <item row="1" column="1">
            <widget class="QPushButton" name="pbRemoveAuthor">
@@ -283,19 +283,19 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="0" rowspan="3">
-           <widget class="QListWidget" name="listWidget"/>
+           <widget class="QListWidget" name="lwBuildExcludedFiles"/>
           </item>
           <item row="0" column="1">
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="pbBuilExcludedFilesAdd">
             <property name="text">
-             <string>PushButton</string>
+             <string>Add</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QPushButton" name="pushButton_2">
+           <widget class="QPushButton" name="pbBuilExcludedFilesRemove">
             <property name="text">
-             <string>PushButton</string>
+             <string>Remove</string>
             </property>
            </widget>
           </item>
@@ -688,7 +688,7 @@
   <tabstop>cmbGlobalLicense</tabstop>
   <tabstop>leGlobalCopyright</tabstop>
   <tabstop>leGlobalHomepage</tabstop>
-  <tabstop>lstGlobalAuthors</tabstop>
+  <tabstop>lwGlobalAuthors</tabstop>
   <tabstop>pbAddAuthor</tabstop>
   <tabstop>pbRemoveAuthor</tabstop>
   <tabstop>leBuildTargetName</tabstop>
@@ -698,9 +698,9 @@
   <tabstop>lwBuildDependencies</tabstop>
   <tabstop>pbBuildAddDependency</tabstop>
   <tabstop>pbBuildDependencyRemove</tabstop>
-  <tabstop>listWidget</tabstop>
-  <tabstop>pushButton</tabstop>
-  <tabstop>pushButton_2</tabstop>
+  <tabstop>lwBuildExcludedFiles</tabstop>
+  <tabstop>pbBuilExcludedFilesAdd</tabstop>
+  <tabstop>pbBuilExcludedFilesRemove</tabstop>
   <tabstop>cbBuildDisallowOptimizations</tabstop>
   <tabstop>cbBuildAllowWarnings</tabstop>
   <tabstop>cbBuildRequireBoundsCheck</tabstop>

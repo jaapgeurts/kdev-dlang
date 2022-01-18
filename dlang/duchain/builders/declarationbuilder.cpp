@@ -95,6 +95,7 @@ void DeclarationBuilder::visitAliasInitializer(IAliasInitializer* node, const QS
 void DeclarationBuilder::visitDeclaration(IDeclaration* node)
 {
     m_visibility = Visibility::Public; // this is the default in D
+    m_static = false;
 
     for (size_t i =0;i<node->numAttributes();i++) {
         if (auto t = node->getAttribute(i)->getAttribute()) {
@@ -102,6 +103,11 @@ void DeclarationBuilder::visitDeclaration(IDeclaration* node)
                 m_visibility = Visibility::Protected;
             else if (QStringLiteral("private") == t->getType())
                 m_visibility = Visibility::Private;
+            else if (QStringLiteral("static") == t->getType())
+                m_static = true;
+            else {
+                qCDebug(DUCHAIN) << "WARNING: unhandled attribute: " << t->getType();
+            }
         }
     }
 
@@ -250,10 +256,18 @@ void DeclarationBuilder::visitParameter(IParameter *node)
 {
 	TypeBuilder::visitParameter(node);
 	DUChainWriteLocker lock;
-	Declaration *parameter = openDeclaration<Declaration>(node->getName(), node);
-	parameter->setKind(Declaration::Instance);
-	parameter->setAbstractType(lastType());
-	closeDeclaration();
+    IToken* argName = node->getName();
+    const char* argText = argName->getText();
+    if (argText != nullptr) {
+        // only create declaration if the argument has a name
+        Declaration *parameter = openDeclaration<Declaration>(argName, node);
+        qCDebug(DUCHAIN) << "Opening decl for param: " << argText;
+        parameter->setKind(Declaration::Instance);
+        parameter->setAbstractType(lastType());
+        closeDeclaration();
+    } else {
+       //qCDebug(DUCHAIN) << "ARgument empty: " << node->get
+    }
 }
 
 void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
@@ -272,6 +286,7 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 		closeDeclaration();
 		newMethod->setInternalContext(lastContext());
 		newMethod->setType(currentFunctionType);
+        newMethod->setStatic(m_static);
         if (m_visibility == Visibility::Protected)
             newMethod->setAccessPolicy(ClassFunctionDeclaration::AccessPolicy::Protected);
         else if (m_visibility == Visibility::Private)
@@ -292,6 +307,8 @@ void DeclarationBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 		closeDeclaration();
 		newMethod->setInternalContext(lastContext());
 		newMethod->setType(currentFunctionType);
+        // TODO: JG functiondecl doesn't support static
+        //newMethod->setStatic(m_static);
 	}
 
 }
@@ -391,6 +408,7 @@ void DeclarationBuilder::visitModule(IModule *node)
 
 void DeclarationBuilder::visitForeachType(IForeachType *node)
 {
+    // TODO: JG Is this method required?
 	TypeBuilder::visitForeachType(node);
 	DUChainWriteLocker lock;
 	Declaration *argument = openDeclaration<Declaration>(node->getIdentifier(), node);
@@ -439,13 +457,14 @@ void DeclarationBuilder::visitCatch(ICatch *node)
 void DeclarationBuilder::visitEnumDeclaration(IEnumDeclaration *node)
 {
 	DUChainWriteLocker lock;
-	Declaration *e = openDeclaration<Declaration>(node->getName(), node);
+	Declaration *e = openDefinition<Declaration>(node->getName(), node);
+//    qCDebug(DUCHAIN) << "declare enum " << node->getName()->getText();
 	e->setKind(Declaration::Type);
 	lock.unlock();
 	DeclarationBuilderBase::visitEnumDeclaration(node);
 	lock.lock();
 	e->setInternalContext(lastContext());
-	//e->setAbstractType(lastType());
+	e->setAbstractType(lastType());
 	closeDeclaration();
 }
 

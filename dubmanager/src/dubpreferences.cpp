@@ -51,13 +51,13 @@ void DubPreferences::updateWidgets()
     m_ui->leGlobalCopyright->setText(m_dubSettings->getValue<QString>("copyright"));
     m_ui->leGlobalHomepage->setText(m_dubSettings->getValue<QString>("homepage"));
 
-    m_ui->lstGlobalAuthors->clear();
+    m_ui->lwGlobalAuthors->clear();
     for(const QVariant& author : m_dubSettings->getValues("authors")) {
-        m_ui->lstGlobalAuthors->addItem(author.toString());
+        m_ui->lwGlobalAuthors->addItem(author.toString());
     }
     // set all items editable
-    for(int i =0 ;i < m_ui->lstGlobalAuthors->count(); i++) {
-        QListWidgetItem* item = m_ui->lstGlobalAuthors->item(i);
+    for(int i =0 ;i < m_ui->lwGlobalAuthors->count(); i++) {
+        QListWidgetItem* item = m_ui->lwGlobalAuthors->item(i);
         item->setFlags(item->flags() | Qt::ItemIsEditable);
     }
 
@@ -79,7 +79,14 @@ void DubPreferences::updateWidgets()
     for (int i=0;i<count;i++ ) {
         QString dep = m_dubSettings->getValue<QString>("dependency", i);
         QString item = dep + " " + m_dubSettings->getAttribute<QString>("dependency", "version", i);
-        m_ui->lbBuildDependencies->addItem(item);
+        m_ui->lwBuildDependencies->addItem(item);
+    }
+
+    // excluded files
+    count = m_dubSettings->numValues("excludedSourceFiles",0);
+    for(int i=0; i<count;i++) {
+        QString fileName = m_dubSettings->getValue<QString>("excludedSourceFiles", 0, i);
+        m_ui->lwBuildExcludedFiles->addItem(fileName);
     }
 }
 

@@ -16,7 +16,10 @@ int DubSettings::numNodes(const QString& path)
 
 int DubSettings::numValues(const QString& path, int nodeIndex)
 {
-    return  findNode(path).at(nodeIndex)->values().count();
+    QList<SDLNode*> nodes = findNode(path);
+    if (nodes.isEmpty())
+        return 0;
+    return nodes.at(nodeIndex)->values().count();
 }
 
 // TODO: error handling in case nothing found

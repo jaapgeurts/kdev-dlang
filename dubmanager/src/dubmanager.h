@@ -43,7 +43,7 @@ public:
     //BEGIN IBuildSystemManager
     //TODO
     IProjectBuilder*  builder() const override;
-    Path buildDirectory(ProjectBaseItem*) const override;
+    Path buildDirectory(ProjectBaseItem* item) const override;
     Path::List collectDirectories(ProjectBaseItem*, const bool collectIncludes=true) const;
     Path::List includeDirectories(ProjectBaseItem*) const override;
     Path::List frameworkDirectories(ProjectBaseItem* item) const override;

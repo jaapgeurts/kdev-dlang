@@ -22,9 +22,10 @@
 #include <QString>
 
 #include <outputview/outputexecutejob.h>
-#include <project/projectmodel.h>
 
 #include "debug.h"
+
+class KDevelop::IFilterStrategy;
 
 /**
  * @todo write docs
@@ -50,23 +51,16 @@ public:
     /**
      * Default constructor
      */
-    DUBJob( QObject* parent, KDevelop::ProjectBaseItem* item,
-             CommandType command, const QStringList& overrideTargets = QStringList() );
+    DUBJob( QObject* parent, const QUrl& buildDir ,CommandType command );
     /**
      * Destructor
      */
     ~DUBJob() override;
 
-    void start() override;
-
      // This returns the "make" command line.
     QStringList commandLine() const override;
 
-    KDevelop::ProjectBaseItem * item() const;
-
-
 private:
-    QPersistentModelIndex m_Idx;
     CommandType m_Command;
 };
 

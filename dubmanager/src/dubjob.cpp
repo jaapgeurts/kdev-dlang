@@ -21,63 +21,44 @@
 #include <KLocalizedString>
 #include <util/path.h>
 
+#include "dcompilerfilterstrategy.h"
+
 using namespace KDevelop;
 
 #include "dubjob.h"
 
-DUBJob::DUBJob( QObject* parent, ProjectBaseItem* item,
-             CommandType command, const QStringList& overrideTargets ) :
-             m_Idx(item->index()),
+DUBJob::DUBJob( QObject* parent, const QUrl& buildDir,
+             CommandType command) :
+             OutputExecuteJob(parent),
              m_Command(command)
 {
-    Q_UNUSED(parent);
-    Q_UNUSED(overrideTargets);
+    setCapabilities(Killable);
+    setStandardToolView(IOutputView::BuildView);
+    setFilteringStrategy(new DCompilerFilterStrategy(buildDir));
+    setWorkingDirectory(buildDir);
+    setJobName(QStringLiteral("DUB Job"));
+    setToolTitle(i18nc("@title:window", "DUB"));
+    setBehaviours(KDevelop::IOutputView::AllowUserClose | KDevelop::IOutputView::AutoScroll);
+    // enable to process errors
+    setProperties(
+        OutputExecuteJob::NeedWorkingDirectory |
+        OutputExecuteJob::DisplayStderr |
+        OutputExecuteJob::DisplayStdout |
+        //OutputExecuteJob::PostProcessOutput |
+        OutputExecuteJob::IsBuilderHint );
+
 }
 
-    /**
-     * Destructor
-     */
+/**
+    * Destructor
+    */
 DUBJob::~DUBJob()
 {
-
-}
-
-void DUBJob::start()
-{
-    ProjectBaseItem* it = item();
-    qCDebug(DUB) << "Building with dub" << m_Command;
-    if (!it)
-    {
-        setError(ItemNoLongerValidError);
-        setErrorText(i18n("Build item no longer available"));
-        emitResult();
-        return;
-    }
-
-    if( it->type() == ProjectBaseItem::File ) {
-        setError(IncorrectItemError);
-        setErrorText(i18n("Internal error: cannot build a file item"));
-        emitResult();
-        return;
-    }
-
-    setStandardToolView(IOutputView::BuildView);
-    setBehaviours(KDevelop::IOutputView::AllowUserClose | KDevelop::IOutputView::AutoScroll);
-
-    OutputExecuteJob::setWorkingDirectory(it->path().toUrl());
-
-    OutputExecuteJob::start();
 }
 
 QStringList DUBJob::commandLine() const
 {
-    QStringList cmdLine;
-    cmdLine << "dub";
-    cmdLine << "build";
-    return cmdLine;
+    // TODO: JG add all build options
+    return { "dub","build" };
 }
 
-KDevelop::ProjectBaseItem* DUBJob::item() const
-{
-    return ICore::self()->projectController()->projectModel()->itemFromIndex(m_Idx);
-}

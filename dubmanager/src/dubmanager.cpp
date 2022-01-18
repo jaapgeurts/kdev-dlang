@@ -35,9 +35,6 @@ DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
     Q_UNUSED(args);
 
     qCDebug(DUB) << "DUBProjectManager(QObject *, const QVariantList&)";
-
-
-
 }
 
 DUBProjectManager::~DUBProjectManager() {
@@ -120,11 +117,12 @@ IProjectBuilder*  DUBProjectManager::builder() const
 
 }
 
-Path DUBProjectManager::buildDirectory(ProjectBaseItem*) const
+Path DUBProjectManager::buildDirectory(ProjectBaseItem* item) const
 {
     qCDebug(DUB) << "buildDirectory(ProjectBaseItem*)";
 
-    return Path();
+    auto project = item->project();
+    return project->path();
 }
 
 Path::List DUBProjectManager::collectDirectories(ProjectBaseItem*, const bool collectIncludes) const

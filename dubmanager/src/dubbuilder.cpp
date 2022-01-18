@@ -2,6 +2,9 @@
 
 #include <debug.h>
 
+#include <interfaces/iproject.h>
+#include <project/interfaces/ibuildsystemmanager.h>
+
 #include "dubjob.h"
 #include "dubbuilder.h"
 
@@ -21,8 +24,7 @@ DUBBuilder::DUBBuilder()
 KJob* DUBBuilder::install(KDevelop::ProjectBaseItem* item, const QUrl &specificPrefix) {
 
     Q_UNUSED(specificPrefix);
-    qCDebug(DUB) << "install(KDevelop::ProjectBaseItem*, const QUrl &)";
-    return new DUBJob(this,item,DUBJob::CommandType::InstallCommand);
+    return createJobForAction(item,DUBJob::CommandType::InstallCommand);
 };
 
 /**
@@ -32,7 +34,7 @@ KJob* DUBBuilder::install(KDevelop::ProjectBaseItem* item, const QUrl &specificP
 KJob* DUBBuilder::build(KDevelop::ProjectBaseItem *item) {
         qCDebug(DUB) << "build(KDevelop::ProjectBaseItem *)";
 
-        return new DUBJob(this,item,DUBJob::CommandType::BuildCommand);
+        return createJobForAction(item,DUBJob::CommandType::BuildCommand);
 
 }
 
@@ -45,9 +47,18 @@ KJob* DUBBuilder::build(KDevelop::ProjectBaseItem *item) {
 KJob* DUBBuilder::clean(KDevelop::ProjectBaseItem *item) {
         qCDebug(DUB) << "clean(KDevelop::ProjectBaseItem *)";
 
-    return new DUBJob(this,item,DUBJob::CommandType::CleanCommand);
+        return createJobForAction(item,DUBJob::CommandType::CleanCommand);
 }
 
+KJob* DUBBuilder::createJobForAction(KDevelop::ProjectBaseItem *item, DUBJob::CommandType cmdType)
+{
+    auto bsm = item->project()->buildSystemManager();
+    auto buildDir = bsm->buildDirectory(item);
+
+    qCDebug(DUB) << buildDir;
+    auto job = new DUBJob(this,buildDir.toUrl(),cmdType);
+    return job;
+}
 
     /**
      * Emitted when the build for the given item was finished

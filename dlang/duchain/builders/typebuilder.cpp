@@ -152,6 +152,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 		return;
 	}
 	if(type != IntegralType::TypeNone) {
+        qCDebug(DUCHAIN) << "Recording type: " << name;
 		injectType<AbstractType>(AbstractType::Ptr(new DIntegralType(type)));
     }
 }
@@ -159,6 +160,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 void TypeBuilder::visitParameter(IParameter *node)
 {
 	TypeBuilderBase::visitParameter(node);
+    //qCDebug(DUCHAIN) << "Recording type :  " << lastType()->toString();
 	currentFunctionType->addArgument(lastType());
 }
 
