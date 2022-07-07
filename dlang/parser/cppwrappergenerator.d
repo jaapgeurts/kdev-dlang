@@ -51,7 +51,7 @@ ClassDeclaration[string] templatedClasses;
 
 struct Alias {
     string name;
-    string templatename;
+    string identifier;
     string templateargs;
 }
 
@@ -381,7 +381,10 @@ void writeExtras() {
 void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
     foreach (aliasclass; aliasses) {
 
-        ClassDeclaration cd = templatedClasses[aliasclass.templatename];
+//         if (aliasclass.identifier !in templatedClasses)
+//             continue;
+
+        ClassDeclaration cd = templatedClasses[aliasclass.identifier];
 
         if (outFormat == OutputFormat.DModule)
             writefln("extern(C++) interface I%s : INode", aliasclass.name);
@@ -435,7 +438,7 @@ void writeInterfaceForTemplate(WrapperGenVisitor visitor) {
 /** this function produces classes for two foreach aliases which expand to template class ForEach */
 void writeClassForTemplate(WrapperGenVisitor visitor) {
     foreach (aliasclass; aliasses) {
-        ClassDeclaration cd = templatedClasses[aliasclass.templatename];
+        ClassDeclaration cd = templatedClasses[aliasclass.identifier];
 
         writefln("class C%s : I%s", aliasclass.name, aliasclass.name);
         writeln("{");
@@ -513,7 +516,6 @@ class pass1Visitor : ASTVisitor {
         if (cd.name.text == "ASTVisitor")
             return;
 
-
         if (cd.templateParameters !is null) {
             // store templated classes for different use
             templatedClasses[cd.name.text] = cast(ClassDeclaration) cd;
@@ -537,10 +539,17 @@ class pass1Visitor : ASTVisitor {
         string name = init.name.text;
         // NOTE: this only works for the specific Foreach template class
         // where the template param is either true of false
-        aliasses[name] = Alias(name,
-                getString(init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance.identifier),
-                init.type.type2.typeIdentifierPart.identifierOrTemplateInstance.templateInstance
-                .templateArguments.templateSingleArgument.token == tok!"true" ? "true" : "false");
+        // now also for ThrowStatement
+        const IdentifierOrTemplateInstance identOrTemplate = init.type.type2.typeIdentifierPart.identifierOrTemplateInstance;
+        if (identOrTemplate.templateInstance !is null) {
+            // in case the alias instantiates a template
+            string aliasname = getString(identOrTemplate.templateInstance.identifier);
+            aliasses[name] = Alias(name, aliasname,
+                identOrTemplate.templateInstance.templateArguments.templateSingleArgument.token == tok!"true" ? "true" : "false");
+        } else {
+            stderr.writeln("Ignoring alias: ", name);
+        }
+
     }
 
     override void visit(const EnumDeclaration ed) {
@@ -752,7 +761,7 @@ class WrapperGenVisitor : ASTVisitor {
         writeln("public: //Methods.");
         string classname = cd.name.text;
         if (!aliasclass.isNull)
-            classname = aliasclass.get.templatename ~ "!" ~ aliasclass.get.templateargs;
+            classname = aliasclass.get.identifier ~ "!" ~ aliasclass.get.templateargs;
         writefln("\tthis(const %s dclass)", classname);
         writeln("\t{");
         writeln("\t\tthis.dclass = dclass;");
@@ -900,8 +909,8 @@ class WrapperGenVisitor : ASTVisitor {
         writeln("private: // Variables.");
         string classname = cd.name.text;
         if (!aliasclass.isNull) {
-            if (classname == aliasclass.get.templatename)
-                classname = aliasclass.get.templatename ~ "!" ~ aliasclass.get.templateargs;
+            if (classname == aliasclass.get.identifier)
+                classname = aliasclass.get.identifier ~ "!" ~ aliasclass.get.templateargs;
         }
         writefln("\tconst %s dclass;", classname);
         foreach (cv; classvars) {
@@ -1512,7 +1521,7 @@ void old(Module mod, string[] args) {
     // alias template implementation classes
     foreach (init; aliasses) {
         // alias points to template classes to generate
-        writefln("class C%s : I%s", init.name, init.templatename);
+        writefln("class C%s : I%s", init.name, init.identifier);
         writeln("{");
         writeln("}");
         writeln();

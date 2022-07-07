@@ -205,8 +205,9 @@ QList<CompletionTreeItemPointer> DCodeCompletionContext::importAndMemberCompleti
 
 QList<CompletionTreeItemPointer> DCodeCompletionContext::importCompletion()
 {
-	auto searchPaths = Helper::getSearchPaths();
 	QList<CompletionTreeItemPointer> items;
+    /*
+	auto searchPaths = Helper::getSearchPaths();
 	QString fullPath = m_text;
 
 	QStringList pathChain = fullPath.split('.', Qt::SkipEmptyParts);
@@ -234,6 +235,7 @@ QList<CompletionTreeItemPointer> DCodeCompletionContext::importCompletion()
 			}
 		}
 	}
+	*/
 	return items;
 }
 

@@ -28,4 +28,7 @@ public:
 
 protected:
 	virtual void run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread) override;
+
+private:
+    QList<QString> m_includeDirs;
 };

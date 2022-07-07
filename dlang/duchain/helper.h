@@ -31,7 +31,6 @@ using namespace KDevelop;
 class KDEVDDUCHAIN_EXPORT Helper
 {
 public:
-	static QList<QString> getSearchPaths(QUrl document=QUrl());
     static void registerDUChainItems();
     static void unregisterDUChainItems();
 

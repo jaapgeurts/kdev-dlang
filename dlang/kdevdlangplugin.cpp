@@ -79,7 +79,6 @@ QString DPlugin::name() const
 	return "D";
 }
 
-// NOTE must not run multithreaded because libdparse is not re-entrant
 ParseJob *DPlugin::createParseJob(const IndexedString &url)
 {
 	qCDebug(DPLUGIN) << "Creating dlang parse job\n";
@@ -87,7 +86,7 @@ ParseJob *DPlugin::createParseJob(const IndexedString &url)
     if (url.str().contains("build",Qt::CaseSensitivity::CaseInsensitive))
         return nullptr;
 
-    // Queue jobs so that one 1 is execute at a time
+    // Queue jobs so that one is executed at a time
 
     return new DParseJob(url, this);
 //     ParseJob* pj = new DParseJob(url, this);

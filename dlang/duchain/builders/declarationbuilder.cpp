@@ -350,20 +350,24 @@ void DeclarationBuilder::visitDestructor(IDestructor *node)
 
 void DeclarationBuilder::visitSingleImport(ISingleImport *node)
 {
+    // first process the import
 	DeclarationBuilderBase::visitSingleImport(node);
+
 	DUChainWriteLocker lock;
 	QualifiedIdentifier importId = identifierForNode(node->getIdentifierChain());
 
     NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(globalImportIdentifier(), editorFindRange(node->getIdentifierChain(), nullptr));
+//     Declaration* decl = openDeclaration<Declaration>(importId.last(),editorFindRange(node->getIdentifierChain(),nullptr));
     decl->setImportIdentifier(importId);
-    decl->setKind(Declaration::NamespaceAlias);
+    decl->setKind(Declaration::Import);
 
 	closeDeclaration();
 }
 
 void DeclarationBuilder::visitModule(IModule *node)
 {
-    Declaration* packageDeclaration = nullptr;
+    NamespaceAliasDeclaration* packageDeclaration = nullptr;
+
 
 	if(auto moduleDeclaration = node->getModuleDeclaration())
 	{
@@ -373,7 +377,7 @@ void DeclarationBuilder::visitModule(IModule *node)
         DUChainWriteLocker lock;
 
         auto m_thisPackage = identifierForNode(moduleDeclaration->getModuleName());
-		RangeInRevision range = editorFindRange(moduleDeclaration->getModuleName(), moduleDeclaration->getModuleName());
+		RangeInRevision range = editorFindRange(moduleDeclaration->getModuleName(), nullptr);
 
         Identifier localId;
         if (!m_thisPackage.isEmpty())
@@ -381,25 +385,32 @@ void DeclarationBuilder::visitModule(IModule *node)
         else
             qCDebug(DUCHAIN) << "visitModule::openDeclaration() called without identifier";
 
-// 		packageDeclaration = openDeclaration<DDeclaration>(localId, range);
-// 		packageDeclaration->setDKind(DDeclaration::Kind::Module);
-        packageDeclaration = openDeclaration<Declaration>(localId,editorFindRange(moduleDeclaration->getModuleName(),nullptr));
+        // the module statement itself is a declaration and starts a namespace
+        packageDeclaration = openDeclaration<NamespaceAliasDeclaration>(localId,range);
         packageDeclaration->setKind(Declaration::Namespace);
-        // Always open a context here
-		openContext(node, editorFindRange(node, nullptr), DUContext::Namespace, m_thisPackage);
 
+        // Always open a namespace context here
+		openContext(node, editorFindRange(node, nullptr), DUContext::ContextType::Namespace, m_thisPackage);
         packageDeclaration->setInternalContext(currentContext());
+        closeDeclaration();
+        // Now open a declaration so that we import our own namespace
+        NamespaceAliasDeclaration* decl =
+        openDeclaration<NamespaceAliasDeclaration>(globalImportIdentifier(),range);
+        decl->setImportIdentifier(QualifiedIdentifier(localId));
     }
 
     // TODO: JG always import object.d (this is the default D behaviour)
 
     // always visit: files do NOT require a module statement
+    // TODO: JG figure out how to deal with files that are not modules
     DeclarationBuilderBase::visitModule(node);
 
 
     if(node->getModuleDeclaration())
     {
+        DUChainWriteLocker lock(DUChain::lock());
         closeContext();
+        currentDeclaration()->setKind(KDevelop::Declaration::Namespace);
         closeDeclaration();
     }
     topContext()->updateImportsCache();

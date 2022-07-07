@@ -60,35 +60,6 @@ void Helper::unregisterDUChainItems()
 */
 }
 
-QList<QString> Helper::getSearchPaths(QUrl document)
-{
-    // TODO: jg these should be configurable
-	QList<QString> paths;
-	if(QFileInfo("/usr/include/dlang/dmd").exists())
-		paths.append("/usr/include/dlang/dmd");
-	else if(QFileInfo("/usr/include/dlang/ldc").exists())
-		paths.append("/usr/include/dlang/ldc");
-	else if(QFileInfo("/usr/include/dlang/gdc").exists())
-		paths.append("/usr/include/dlang/gcd");
-	else if(QFileInfo("/usr/include/d/dmd").exists())
-		paths.append("/usr/include/d/dmd");
-	else if(QFileInfo("/usr/include/d").exists())
-		paths.append("/usr/include/d");
-	if(document != QUrl())
-	{
-		//Try to find path automatically for opened documents.
-		QDir currentDir(document.adjusted(QUrl::RemoveFilename).path());
-		while(currentDir.exists() && (currentDir.dirName() != "src" || currentDir.dirName() != "source"))
-		{
-			if(!currentDir.cdUp())
-				break;
-		}
-		if(currentDir.exists() && (currentDir.dirName() == "src" || currentDir.dirName() == "source"))
-			paths.append(currentDir.absolutePath());
-		paths.append(document.adjusted(QUrl::RemoveFilename).path());
-	}
-	return paths;
-}
 
 DeclarationPointer resolveTypeDeclarationForIdentifier(QualifiedIdentifier newIdentifier, DUContext *context)
 {
@@ -129,6 +100,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
         DUChainReadLocker lock;
         QList<Declaration*> declarations = context->findDeclarations(id,CursorInRevision(INT_MAX,INT_MAX));
         for(Declaration *decl : declarations)
+            // TODO: JG duplicated code
         {
             //Import declarations are just decorations and need not be returned.
             if(decl->kind() == Declaration::Import)
@@ -160,6 +132,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext *context, bo
         declarations = context->findDeclarations(newIdentifier,CursorInRevision(INT_MAX,INT_MAX));
         for(Declaration *decl : declarations)
         {
+            // TODO: JG duplicated code
             //Import declarations are just decorations and need not be returned.
             if(decl->kind() == Declaration::Import)
                 continue;
@@ -187,19 +160,84 @@ DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext *co
 	return DeclarationPointer();
 }
 
+Declaration* searchUp(DUContext* context, const QualifiedIdentifier& identifier,
+                                         const CursorInRevision& position = CursorInRevision::invalid()) {
+
+    Declaration* decl;
+    if (context == nullptr)
+        return nullptr;
+
+    QVector<QPair<Declaration*, int>> alldecls = context->allDeclarations(position, context->topContext());
+    // search upwards
+    for(const QPair<Declaration*, int>& pair : alldecls) {
+            qCDebug(DUCHAIN) << "KK" << pair.first->toString() << "Depth:" << pair.second;
+            // if found == return pair.first
+    }
+    return searchUp(context->parentContext(),identifier,position);
+}
+
+
+Declaration* searchDown(DUContext* context, const QualifiedIdentifier& identifier,
+                                         const CursorInRevision& position = CursorInRevision::invalid()) {
+    Declaration* decl;
+
+    QVector<QPair<Declaration*, int>> alldecls = context->allDeclarations(position, context->topContext());
+    // search upwards
+    for(const QPair<Declaration*, int>& pair : alldecls) {
+            qCDebug(DUCHAIN) << "PP" << pair.first->toString() << "Depth:" << pair.second;
+            // if found == return pair.first
+    }
+
+    // search downwards
+//    QVector<DUContext::Import> imports = context->importedParentContexts();
+    QVector<DUContext*> children = context->childContexts();
+    for (DUContext* ctxt: children) {
+        decl = searchDown(ctxt,identifier,position);
+        if (decl != nullptr)
+            return decl;
+    }
+    return nullptr;
+}
+
+Declaration* myFindDeclaration(DUContext* context, const QualifiedIdentifier& identifier,
+                                         const CursorInRevision& position = CursorInRevision::invalid()) {
+    // then back down to all imported contexts
+    Declaration* decl;
+
+    if (context == nullptr)
+        return nullptr;
+
+    decl = searchUp(context,identifier,position);
+    if (decl != nullptr)
+        return decl;
+
+    return searchDown(context->topContext(),identifier,position);
+
+}
+
+
 DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext *context, bool searchInParent)
 {
     Q_UNUSED(searchInParent);
 	DUChainReadLocker lock;
 	if(context)
 	{
-		auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
-		for(Declaration *decl : declarations)
-		{
-			if(decl->kind() != Declaration::Type)
-				continue;
-			return DeclarationPointer(decl);
-		}
+        // recursive??
+//         DUContext* walker = context;
+//         while (walker != nullptr) {
+            QString idstr = id.toString();
+            auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
+            // TODO: JG Search ourselves. DUChain is too focussed on C++
+//            auto declarations = myFindDeclaration(context,id,CursorInRevision(INT_MAX, INT_MAX));
+            for(Declaration *decl : declarations)
+            {
+                QString declstr = decl->toString();
+                if(decl->kind() != Declaration::Type)
+                    continue;
+                return DeclarationPointer(decl);
+            }
+//             walker = walker->parentContext();
+//         }
 	}
 	return DeclarationPointer();
 }

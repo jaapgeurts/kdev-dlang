@@ -80,7 +80,7 @@ DUContext* ContextBuilder::findContextRecursive(const RangeInRevision& range) co
         context = context->parentContext();
     }
 
-    return context;
+    return nullptr;
 }
 
 
@@ -187,11 +187,13 @@ void ContextBuilder::visitSingleImport(ISingleImport *node)
 {
 	DUChainWriteLocker lock;
     // TODO: JG import bindings are ignored
-    // Lives in importdeclaration.
+    // Lives in import declaration.
+    // TODO: JG only public imports should be imported into the context
     IIdentifierChain* chain = node->getIdentifierChain();
-//     qCDebug(DUCHAIN) << "Import chain: " << identifierForNode(chain).toString();
+    qCDebug(DUCHAIN) << "Importing chain: " << identifierForNode(chain).toString();
 	QList<ReferencedTopDUContext> contexts = m_session->contextForImport(identifierForNode(chain));
 	if(contexts.length() > 0 && chain->numIdentifiers() > 0) {
+        // adds this import as a parent to the current context
 		currentContext()->addImportedParentContext(
              contexts[0],
              CursorInRevision(chain->getIdentifier(0)->getLine(),
@@ -497,8 +499,6 @@ void ContextBuilder::visitStatementNoCaseNoDefault(IStatementNoCaseNoDefault *no
 		visitGotoStatement(n);
 	if(auto n = node->getTryStatement())
 		visitTryStatement(n);
-	if(auto n = node->getThrowStatement())
-		visitThrowStatement(n);
 	if(auto n = node->getScopeGuardStatement())
 		visitScopeGuardStatement(n);
 	if(auto n = node->getWithStatement())
@@ -511,11 +511,25 @@ void ContextBuilder::visitStatementNoCaseNoDefault(IStatementNoCaseNoDefault *no
 		visitAsmStatement(n);
 }
 
+void ContextBuilder::visitIfCondition(IIfCondition* node)
+{
+		// TODO: incomplete
+	if (auto n = node->getExpression())
+		visitExpression(n);
+	else
+		qCDebug(DUCHAIN) << "This type of condition in this if/while statement is not implemented";
+}
+
+
 void ContextBuilder::visitIfStatement(IIfStatement *node)
 {
+	if (auto n = node->getCondition())
+		visitIfCondition(n);
+	else
+		qCDebug(DUCHAIN) << "If statement without condition";
+
 	if(node->getThenStatement())
 	{
-		visitExpression(node->getExpression());
 		if(auto n = node->getThenStatement()->getDeclaration())
 			visitDeclaration(n);
 		if(auto n = node->getThenStatement()->getStatement())
@@ -618,6 +632,8 @@ void ContextBuilder::visitExpressionNode(IExpressionNode *node)
 		visitInExpression(n);
     else if (auto n = node->getTernaryExpression())
         visitTernaryExpression(n);
+	else if (auto n = node->getThrowExpression())
+		visitThrowExpression(n);
 
     //qCDebug(DUCHAIN) << "Clearing identifier chain: " << m_identifier;
     m_identifier.clear();
@@ -788,7 +804,8 @@ void ContextBuilder::visitIndex ( IIndex* node )
 
 void ContextBuilder::visitNewExpression(INewExpression* node) {
     visitTypeName(node->getType());
-    visitArguments(node->getArguments());
+    if (auto n = node->getArguments())
+        visitArguments(n);
 }
 
 void ContextBuilder::visitDeclarator(IDeclarator *node)
@@ -860,8 +877,8 @@ void ContextBuilder::visitWhileStatement(IWhileStatement *node)
 	ContextBuilder::openContext(node, DUContext::Other);
 	if(auto n = node->getDeclarationOrStatement())
 		visitDeclarationOrStatement(n);
-	if(auto n = node->getExpression())
-		visitExpression(n);
+	if(auto n = node->getCondition())
+		visitIfCondition(n);
 	closeContext();
 }
 
@@ -1030,12 +1047,6 @@ void ContextBuilder::visitFinally(IFinally *node)
 		visitDeclarationOrStatement(n);
 }
 
-void ContextBuilder::visitThrowStatement(IThrowStatement *node)
-{
-	if(auto n = node->getExpression())
-		visitExpression(n);
-}
-
 void ContextBuilder::visitScopeGuardStatement(IScopeGuardStatement *node)
 {
 	//TODO: Open context.
@@ -1097,4 +1108,10 @@ void ContextBuilder::visitForeachType(IForeachType *node)
 {
 	if(auto n = node->getType())
 		visitTypeName(n);
+}
+
+void ContextBuilder::visitThrowExpression(IThrowExpression* node)
+{
+	if(auto n = node->getExpression())
+		visitExpressionNode(n);
 }

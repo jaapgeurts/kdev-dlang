@@ -30,7 +30,8 @@ static void sdl_report_error(enum sdlang_error_t error, int line, void* user);
 DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
     : AbstractFileManagerPlugin(QStringLiteral("kdevdubmanager"), parent),
     IBuildSystemManager(),
-    m_builder(new DUBBuilder())
+    m_builder(new DUBBuilder()),
+    m_dubSettings(nullptr)
 {
     Q_UNUSED(args);
 
@@ -66,15 +67,30 @@ ProjectFolderItem* DUBProjectManager::import(IProject* project )
 
     ProjectFolderItem* item = AbstractFileManagerPlugin::import(project);
 
-
+    // TODO: JG This should be read and kept per project
+    readSettings(project);
     // TODO: connect
     return item;
+}
+
+void DUBProjectManager::readSettings(IProject* project ) {
+            // check standard locations for project file.
+    QString sdlFileName = project->path().toLocalFile() + QStringLiteral("/dub.sdl");
+    QString jsonFileName = project->path().toLocalFile() + QStringLiteral("/dub.json");
+    if (QFile::exists(sdlFileName)) {
+         m_dubSettings = m_Parser.parseProjectFileSdl(sdlFileName);
+    }
+    else if (QFile::exists(jsonFileName)) {
+        //m_Parser.parseProjectFileJson(jsonFileName);
+        qCDebug(DUB) << "dub JSON parsing not implemented yet";
+    }
+
 }
 
 ProjectFolderItem* DUBProjectManager::createFolderItem( IProject* project, const Path& path,
                                                 ProjectBaseItem* parent )
 {
-    qCDebug(DUB) << "createFolderItem( IProject* , const Path& ,                                                ProjectBaseItem*)";
+    qCDebug(DUB) << "createFolderItem( IProject* , const Path& , ProjectBaseItem*)";
 
     if (!parent) {
         return new ProjectBuildFolderItem( project, path, parent );
@@ -125,19 +141,18 @@ Path DUBProjectManager::buildDirectory(ProjectBaseItem* item) const
     return project->path();
 }
 
-Path::List DUBProjectManager::collectDirectories(ProjectBaseItem*, const bool collectIncludes) const
+
+Path::List DUBProjectManager::includeDirectories(ProjectBaseItem* projectBaseItem) const
 {
-    Q_UNUSED(collectIncludes);
-    qCDebug(DUB) << "collectDirectories(ProjectBaseItem*, const bool)";
 
-    return Path::List();
-}
-
-Path::List DUBProjectManager::includeDirectories(ProjectBaseItem*) const
-{
-    qCDebug(DUB) << "includeDirectories(ProjectBaseItem*)";
-
-    return {  };
+    // TODO: include all project folders
+    // for now just include the .dub packages from the home folder.
+    Path::List folders;
+    folders << getToolchainPaths(projectBaseItem->project());
+    // TODO: JG read function and scan project folders
+    folders << getProjectPaths(projectBaseItem->project());
+    folders << getDependenciesPaths(projectBaseItem->project());
+    return folders;
 }
 
 Path::List DUBProjectManager::frameworkDirectories(ProjectBaseItem* item) const
@@ -207,7 +222,7 @@ ConfigPage* DUBProjectManager::perProjectConfigPage(int number, const ProjectCon
 {
     qCDebug(DUB) << "perProjectConfigPage()";
     if (number == 0) {
-        ConfigPage* page = new DubPreferences(this,options.project, parent);
+        ConfigPage* page = new DubPreferences(this, m_dubSettings , parent);
         return page;
     }
     return nullptr;
@@ -215,6 +230,73 @@ ConfigPage* DUBProjectManager::perProjectConfigPage(int number, const ProjectCon
 
 //END IBuildSystemManager
 
+
+Path::List DUBProjectManager::getToolchainPaths(IProject* project) const
+{
+    // TODO: JG these should be configurable
+    static QString searchPaths[] = {
+        QLatin1String("/usr/include/dlang/dmd"),
+        QLatin1String("/usr/include/dlang/ldc"),
+        QLatin1String("/usr/include/dlang/gcd"),
+        QLatin1String("/usr/include/d/dmd"),
+        QLatin1String("/usr/include/d")
+    };
+
+	Path::List folders;
+    for(const QString& path : searchPaths) {
+        if (QFileInfo::exists(path)) {
+            folders << Path(path);
+            return folders;
+        }
+    }
+    return folders;
+}
+
+Path::List DUBProjectManager::getProjectPaths(IProject* project) const
+{
+    Path::List folders;
+
+    //Try to find path automatically for opened documents.
+    QDir currentDir(project->path().toLocalFile());
+    while(currentDir.exists() && (currentDir.dirName() != "src" || currentDir.dirName() != "source"))
+    {
+        if(!currentDir.cdUp())
+            break;
+    }
+    // Add a src or source directory
+    if(currentDir.exists() && (currentDir.dirName() == "src" || currentDir.dirName() == "source"))
+        folders << Path(currentDir.absolutePath());
+
+    return folders;
+}
+
+Path::List DUBProjectManager::getDependenciesPaths(IProject* project) const
+{
+    Path::List folders;
+    QString home = qEnvironmentVariable("HOME");
+    QString basePath = home + "/.dub/packages";
+    // dependencies
+    int count = m_dubSettings->numNodes("dependency");
+    for (int i=0;i<count;i++ ) {
+        QString dep = m_dubSettings->getValue<QString>("dependency", i);
+        QString depPath = m_dubSettings->getAttribute<QString>("dependency","path",i);
+        QString depVersion = m_dubSettings->getAttribute<QString>("dependency", "version", i);
+        if (!depPath.isEmpty()) {
+            QDir canonicalPath(project->path().toLocalFile()+"/"+depPath);
+            folders << Path(canonicalPath.absolutePath());
+        } else if (!depVersion.isEmpty()) {
+            depVersion.remove(0,2);
+            QString path = basePath + "/" + dep +"-"+depVersion+"/"+dep; // TODO or source
+            if (QFileInfo::exists(path + "/source"))
+                folders << Path(path+"/source");
+            else if (QFileInfo::exists(path + "/src"))
+                folders << Path(path+"/src");
+        }
+        else
+            qCDebug(DUB) << "Dependency not found. Run 'dub build' at least once: "+dep;
+    }
+    return folders;
+}
 
 
 /*

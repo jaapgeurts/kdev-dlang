@@ -608,36 +608,57 @@ void ParseSession::setCurrentDocument(const IndexedString &document)
  */
 QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier package)
 {
+    qCDebug(DPARSER) << "Import for: " << package.toString();
 	QStringList files;
-	if(files.empty())
-	{
-		for(const QString &pathname : m_includePaths)
-		{
-			QDir path(pathname);
-			if(path.exists())
-			{
-				bool canFind = true;
-				for(int i=0; i<package.count()-1; i++)
-				{
-					if(!path.cd(package.at(i).toString()))
-					{
-						canFind = false;
-						break;
-					}
-				}
-				if(package.count() == 1)
-					canFind = path.exists(package.at(0).toString()+".d") || path.exists(package.at(0).toString()+".di");
-				if(canFind)
-				{
-					if(path.exists(package.at(package.count()-1).toString()+".d"))
-						files.append(path.filePath(package.at(package.count()-1).toString()+".d"));
-					else if(path.exists(package.at(package.count()-1).toString()+".di"))
-						files.append(path.filePath(package.at(package.count()-1).toString()+".di"));
-					break;
-				}
-			}
-		}
-	}
+    if (package.toString() == "dpq2::connection")
+        qCDebug(DPARSER) << "INCLUDES:" << m_includePaths;
+    // Search all include paths for the package
+    for(const QString &pathname : m_includePaths)
+    {
+        QDir path(pathname);
+        qCDebug(DPARSER) << "checking path:" << pathname;
+        if(path.exists())
+        {
+            qCDebug(DPARSER) << "exists";
+            bool canFind = true;
+            // cd into include path minus module name
+            for(int i=0; i<package.count()-1; i++)
+            {
+                if(!path.cd(package.at(i).toString()))
+                {
+                    canFind = false;
+                    break;
+                }
+            }
+            // check if the module file or package.d is present
+            if(canFind)
+            {
+                QString modulePath;
+                QString moduleNameOrPackage = package.at(package.count()-1).toString();
+                qCDebug(DPARSER) << "Checking file:"<<path.path()<< moduleNameOrPackage+".d";
+                if(path.exists(moduleNameOrPackage+".d"))
+                    modulePath = path.filePath(moduleNameOrPackage+".d");
+                else if(path.exists(moduleNameOrPackage+".di"))
+                    modulePath = path.filePath(moduleNameOrPackage+".di");
+                else if (path.cd(moduleNameOrPackage)) {
+                    modulePath = path.filePath("package.d");
+                }
+
+                // If a module or package was found add it to the files.
+                if (!modulePath.isEmpty()) {
+                    qCDebug(DPARSER) << "module path:" << modulePath;
+                    files.append(modulePath);
+                    break;
+                }
+            }
+        }
+    }
+    if (files.isEmpty()) {
+       qCDebug(DPARSER) << "Module not found:" << package.toString();
+    }
+    // Check if the module has already been parsed or not.
+    // If already parsed => return the context
+    // If not already parsed => schedule for parsing.
 	QList<ReferencedTopDUContext> contexts;
 	bool shouldReparse = false;
 	//Reduce priority if it is recursive import.
@@ -655,29 +676,36 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier
 		if(!file.exists())
 			continue;
 
-//         qCDebug(DPARSER) << "File needs parsing after import statement: " << filename;
-
 		IndexedString url(filename);
 		DUChainReadLocker lock;
 		ReferencedTopDUContext context = DUChain::self()->chainForDocument(url);
 		lock.unlock();
-		if(context)
+		if(context) {
+            qCDebug(DPARSER) << "File added by context: " << filename;
 			contexts.append(context);
-		else if(scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
+        }
+		else if(scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts))) {
+                qCDebug(DPARSER) << "File added by scheduling 1: " << filename;
                 shouldReparse = true;
+        }
 	}
-	if(shouldReparse)
+	if(shouldReparse) {
 		//Reparse this file after its imports are done.
+        qCDebug(DPARSER) << "File added by reparse 1: " << m_document;
 		scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+    }
 
-	if(!forExport && m_priority != BackgroundParser::WorstPriority) //Always schedule last reparse after all recursive imports are done.
-		scheduleForParsing(m_document, BackgroundParser::WorstPriority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+	if(!forExport && m_priority != BackgroundParser::WorstPriority) { //Always schedule last reparse after all recursive imports are done.
+        qCDebug(DPARSER) << "File added by reparse 2: " << m_document;
+        scheduleForParsing(m_document, BackgroundParser::WorstPriority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+    }
 
 	return contexts;
 }
 
 bool ParseSession::scheduleForParsing(const IndexedString &url, int priority, TopDUContext::Features features)
 {
+    qCDebug(DPARSER) << "Scheduled for parsing: " << url;
 	BackgroundParser *bgparser = ICore::self()->languageController()->backgroundParser();
 	//TopDUContext::Features features = (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts);//(TopDUContext::Features)
 	//(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsContextsAndUses);
@@ -895,8 +923,6 @@ void ParseSession::addProblem(const QString& message, size_t line, size_t column
     r.document = m_document;
     p->setFinalLocation(r);
     p->setFinalLocationMode(KDevelop::IProblem::TrimmedLine);
-//     p->setFinalLocation(DocumentRange(m_document, KTextEditor::Range(line,column,line,column)));
-    //editorFindRange(node, node).castToSimpleRange()));
 
     m_problems << p;
 }

@@ -47,6 +47,7 @@ void UseBuilder::visitTypeName(IType *node)
 	if(!node || !currentContext())
 		return;
 
+
     IToken* ident = nullptr;
     if (auto node2 = node->getType2()->getTypeIdentifierPart()) {
 
@@ -60,9 +61,12 @@ void UseBuilder::visitTypeName(IType *node)
     } else {
         // must be built-in type or template argument
         return;
+
     }
 
     QualifiedIdentifier id(identifierForNode(ident));
+
+    qCDebug(DUCHAIN) << "UseBuilder::visitTypeName " << id;
 
     if (id.isEmpty()) {
         qCDebug(DUCHAIN) << "ERROR: No identifier at line: " << node->getStartLine();
@@ -79,10 +83,11 @@ void UseBuilder::visitTypeName(IType *node)
 		return;
 	}
 	DeclarationPointer decl = getTypeDeclaration(id, context);
-//     qCDebug(DUCHAIN) << "UseBuilder::visitTypeName " << id;
 	if(decl) {
-//         qCDebug(DUCHAIN) << "UseBuilder::Decl found for typename: " << id;
+        qCDebug(DUCHAIN) << "UseBuilder::Decl found for type: " << id;
 		newUse(ident, decl);
+    } else {
+        qCDebug(DUCHAIN) << "UseBuilder::Decl not found for type: " << id;
     }
 }
 

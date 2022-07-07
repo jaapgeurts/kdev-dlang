@@ -11,21 +11,13 @@
 
 using namespace KDevelop;
 
-DubPreferences::DubPreferences(IPlugin* plugin, IProject* project , QWidget* parent) :
+DubPreferences::DubPreferences(IPlugin* plugin, DubSettings::Ptr settings, QWidget* parent) :
     ConfigPage(plugin, nullptr, parent),
-    m_ui(new Ui::DubPreferences())
+    m_ui(new Ui::DubPreferences()),
+    m_dubSettings(settings)
 {
     m_ui->setupUi(this);
 
-        // check standard locations for project file.
-    QString sdlFileName = project->path().toLocalFile() + QStringLiteral("/dub.sdl");
-    QString jsonFileName = project->path().toLocalFile() + QStringLiteral("/dub.json");
-    if (QFile::exists(sdlFileName)) {
-         m_dubSettings = m_Parser.parseProjectFileSdl(sdlFileName);
-    }
-    else if (QFile::exists(jsonFileName)) {
-        //m_Parser.parseProjectFileJson(jsonFileName);
-    }
 
     init();
 

@@ -35,7 +35,7 @@ public:
     /**
      * Default constructor
      */
-    DubPreferences(KDevelop::IPlugin* plugin, KDevelop::IProject* project, QWidget* parent = nullptr);
+    DubPreferences(KDevelop::IPlugin* plugin, DubSettings::Ptr setting, QWidget* parent = nullptr);
 
     /**
      * Destructor
@@ -92,8 +92,7 @@ private:
     QScopedPointer<Ui::DubPreferences> m_ui;
 
 
-    DubParser m_Parser;
-    QSharedPointer<DubSettings> m_dubSettings;
+    DubSettings::Ptr m_dubSettings;
     DubType m_dubType;
 
 };

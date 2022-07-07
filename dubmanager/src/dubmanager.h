@@ -42,9 +42,10 @@ public:
 
     //BEGIN IBuildSystemManager
     //TODO
+
+
     IProjectBuilder*  builder() const override;
     Path buildDirectory(ProjectBaseItem* item) const override;
-    Path::List collectDirectories(ProjectBaseItem*, const bool collectIncludes=true) const;
     Path::List includeDirectories(ProjectBaseItem*) const override;
     Path::List frameworkDirectories(ProjectBaseItem* item) const override;
     QHash<QString,QString> defines(ProjectBaseItem*) const override;
@@ -87,6 +88,17 @@ private Q_SLOTS:
 
 private:
     IProjectBuilder* m_builder;
+    DubSettings::Ptr m_dubSettings;
+    DubParser m_Parser;
+
+
+    Path::List getToolchainPaths(IProject* project) const;
+    Path::List getProjectPaths(IProject* project) const;
+    Path::List getDependenciesPaths(IProject* project) const;
+
+    void readSettings(IProject* project );
+
+
 //     ProjectFolderItem* projectRootItem( IProject* project, const Path& path );
 //     ProjectFolderItem* buildFolderItem( IProject* project, const Path& path, ProjectBaseItem* parent );
 

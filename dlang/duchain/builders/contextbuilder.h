@@ -104,6 +104,7 @@ public:
 //     virtual void visitIdentifier(IToken* node);
     virtual void visitIdentifierOrTemplateInstance(IIdentifierOrTemplateInstance *node);
     virtual void visitIdentityExpression(IIdentityExpression *node);
+    virtual void visitIfCondition(IIfCondition *node);
     virtual void visitIfStatement(IIfStatement *node);
     virtual void visitImportBind(IImportBind* node);
     virtual void visitImportDeclaration(IImportDeclaration *node);
@@ -136,7 +137,7 @@ public:
     virtual void visitTemplateInstance(ITemplateInstance* node);
     virtual void visitTemplateParameter(ITemplateParameter* node);
     virtual void visitTernaryExpression(ITernaryExpression* node);
-    virtual void visitThrowStatement(IThrowStatement *node);
+    virtual void visitThrowExpression(IThrowExpression* node);
     virtual void visitToken(IToken *node);
     virtual void visitTryStatement(ITryStatement *node);
     virtual void visitTypeName(IType *node) = 0;

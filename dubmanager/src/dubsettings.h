@@ -12,6 +12,8 @@ class DubSettings {
 
 public:
 
+    typedef QSharedPointer<DubSettings> Ptr;
+
     DubSettings(const QSharedPointer<SDLNode>& root);
 
     /** Path is specified as A/B/C where A,B,C are nodes and / indicates a child node */
