@@ -212,9 +212,6 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
     // Dumps DU Chain to output
     dumpDUChain(context);
 
-
-
-
 	// BEGIN JG
 // 	uint count;
 //     const CodeModelItem* items;

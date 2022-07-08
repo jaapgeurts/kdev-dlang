@@ -13,7 +13,7 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMQtDeclareLoggingCategory)
 include(FeatureSummary)
 
-find_package(KDevPlatform 5.7.22 REQUIRED)
+find_package(KDevPlatform 5.9.22 REQUIRED)
 
 add_subdirectory(dfmt)
 add_subdirectory(dlang)
