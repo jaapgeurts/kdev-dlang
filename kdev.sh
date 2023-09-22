@@ -1,5 +1,13 @@
 #!/bin/bash
 
+pathadd() {
+    if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
+        PATH="${PATH:+"$PATH:"}$1"
+    fi
+}
+
+pathadd "$HOME/devinstall/bin"
+
 export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/devinstall/share
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/devinstall/lib64
 export QT_PLUGIN_PATH=~/devinstall/lib64/plugins

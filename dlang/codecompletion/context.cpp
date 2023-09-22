@@ -107,7 +107,7 @@ QList<CompletionTreeItemPointer> DCodeCompletionContext::functionCallTips()
 		if(entry.startPosition > 0 && m_text.at(entry.startPosition - 1) == QLatin1Char('('))
 		{
 			DeclarationPointer function = lastDeclaration(m_text.left(entry.startPosition - 1));
-			if(function && fastCast<KDevelop::FunctionType *>(function->abstractType().constData()))
+			if(function && dynamic_cast<const KDevelop::FunctionType *>(function->abstractType().constData()))
 			{
 				FunctionCompletionItem *item = new FunctionCompletionItem(function, depth, entry.commas);
 				depth++;
@@ -115,7 +115,7 @@ QList<CompletionTreeItemPointer> DCodeCompletionContext::functionCallTips()
 
 				if(isTopOfStack && !m_typeToMatch)
 				{
-					KDevelop::FunctionType::Ptr ftype(fastCast<KDevelop::FunctionType *>(function->abstractType().constData()));
+					const KDevelop::FunctionType* ftype(dynamic_cast<const KDevelop::FunctionType *>(function->abstractType().constData()));
 					auto args = ftype->arguments();
 					if(args.count() != 0)
 					{
@@ -137,19 +137,19 @@ QList<CompletionTreeItemPointer> DCodeCompletionContext::importAndMemberCompleti
 	if(lasttype)
 	{
 		//Evaluate pointers,
-		if(fastCast<PointerType *>(lasttype.constData()))
+		if(dynamic_cast<const PointerType *>(lasttype.constData()))
 		{
 			DUChainReadLocker lock;
-			PointerType *ptype = fastCast<PointerType *>(lasttype.constData());
+			const PointerType *ptype = dynamic_cast<const PointerType *>(lasttype.constData());
 			if(ptype->baseType())
 				lasttype = ptype->baseType();
 		}
-		if(fastCast<StructureType *>(lasttype.constData()))
+		if(dynamic_cast<const StructureType *>(lasttype.constData()))
 		{
 			//We have to look for module declarations.
 			//TODO: Handle module aliases.
 			DUChainReadLocker lock;
-			Declaration *lastdeclaration = fastCast<StructureType *>(lasttype.constData())->declaration(m_duContext->topContext());
+			const Declaration *lastdeclaration = dynamic_cast<const StructureType *>(lasttype.constData())->declaration(m_duContext->topContext());
 			if(lastdeclaration->kind() == Declaration::Namespace)
 			{
 				auto decls = getDeclarations(lastdeclaration->qualifiedIdentifier(), m_duContext.data());
@@ -178,7 +178,7 @@ QList<CompletionTreeItemPointer> DCodeCompletionContext::importAndMemberCompleti
 		do
 		{
 			count++;
-			StructureType *structure = fastCast<StructureType *>(lasttype.constData());
+			const StructureType *structure = dynamic_cast<const StructureType *>(lasttype.constData());
 			if(structure)
 			{
 				//Get members.
@@ -189,7 +189,7 @@ QList<CompletionTreeItemPointer> DCodeCompletionContext::importAndMemberCompleti
 				for(const QPair<Declaration *, int> &decl : declarations)
 					items << itemForDeclaration(decl);
 			}
-			StructureType *identType = fastCast<StructureType *>(lasttype.constData());
+			const StructureType *identType = dynamic_cast<const StructureType *>(lasttype.constData());
 			if(identType)
 			{
 				DUChainReadLocker lock;

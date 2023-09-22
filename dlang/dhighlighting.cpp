@@ -28,7 +28,7 @@ class HighlightingInstance : public KDevelop::CodeHighlightingInstance
 {
 public:
 	HighlightingInstance(const KDevelop::CodeHighlighting *highlighting);
-	virtual Types typeForDeclaration(KDevelop::Declaration *decl, KDevelop::DUContext *context) const override;
+	virtual KDevelop::CodeHighlightingType typeForDeclaration(KDevelop::Declaration *decl, KDevelop::DUContext *context) const override;
 	virtual bool useRainbowColor(KDevelop::Declaration *dec) const override;
 };
 
@@ -42,7 +42,7 @@ KDevelop::CodeHighlightingInstance *Highlighting::createInstance() const
 	return new HighlightingInstance(this);
 }
 
-KDevelop::HighlightingEnumContainer::Types HighlightingInstance::typeForDeclaration(KDevelop::Declaration *decl, KDevelop::DUContext *context) const
+KDevelop::CodeHighlightingType HighlightingInstance::typeForDeclaration(KDevelop::Declaration* decl, KDevelop::DUContext* context) const
 {
 	return KDevelop::CodeHighlightingInstance::typeForDeclaration(decl, context);
 }

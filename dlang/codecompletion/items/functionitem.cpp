@@ -32,7 +32,7 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
     m_depth(depth), m_atArgument(atArgument)
 {
 	auto function = decl.dynamicCast<KDevelop::FunctionDeclaration>();
-	KDevelop::FunctionType::Ptr type(fastCast<KDevelop::FunctionType *>(decl->abstractType().constData()));
+	const KDevelop::FunctionType* type(dynamic_cast<const KDevelop::FunctionType *>(decl->abstractType().constData()));
 	if(!type)
 		return;
 
@@ -92,9 +92,9 @@ void FunctionCompletionItem::executed(KTextEditor::View *view, const KTextEditor
 		suffix.clear();
 	document->replaceText(word, declaration()->identifier().toString() + suffix);
 	AbstractType::Ptr type = declaration()->abstractType();
-	if(fastCast<KDevelop::FunctionType *>(type.constData()))
+	if(dynamic_cast<const KDevelop::FunctionType *>(type.constData()))
 	{
-		KDevelop::FunctionType *ftype = fastCast<KDevelop::FunctionType *>(type.constData());
+		const KDevelop::FunctionType *ftype(dynamic_cast<const KDevelop::FunctionType *>(type.constData()));
 		//Put cursor inside parentheses if function takes arguments.
 		if(ftype->arguments().size() > 0)
 			view->setCursorPosition(KTextEditor::Cursor(word.end().line(), word.end().column() + 1));

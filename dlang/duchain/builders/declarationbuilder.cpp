@@ -485,11 +485,11 @@ void DeclarationBuilder::visitEnumMember(IEnumMember *node)
 	DUChainWriteLocker lock;
 	ClassMemberDeclaration *e = openDeclaration<ClassMemberDeclaration>(node->getName(), node);
 	e->setStatic(true);
-	EnumeratorType::Ptr enumeratorType = lastType().cast<EnumeratorType>();
+	EnumeratorType::Ptr enumeratorType = lastType().dynamicCast<EnumeratorType>();
 	if(enumeratorType)
 	{
 		enumeratorType->setDeclaration(e);
-		e->setAbstractType(enumeratorType.cast<AbstractType>());
+		e->setAbstractType(enumeratorType);
 	}
 	closeDeclaration();
 }

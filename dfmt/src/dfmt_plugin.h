@@ -22,10 +22,6 @@ public:
     QString caption() const override;
     QString description() const override;
 
-    /** Formats using the current style.
-    */
-    QString formatSource(const QString& text, const QUrl &url, const QMimeType& mime, const QString& leftContext, const QString& rightContext) const override;
-
     QString formatSourceWithStyle(const KDevelop::SourceFormatterStyle& style,
                                 const QString& text,
                                 const QUrl &url,
@@ -37,9 +33,14 @@ public:
     */
     QVector<KDevelop::SourceFormatterStyle> predefinedStyles() const override;
 
+    /**
+		 * @return whether editStyleWidget() returns a valid pointer
+		 */
+    virtual bool hasEditStyleWidget() const override;
+
     /** \return The widget to edit a style.
     */
-    KDevelop::SettingsWidget* editStyleWidget(const QMimeType& mime) const override;
+    virtual KDevelop::SettingsWidgetPtr editStyleWidget(const QMimeType &mime) const override;
 
     /** \return The text used in the config dialog to preview the current style.
     */
@@ -47,8 +48,10 @@ public:
 
     /** \return The indentation type of the currently selected style.
     */
-    KDevelop::ISourceFormatter::Indentation indentation(const QUrl &url) const override;
+    virtual Indentation indentation(const KDevelop::SourceFormatterStyle& style, const QUrl& url,
+		                                const QMimeType& mime) const override;
 
+    // TODO: is this still needed here??
     static QString formattingSample();
     static QString indentingSample();
 

@@ -1,13 +1,11 @@
 #include "dfmt_plugin.h"
 
-#include <debug.h>
-
-#include <interfaces/icore.h>
-#include <interfaces/isourceformattercontroller.h>
-
+#include <QMimeDatabase>
 #include <KPluginFactory>
 
-#include <QMimeDatabase>
+#include <interfaces/icore.h>#include <interfaces/isourceformattercontroller.h>
+
+#include <debug.h>
 
 #include "dfmt_preferences.h"
 
@@ -126,13 +124,6 @@ QString DFormatPlugin::description() const
         "and beautifier for the D language.<br/>Home page: <a href=\"https://github.com/dlang-community/dfmt\">https://github.com/dlang-community/dfmt</a>");
 }
 
-QString DFormatPlugin::formatSource(const QString& text, const QUrl &url, const QMimeType& mime, const QString& leftContext, const QString& rightContext) const
-{
-    auto style = ICore::self()->sourceFormatterController()->styleForUrl(url, mime);
-    return formatSourceWithStyle(style, text, url, mime, leftContext, rightContext);
-
-}
-
 QString DFormatPlugin::formatSourceWithStyle(const KDevelop::SourceFormatterStyle& style,
                                 const QString& text,
                                 const QUrl &url,
@@ -142,6 +133,8 @@ QString DFormatPlugin::formatSourceWithStyle(const KDevelop::SourceFormatterStyl
 {
     Q_UNUSED(url);
     Q_UNUSED(mime);
+    Q_UNUSED(leftContext);
+    Q_UNUSED(rightContext);
     if (style.content().isEmpty()) {
         m_formatter->predefinedStyle(style.name());
     } else {
@@ -172,15 +165,18 @@ QVector<SourceFormatterStyle> DFormatPlugin::predefinedStyles() const
     return list;
 }
 
+bool DFormatPlugin::hasEditStyleWidget() const {
+    return true;
+}
 
-SettingsWidget* DFormatPlugin::editStyleWidget(const QMimeType& mime) const
+SettingsWidgetPtr DFormatPlugin::editStyleWidget(const QMimeType &mime) const
 {
     if (mime.inherits(QStringLiteral("text/x-dsrc")))
         qCDebug(DFMT) << "Found a D file to format";
     else
         qCDebug(DFMT) << "Can't format file of type " << mime;
 
-    return new DFMTPreferences();
+    return SettingsWidgetPtr(new DFMTPreferences());
 }
 
 QString DFormatPlugin::previewText(const SourceFormatterStyle& style, const QMimeType& mime) const
@@ -194,10 +190,11 @@ QString DFormatPlugin::previewText(const SourceFormatterStyle& style, const QMim
       formattingSample();
 }
 
-ISourceFormatter::Indentation DFormatPlugin::indentation(const QUrl &url) const{
+ISourceFormatter::Indentation DFormatPlugin::indentation(const KDevelop::SourceFormatterStyle& style, const QUrl& url, const QMimeType& mime) const {
 
+    Q_UNUSED(mime);
     // Call formatSource first, to initialize the m_formatter data structures according to the URL
-    formatSource(QString(), url, QMimeDatabase().mimeTypeForUrl(url), QString(), QString());
+    formatSourceWithStyle(style,QString(),  url, QMimeDatabase().mimeTypeForUrl(url), QString(), QString());
 
     Indentation ret;
 
@@ -229,3 +226,4 @@ QString DFormatPlugin::indentingSample()
 
 // needed for QObject class created from K_PLUGIN_FACTORY_WITH_JSON
 #include "dfmt_plugin.moc"
+

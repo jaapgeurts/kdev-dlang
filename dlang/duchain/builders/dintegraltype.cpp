@@ -44,7 +44,7 @@ bool DIntegralType::equals(const KDevelop::AbstractType* _rhs) const
     if (!AbstractType::equals(_rhs))
         return false;
 
-    Q_ASSERT(fastCast<const DIntegralType*>(_rhs));
+    Q_ASSERT(dynamic_cast<const DIntegralType*>(_rhs));
 
     const auto* rhs = static_cast<const DIntegralType*>(_rhs);
 

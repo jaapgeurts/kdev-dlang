@@ -79,15 +79,6 @@ public:
     TYPE_DECLARE_DATA(DIntegralType)
 };
 
-template <>
-inline DIntegralType* KDevelop::fastCast<DIntegralType*>(AbstractType* from)
-{
-    if (!from || from->whichType() != AbstractType::TypeIntegral)
-        return nullptr;
-    else
-        return static_cast<DIntegralType*>(from);
-}
-
 class DIntegralTypeData
     : public IntegralTypeData
 {

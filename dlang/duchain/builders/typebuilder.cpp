@@ -39,7 +39,7 @@ void TypeBuilder::visitTypeName(IType *node)
 {
 	if(!node)
 	{
-		injectType<AbstractType>(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
+		injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
 		return;
 	}
 	if (node->getType2()->getTypeofExpression()) {
@@ -137,7 +137,7 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 //            qCDebug(DUCHAIN) << "TypeBuilder: Found " << decl->qualifiedIdentifier();
 			StructureType *type = new StructureType();
 			type->setDeclaration(decl.data());
-			injectType<AbstractType>(AbstractType::Ptr(type));
+			injectType(AbstractType::Ptr(type));
 			return;
 		}
 		// This happens e.g. with foreach without type spec.
@@ -148,12 +148,12 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
         //unknown->setKind(DelayedType::Unresolved);
         //
         //JG END
-		injectType<AbstractType>(AbstractType::Ptr(unknown));
+		injectType(AbstractType::Ptr(unknown));
 		return;
 	}
 	if(type != IntegralType::TypeNone) {
         qCDebug(DUCHAIN) << "Recording type: " << name;
-		injectType<AbstractType>(AbstractType::Ptr(new DIntegralType(type)));
+		injectType(AbstractType::Ptr(new DIntegralType(type)));
     }
 }
 
@@ -215,7 +215,7 @@ void TypeBuilder::visitClassDeclaration(IClassDeclaration *node)
 
     StructureType::Ptr structureType = KDevelop::StructureType::Ptr(new KDevelop::StructureType);
     currentStructureType = structureType;
-    openType<KDevelop::StructureType>(structureType);
+    openType(structureType);
 
 	TypeBuilderBase::visitClassDeclaration(node);
 	closeType();
@@ -226,7 +226,7 @@ void TypeBuilder::visitStructDeclaration(IStructDeclaration *node)
     StructureType::Ptr structureType = KDevelop::StructureType::Ptr(new KDevelop::StructureType);
     currentStructureType = structureType;
 
-    openType<KDevelop::StructureType>(structureType);
+    openType(structureType);
 	TypeBuilderBase::visitStructDeclaration(node);
 
 	closeType();
@@ -236,7 +236,7 @@ void TypeBuilder::visitInterfaceDeclaration(IInterfaceDeclaration *node)
 {
     StructureType::Ptr structureType = KDevelop::StructureType::Ptr(new KDevelop::StructureType);
     currentStructureType = structureType;
-    openType<KDevelop::StructureType>(structureType);
+    openType(structureType);
 
 	TypeBuilderBase::visitInterfaceDeclaration(node);
 	closeType();
@@ -250,7 +250,7 @@ void TypeBuilder::visitEnumDeclaration(IEnumDeclaration *node)
 	if(auto n = node->getType())
 		visitTypeName(n);
 	else
-		injectType<AbstractType>(AbstractType::Ptr(new IntegralType(IntegralType::TypeInt)));
+		injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeInt)));
 }
 
 void TypeBuilder::visitEnumMember(IEnumMember *node)

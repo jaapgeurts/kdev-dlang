@@ -83,7 +83,7 @@ void DFMTPreferences::load(const SourceFormatterStyle &style)
     updatePreviewText();
 }
 
-QString DFMTPreferences::save()
+QString DFMTPreferences::save() const
 {
     return m_formatter->saveStyle();
 }
