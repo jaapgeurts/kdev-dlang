@@ -1,0 +1,29 @@
+json        <- element
+element     <- WS value WS
+
+value       <- object / array / string / number / 'true' / 'false' /  'null'
+
+object      <- '{' ( members / WS ) '}'
+members     <- member (',' member)*
+member      <- WS string WS ':' element
+
+array       <- '[' ( elements / WS ) ']'
+
+elements    <- element (',' elements)*
+
+string      <- '"' < character* > '"'
+character   <- !'"' !'\\' [\u0020-\u10FFFF] / '\\' escape
+escape      <- '"' / '\\' / '/' / 'b' / 'f' / 'n' / 'r' / 't' / 'u' hex{3}
+
+hex         <- digit / [A-Fa-f]
+number      <- integer fraction? exponent?
+integer     <- '-'? ( onenine digits / digit )
+digits      <- digit+
+digit       <- '0' / onenine
+onenine     <- [1-9]
+
+fraction    <- '.' digits
+exponent    <- [Ee] sign? digits
+sign        <- '+' / '-'
+
+WS          <- [ \r\n\t]*

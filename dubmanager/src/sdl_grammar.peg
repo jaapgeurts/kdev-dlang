@@ -1,0 +1,52 @@
+TagTree         <- Line*
+Line            <- (TagList / Anon / Comment / BlankLine)
+TagList         <- Tag (TAGSEP Spacing TagList?)? Spacing LineComment? ( EOL / EOF )?
+Tag             <- TagName Spacing (Value Spacing)*  (Attribute Spacing)*  (Children Spacing)*
+
+Children        <- '{' Spacing (Line Spacing)* '}'
+
+TagName         <- (Namespace ':')? Identifier
+Namespace       <- Identifier
+
+Attribute       <- (Namespace ':')? Key Spacing '=' Spacing  Value
+
+Key             <- Identifier
+
+Anon            <- Value Spacing LineComment?
+Value           <- StringEscaped / StringRaw / DateTime / Number / Boolean / Null / Binary
+
+StringEscaped   <-  '"' < (! '"' Char )* > '"'
+StringRaw       <-  '`' < (! '`' . )* > '`'
+Char            <- ('\\' . ) / (!'\\' .)
+Number          <-  Decimal / Float32 / Float64  / Int64 / Int32
+Int32           <- < [0-9]+ >
+Int64           <- < [0-9]+ > 'L'
+Float32         <- < [0-9]+ '.' [0-9]+ > 'f'
+Float64         <- < [0-9]+ '.' [0-9]+ > 'd'?
+Decimal         <- < [0-9]+ '.' [0-9]+ > 'BD'
+Boolean         <- 'true' / 'false' / 'on' / 'off'
+Null            <- 'null'
+DateTime        <- Date (Spacing Time)? / Time
+Date            <- < '-'? [0-9]{4} '/' [0-9]{2} '/' [0-9]{2} >
+Time            <- < '-'? ([0-9]+'d' ':')? ([0-9]{2} ':')+ [0-9]{2} ('.' [0-9]{3} ('-' TimeZone)? )? >
+TimeZone        <- < [a-zA-Z0-9/_:+-]+ >
+# base 64 encoded
+Binary          <- '[' < [A-Za-z0-9+/=]* > ']'
+
+Identifier      <- < [a-zA-Z_] [a-zA-Z0-9_.$-]* >
+
+Comment         <- BlockComment / LineComment
+
+LineComment     <- < ("//" / "--" / "#") (!EOL !EOF .)* > (EOL / EOF)
+BlockComment    <- "/*" < (!"*/" .)* > "*/"
+
+LineCont        <- '\\' '\n'
+
+BlankLine       <- WS / EOL
+
+Spacing         <- (  BlockComment / WS / LineCont )*
+TAGSEP          <- ';'
+~WS             <- [ \t]
+
+EOL             <- '\n' / '\r\n' / '\r'
+EOF             <- !.
