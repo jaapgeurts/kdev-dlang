@@ -32,7 +32,7 @@ namespace dscannercheck {
 DScannerParameters::DScannerParameters(IProject* project) :
     m_project(project)
 {
-    executablePath = "/home/jaapg/bin/dscanner";
+    executablePath = QStringLiteral("/home/jaapg/bin/dscanner");
     hideOutputView = GlobalSettings::hideOutputView();
 
     m_projectRootPath    = m_project->path();
@@ -49,11 +49,11 @@ QStringList DScannerParameters::commandLine() const
 
     result << executablePath;
 
-    result << "-S"; // do style check. Individual settings are controlled via a settings file
+    result << QStringLiteral("-S"); // do style check. Individual settings are controlled via a settings file
 
     // set reporting format
-    result << "-f";
-    result << "##{filepath}:{line}:{column}:{type}:{message}";
+    result << QStringLiteral("-f");
+    result << QStringLiteral("##{filepath}:{line}:{column}:{type}:{message}");
 
     // append all the checks here, depending on the settings.
     // if (boolean this or that)

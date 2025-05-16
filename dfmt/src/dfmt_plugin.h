@@ -15,7 +15,7 @@ class DFormatPlugin : public KDevelop::IPlugin, public KDevelop::ISourceFormatte
 
 public:
     // KPluginFactory-based plugin wants constructor with this signature
-    DFormatPlugin(QObject* parent, const QVariantList& args);
+    DFormatPlugin(QObject* parent,const KPluginMetaData& metaData, const QVariantList& args);
     ~DFormatPlugin() override;
 
     QString name() const override;

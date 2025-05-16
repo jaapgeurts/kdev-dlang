@@ -58,6 +58,6 @@ DUBJob::~DUBJob()
 QStringList DUBJob::commandLine() const
 {
     // TODO: JG add all build options
-    return { "dub","build" };
+    return { QStringLiteral("dub"),QStringLiteral("build") };
 }
 

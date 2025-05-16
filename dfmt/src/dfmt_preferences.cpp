@@ -4,11 +4,13 @@
 
     SPDX-License-Identifier: GPL-2.0-or-later
 */
+#include <QtCore/qtmetamacros.h>
 
 #include "dfmt_preferences.h"
 
 #include "dformatter.h"
 #include "dfmt_plugin.h"
+
 
 using namespace KDevelop;
 
@@ -48,28 +50,28 @@ void DFMTPreferences::init()
     // Tabs
     connect(cbIndentType, QOverload<int>::of(&KComboBox::currentIndexChanged), this, &DFMTPreferences::indentChanged);
     connect(sbNumberSpaces, QOverload<int>::of(&QSpinBox::valueChanged), this, &DFMTPreferences::indentChanged);
-    connect(chkSingleIndent, &QCheckBox::stateChanged, this, &DFMTPreferences::singleIndentChanged);
+    connect(chkSingleIndent, &QCheckBox::checkStateChanged, this, &DFMTPreferences::singleIndentChanged);
 
     // Spaces
-    connect(chkSpaceAfterCast, &QCheckBox::stateChanged, this, &DFMTPreferences::spaceAfterCastChanged);
-    connect(chkSpaceBeforeFunctionParameters, &QCheckBox::stateChanged, this, &DFMTPreferences::spaceBeforeFunctionParametersChanged);
-    connect(chkSelectiveImportSpace, &QCheckBox::stateChanged, this, &DFMTPreferences::selectiveImportSpaceChanged);
-    connect(chkSpaceBeforeAssocArrayColon, &QCheckBox::stateChanged, this, &DFMTPreferences::spaceBeforeAssocArrayColonChanged);
+    connect(chkSpaceAfterCast, &QCheckBox::checkStateChanged, this, &DFMTPreferences::spaceAfterCastChanged);
+    connect(chkSpaceBeforeFunctionParameters, &QCheckBox::checkStateChanged, this, &DFMTPreferences::spaceBeforeFunctionParametersChanged);
+    connect(chkSelectiveImportSpace, &QCheckBox::checkStateChanged, this, &DFMTPreferences::selectiveImportSpaceChanged);
+    connect(chkSpaceBeforeAssocArrayColon, &QCheckBox::checkStateChanged, this, &DFMTPreferences::spaceBeforeAssocArrayColonChanged);
 
     // brace style
     connect(cbBraceStyle, QOverload<int>::of(&KComboBox::currentIndexChanged), this, &DFMTPreferences::braceStyleChanged);
 
 
     // Alignment
-    connect(chkKeepLineBreaks, &QCheckBox::stateChanged, this, &DFMTPreferences::keepLineBreaksChanged);
-    connect(chkAlignSwitchStatements, &QCheckBox::stateChanged, this, &DFMTPreferences::alignSwitchStatementsChanged);
-    connect(chkSplitOperatorAtLineEnd, &QCheckBox::stateChanged, this, &DFMTPreferences::splitOperatorAtLineEndChanged);
-    connect(chkCompactLabeledStatements, &QCheckBox::stateChanged, this, &DFMTPreferences::compactLabeledStatementsChanged);
-    //connect(chkOutdentAttributes, &QCheckBox::stateChanged, this, &DFMTPreferences::outdentAttributesChanged);
+    connect(chkKeepLineBreaks, &QCheckBox::checkStateChanged, this, &DFMTPreferences::keepLineBreaksChanged);
+    connect(chkAlignSwitchStatements, &QCheckBox::checkStateChanged, this, &DFMTPreferences::alignSwitchStatementsChanged);
+    connect(chkSplitOperatorAtLineEnd, &QCheckBox::checkStateChanged, this, &DFMTPreferences::splitOperatorAtLineEndChanged);
+    connect(chkCompactLabeledStatements, &QCheckBox::checkStateChanged, this, &DFMTPreferences::compactLabeledStatementsChanged);
+    //connect(chkOutdentAttributes, &QCheckBox::checkStateChanged, this, &DFMTPreferences::outdentAttributesChanged);
 
     // Templates
     connect(cbTemplateConstraintStyle, QOverload<int>::of(&KComboBox::currentIndexChanged), this, &DFMTPreferences::templateConstraintStyleChanged);
-    connect(chkSingleTemplateConstraintIndent, &QCheckBox::stateChanged, this, &DFMTPreferences::singleTemplateConstraintIndentChanged);
+    connect(chkSingleTemplateConstraintIndent, &QCheckBox::checkStateChanged, this, &DFMTPreferences::singleTemplateConstraintIndentChanged);
 }
 
 void DFMTPreferences::load(const SourceFormatterStyle &style)
@@ -93,7 +95,7 @@ void DFMTPreferences::updateWidgets()
     // block signals to avoid writing stuff to m_formatter
     m_enableWidgetSignals = false;
     //indent
-    if (m_formatter->option("indent_style").toString() == QLatin1String("tab")) {
+    if (m_formatter->option(QStringLiteral("indent_style")).toString() == QLatin1String("tab")) {
         cbIndentType->setCurrentIndex(INDENT_TABS);
         sbNumberSpaces->setValue(m_formatter->option(QStringLiteral("tab_width")).toInt());
         chkSingleIndent->setEnabled(true);
@@ -112,12 +114,12 @@ void DFMTPreferences::updateWidgets()
     chkSpaceAfterKeywords->setChecked(m_formatter->option(QStringLiteral("dfmt_space_after_keywords")).toBool());
 
     // brace style
-    QString option = m_formatter->option("dfmt_brace_style").toString();
-    if (option == QLatin1String("allman")) {
+    QString option = m_formatter->option(QStringLiteral("dfmt_brace_style")).toString();
+    if (option == QStringLiteral("allman")) {
         cbBraceStyle->setCurrentIndex(BRACESTYLE_ALLMAN);
-    } else if (option == QLatin1String("otbs")) {
+    } else if (option == QStringLiteral("otbs")) {
         cbBraceStyle->setCurrentIndex(BRACESTYLE_OTBS);
-    } else if (option == QLatin1String("stroustrup")) {
+    } else if (option == QStringLiteral("stroustrup")) {
         cbBraceStyle->setCurrentIndex(BRACESTYLE_STROUSTRUP);
     }
 
@@ -129,7 +131,7 @@ void DFMTPreferences::updateWidgets()
     chkOutdentAttributes->setChecked(m_formatter->option(QStringLiteral("dfmt_outdent_attributes")).toBool());
 
     // templates
-    option = m_formatter->option("dfmt_template_constraint_style").toString();
+    option = m_formatter->option(QStringLiteral("dfmt_template_constraint_style")).toString();
     if (option == QLatin1String("always_newline")) {
         cbTemplateConstraintStyle->setCurrentIndex(TEMPLATE_CONSTRAINT_ALWAYS_NEWLINE);
     } else if (option == QLatin1String("always_newline_indent")) {
@@ -146,11 +148,12 @@ void DFMTPreferences::updateWidgets()
 
 void DFMTPreferences::updatePreviewText(bool emitChangedSignal)
 {
+
     Q_UNUSED(emitChangedSignal);
     if(tabWidget->currentIndex() == 0)
-        emit previewTextChanged(DFormatPlugin::indentingSample());
+        Q_EMIT previewTextChanged(DFormatPlugin::indentingSample());
     else
-        emit previewTextChanged(DFormatPlugin::formattingSample());
+        Q_EMIT previewTextChanged(DFormatPlugin::formattingSample());
 }
 
 void DFMTPreferences::currentTabChanged()

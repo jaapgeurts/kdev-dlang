@@ -44,7 +44,7 @@ class DPlugin : public KDevelop::IPlugin, public KDevelop::ILanguageSupport
 	Q_INTERFACES(KDevelop::ILanguageSupport)
 
 public:
-	explicit DPlugin(QObject *parent, const QVariantList &args);
+	explicit DPlugin(QObject *parent, const KPluginMetaData& metaData, const QVariantList &args);
 
 	virtual ~DPlugin();
 

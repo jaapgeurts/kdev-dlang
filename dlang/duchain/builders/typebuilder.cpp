@@ -56,11 +56,11 @@ void TypeBuilder::visitTypeName(IType *node)
     } else {
         // TODO: JG fix this
         if (auto t = node->getType2()->getBuiltinType()) {
-            ident = QualifiedIdentifier(t);
+            ident = QualifiedIdentifier(QString::fromUtf8(t));
         } else if (auto t  = node->getType2()->getType()) {
             if (auto t2= t->getType2())
                 if (auto t3 = t2->getBuiltinType())
-                    ident = QualifiedIdentifier(t3);
+                    ident = QualifiedIdentifier(QString::fromUtf8(t3));
         }
     }
     if (ident.isEmpty()) {
@@ -79,7 +79,7 @@ void TypeBuilder::visitTypeName(IType *node)
 			injectType(array);
 		}
 
-		if(QString::fromUtf8(node->getTypeSuffix(i)->getStar()->getType()) != "")
+		if(QString::fromUtf8(node->getTypeSuffix(i)->getStar()->getType()) != QString())
 		{
 			KDevelop::PointerType::Ptr pointer(new KDevelop::PointerType());
 			pointer->setBaseType(lastType());
@@ -93,37 +93,37 @@ void TypeBuilder::buildTypeName(QualifiedIdentifier typeName)
 	uint type = IntegralType::TypeNone;
 	QString name = typeName.toString();
 	//Builtin types.
-	if(name == "void")
+	if(name == QStringLiteral("void"))
 		type = KDevelop::IntegralType::TypeVoid;
-	else if(name == "ubyte")
+	else if(name == QStringLiteral("ubyte"))
 		type = KDevelop::IntegralType::TypeByte;
-	else if(name == "byte")
+	else if(name == QStringLiteral("byte"))
 		type = KDevelop::IntegralType::TypeSbyte;
-    else if(name == "ushort")
+    else if(name == QStringLiteral("ushort"))
 		type = DIntegralType::TypeUshort;
-	else if(name == "short")
+	else if(name == QStringLiteral("short"))
 		type = KDevelop::IntegralType::TypeShort;
-    else if(name == "uint")
+    else if(name == QStringLiteral("uint"))
 		type = DIntegralType::TypeUint;
-	else if(name == "int")
+	else if(name == QStringLiteral("int"))
 		type = KDevelop::IntegralType::TypeInt;
-    else if(name == "ulong")
+    else if(name == QStringLiteral("ulong"))
 		type = DIntegralType::TypeUlong;
-	else if(name == "long")
+	else if(name == QStringLiteral("long"))
 		type = KDevelop::IntegralType::TypeLong;
-	else if(name == "float")
+	else if(name == QStringLiteral("float"))
 		type = KDevelop::IntegralType::TypeFloat;
-	else if(name == "double")
+	else if(name == QStringLiteral("double"))
 		type = KDevelop::IntegralType::TypeDouble;
-	else if(name == "real")
+	else if(name == QStringLiteral("real"))
 		type = DIntegralType::TypeReal;
-	else if(name == "char")
+	else if(name == QStringLiteral("char"))
 		type = KDevelop::IntegralType::TypeChar;
-	else if(name == "wchar")
+	else if(name == QStringLiteral("wchar"))
 		type = KDevelop::IntegralType::TypeChar16_t;
-	else if(name == "dchar")
+	else if(name == QStringLiteral("dchar"))
 		type = KDevelop::IntegralType::TypeChar32_t;
-	else if(name == "bool")
+	else if(name == QStringLiteral("bool"))
 		type = KDevelop::IntegralType::TypeBoolean;
 
 

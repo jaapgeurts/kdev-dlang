@@ -23,12 +23,9 @@ K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "kdevdubmanager.json", registerPlu
 
 using namespace KDevelop;
 
-static void sdl_emit_token(const struct sdlang_token_t* token, void* user);
-static size_t sdl_read(void* ptr, size_t size, void* user);
-static void sdl_report_error(enum sdlang_error_t error, int line, void* user);
 
-DUBProjectManager::DUBProjectManager(QObject *parent, const QVariantList& args)
-    : AbstractFileManagerPlugin(QStringLiteral("kdevdubmanager"), parent),
+DUBProjectManager::DUBProjectManager(QObject *parent, const KPluginMetaData& metaData, const QVariantList& args)
+    : AbstractFileManagerPlugin(QStringLiteral("kdevdubmanager"), parent, metaData),
     IBuildSystemManager(),
     m_builder(new DUBBuilder()),
     m_dubSettings(nullptr)
@@ -73,17 +70,31 @@ ProjectFolderItem* DUBProjectManager::import(IProject* project )
     return item;
 }
 
+// read the settings at the start of the plugin
 void DUBProjectManager::readSettings(IProject* project ) {
+    qCDebug(DUB) << "void DUBProjectManager::readSettings(IProject* project )";
             // check standard locations for project file.
-    QString sdlFileName = project->path().toLocalFile() + QStringLiteral("/dub.sdl");
-    QString jsonFileName = project->path().toLocalFile() + QStringLiteral("/dub.json");
+    QString basePath = project->path().toLocalFile();
+    QString sdlFileName = basePath + QStringLiteral("/dub.sdl");
+    QString jsonFileName = basePath + QStringLiteral("/dub.json");
+    QString fileName;
     if (QFile::exists(sdlFileName)) {
-         m_dubSettings = m_Parser.parseProjectFileSdl(sdlFileName);
+        fileName = sdlFileName;
     }
     else if (QFile::exists(jsonFileName)) {
-        //m_Parser.parseProjectFileJson(jsonFileName);
-        qCDebug(DUB) << "dub JSON parsing not implemented yet";
+        fileName = jsonFileName;
     }
+    else {
+        // TODO: all reporting must go to problem output
+        qCDebug(DUB) << "Missing dub.sdl or dub.json in project folder. This is not a D dub project. Maybe the project uses another build system?";
+        return;
+    }
+
+    m_dubSettings = DubSettings::loadConfigFile(fileName);
+    if (!m_dubSettings) {
+        qCDebug(DUB) << "Dub project file '" << fileName << "' failed to load or parse.";
+    }
+    return;
 
 }
 
@@ -113,7 +124,7 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
 
 
 //    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
-    return path.lastPathSegment()[0] != '.';
+    return path.lastPathSegment()[0] != QChar::fromLatin1('.');
 }
 
 //END AbstractFileManager
@@ -175,7 +186,7 @@ QString DUBProjectManager::extraArguments(ProjectBaseItem *item) const
     Q_UNUSED(item);
     qCDebug(DUB) << "extraArguments(ProjectBaseItem *)";
 
-    return "";
+    return QString();
 }
 
 bool DUBProjectManager::hasBuildInfo(ProjectBaseItem*) const
@@ -258,13 +269,13 @@ Path::List DUBProjectManager::getProjectPaths(IProject* project) const
 
     //Try to find path automatically for opened documents.
     QDir currentDir(project->path().toLocalFile());
-    while(currentDir.exists() && (currentDir.dirName() != "src" || currentDir.dirName() != "source"))
+    while(currentDir.exists() && (currentDir.dirName() != QStringLiteral("src") || currentDir.dirName() != QStringLiteral("source")))
     {
         if(!currentDir.cdUp())
             break;
     }
     // Add a src or source directory
-    if(currentDir.exists() && (currentDir.dirName() == "src" || currentDir.dirName() == "source"))
+    if(currentDir.exists() && (currentDir.dirName() == QStringLiteral("src") || currentDir.dirName() == QStringLiteral("source")))
         folders << Path(currentDir.absolutePath());
 
     return folders;
@@ -273,28 +284,29 @@ Path::List DUBProjectManager::getProjectPaths(IProject* project) const
 Path::List DUBProjectManager::getDependenciesPaths(IProject* project) const
 {
     Path::List folders;
-    QString home = qEnvironmentVariable("HOME");
-    QString basePath = home + "/.dub/packages";
-    // dependencies
-    int count = m_dubSettings->numNodes("dependency");
-    for (int i=0;i<count;i++ ) {
-        QString dep = m_dubSettings->getValue<QString>("dependency", i);
-        QString depPath = m_dubSettings->getAttribute<QString>("dependency","path",i);
-        QString depVersion = m_dubSettings->getAttribute<QString>("dependency", "version", i);
-        if (!depPath.isEmpty()) {
-            QDir canonicalPath(project->path().toLocalFile()+"/"+depPath);
-            folders << Path(canonicalPath.absolutePath());
-        } else if (!depVersion.isEmpty()) {
-            depVersion.remove(0,2);
-            QString path = basePath + "/" + dep +"-"+depVersion+"/"+dep; // TODO or source
-            if (QFileInfo::exists(path + "/source"))
-                folders << Path(path+"/source");
-            else if (QFileInfo::exists(path + "/src"))
-                folders << Path(path+"/src");
-        }
-        else
-            qCDebug(DUB) << "Dependency not found. Run 'dub build' at least once: "+dep;
-    }
+    // TODO: figure out what to return here.
+    // QString home = qEnvironmentVariable("HOME");
+    // QString basePath = home + "/.dub/packages";
+    // // dependencies
+    // int count = m_dubSettings->numNodes("dependency");
+    // for (int i=0;i<count;i++ ) {
+    //     QString dep = m_dubSettings->getValue<QString>("dependency", i);
+    //     QString depPath = m_dubSettings->getAttribute<QString>("dependency","path",i);
+    //     QString depVersion = m_dubSettings->getAttribute<QString>("dependency", "version", i);
+    //     if (!depPath.isEmpty()) {
+    //         QDir canonicalPath(project->path().toLocalFile()+"/"+depPath);
+    //         folders << Path(canonicalPath.absolutePath());
+    //     } else if (!depVersion.isEmpty()) {
+    //         depVersion.remove(0,2);
+    //         QString path = basePath + "/" + dep +"-"+depVersion+"/"+dep; // TODO or source
+    //         if (QFileInfo::exists(path + "/source"))
+    //             folders << Path(path+"/source");
+    //         else if (QFileInfo::exists(path + "/src"))
+    //             folders << Path(path+"/src");
+    //     }
+    //     else
+    //         qCDebug(DUB) << "Dependency not found. Run 'dub build' at least once: "+dep;
+    // }
     return folders;
 }
 

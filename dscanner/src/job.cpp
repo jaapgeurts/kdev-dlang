@@ -81,9 +81,9 @@ void DScannerJob::postProcessStdout(const QStringList& lines)
 
             KDevelop::IProblem::Ptr problem(new KDevelop::DetectedProblem(i18n("DScanner")));
 
-            if (type == "error")
+            if (type == QStringLiteral("error"))
                 problem->setSeverity(KDevelop::IProblem::Error);
-            if (type == "warn")
+            if (type == QStringLiteral("warn"))
                 problem->setSeverity(KDevelop::IProblem::Warning);
             else
                 problem->setSeverity(KDevelop::IProblem::Hint);
@@ -109,7 +109,7 @@ void DScannerJob::postProcessStdout(const QStringList& lines)
             m_problems << problem;
         }
         else {
-            emit infoMessage(this, line);
+            Q_EMIT infoMessage(this, line);
         }
     }
 
@@ -242,7 +242,7 @@ void DScannerJob::childProcessExited(int exitCode, QProcess::ExitStatus exitStat
 void DScannerJob::emitProblems()
 {
     if (!m_problems.isEmpty()) {
-        emit problemsDetected(m_problems);
+        Q_EMIT problemsDetected(m_problems);
     }
 }
 

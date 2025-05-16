@@ -96,14 +96,14 @@ QString DDeclaration::toString() const
     QString s;
     switch (m_kind) {
         case Kind::Template:
-            return "Template";
+            return QStringLiteral("Template");
         case Kind::Module:
-            return "Module";
+            return QStringLiteral("Module");
         case Kind::Import:
-            return "Import";
+            return QStringLiteral("Import");
     }
 
-    return "Unspecified kind";
+    return QStringLiteral("Unspecified kind");
 }
 
 Declaration* DDeclaration::clonePrivate() const {

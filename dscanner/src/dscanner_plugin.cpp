@@ -33,8 +33,8 @@ K_PLUGIN_FACTORY_WITH_JSON(DScannerFactory, "kdevdscanner_plugin.json", register
 // TODO: remove namespace
 namespace dscannercheck {
 
-DScannerPlugin::DScannerPlugin(QObject *parent, const QVariantList& args)
-    : IPlugin(QStringLiteral("kdevdscanner"), parent),
+DScannerPlugin::DScannerPlugin(QObject *parent,const KPluginMetaData& metaData, const QVariantList& args)
+    : IPlugin(QStringLiteral("kdevdscanner"), parent, metaData),
      m_job(nullptr),
      m_currentProject(nullptr),
      m_model(new DProblemModel(this))

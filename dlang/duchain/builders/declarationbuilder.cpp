@@ -99,11 +99,11 @@ void DeclarationBuilder::visitDeclaration(IDeclaration* node)
 
     for (size_t i =0;i<node->numAttributes();i++) {
         if (auto t = node->getAttribute(i)->getAttribute()) {
-            if (QStringLiteral("protected") == t->getType())
+            if (QStringLiteral("protected") == QString::fromUtf8(t->getType()))
                 m_visibility = Visibility::Protected;
-            else if (QStringLiteral("private") == t->getType())
+            else if (QStringLiteral("private") == QString::fromUtf8(t->getType()))
                 m_visibility = Visibility::Private;
-            else if (QStringLiteral("static") == t->getType())
+            else if (QStringLiteral("static") == QString::fromUtf8(t->getType()))
                 m_static = true;
             else {
                 qCDebug(DUCHAIN) << "WARNING: unhandled attribute: " << t->getType();
@@ -317,7 +317,7 @@ void DeclarationBuilder::visitConstructor(IConstructor *node)
 {
 	TypeBuilder::visitConstructor(node);
 	DUChainWriteLocker lock;
-	DClassFunctionDeclaration *newMethod = openDefinition<DClassFunctionDeclaration>(QualifiedIdentifier("this"), editorFindRange(node, node));
+	DClassFunctionDeclaration *newMethod = openDefinition<DClassFunctionDeclaration>(QualifiedIdentifier(QStringLiteral("this")), editorFindRange(node, node));
 	if(node->getComment())
 		newMethod->setComment(QString::fromUtf8(node->getComment()));
 	newMethod->setKind(Declaration::Type);
@@ -334,7 +334,7 @@ void DeclarationBuilder::visitDestructor(IDestructor *node)
 {
 	TypeBuilder::visitDestructor(node);
 	DUChainWriteLocker lock;
-	DClassFunctionDeclaration *newMethod = openDefinition<DClassFunctionDeclaration>(QualifiedIdentifier("~this"), editorFindRange(node, node));
+	DClassFunctionDeclaration *newMethod = openDefinition<DClassFunctionDeclaration>(QualifiedIdentifier(QStringLiteral("~this")), editorFindRange(node, node));
 	if(node->getComment())
 		newMethod->setComment(QString::fromUtf8(node->getComment()));
 	newMethod->setKind(Declaration::Type);

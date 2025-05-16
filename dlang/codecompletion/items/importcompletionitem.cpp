@@ -33,7 +33,7 @@ QVariant ImportCompletionItem::data(const QModelIndex &index, int role, const KD
 	if(role == Qt::DisplayRole && (index.column() == CodeCompletionModel::Name))
 		return m_packageName;
 	if(role == Qt::DisplayRole && (index.column() == CodeCompletionModel::Prefix))
-		return "module";
+		return QStringLiteral("module");
 	return NormalDeclarationCompletionItem::data(index, role, model);
 }
 
@@ -41,8 +41,8 @@ void ImportCompletionItem::execute(KTextEditor::View *view, const KTextEditor::R
 {
 	KTextEditor::Document *document = view->document();
 	KTextEditor::Range checkSuffix(word.end().line(), word.end().column(), word.end().line(), document->lineLength(word.end().line()));
-	QString suffix = "\"";
-	if(document->text(checkSuffix).startsWith('"'))
+	QString suffix = QStringLiteral("\"");
+	if(document->text(checkSuffix).startsWith(QChar::fromLatin1('"')))
 		suffix.clear();
 	document->replaceText(word, m_packageName + suffix);
 }

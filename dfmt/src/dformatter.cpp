@@ -39,28 +39,28 @@ QString DFormatter::formatSource(const QString& text, const QString& leftContext
 {
     QProcess proc;
 
-    QString program = "/home/jaapg/bin/dfmt";
+    QString program = QStringLiteral("/home/jaapg/bin/dfmt");
     QStringList args;
 
     // make sure settings are saved
     saveSettings();
 
     // supply a temporary config file
-    args << "--config";
-    args << "/tmp";
+    args << QStringLiteral("--config");
+    args << QStringLiteral("/tmp");
 
     qCDebug(DFMT) << "Running: " << program << args.join(QLatin1Char(' '));
 
     proc.start(program,args);
     if (!proc.waitForStarted())
-        return "Error";
+        return QStringLiteral("Error");
 
     QString all = leftContext + text + rightContext;
     proc.write(all.toUtf8());
     proc.closeWriteChannel();
 
     if (!proc.waitForFinished())
-        return "error";
+        return QStringLiteral("error");
 
     return QString::fromUtf8(proc.readAll());
 }
@@ -122,9 +122,9 @@ void DFormatter::resetStyle()
 void DFormatter::setIndentStyle(IndentStyle style)
 {
     if (style == IndentStyle::Tabs)
-        m_options[QStringLiteral("indent_style")] = "tab";
+        m_options[QStringLiteral("indent_style")] = QStringLiteral("tab");
     else if (style == IndentStyle::Spaces)
-        m_options[QStringLiteral("indent_style")] = "space";
+        m_options[QStringLiteral("indent_style")] = QStringLiteral("space");
 }
 
 // indent_size | positive integers (**`4`**) | [See EditorConfig documentation.](https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties#indent_size)
@@ -150,13 +150,13 @@ void DFormatter::setBraceStyle(BraceStyle braceStyle)
 {
     switch(braceStyle) {
         case BraceStyle::Allman:
-            m_options[QStringLiteral("dfmt_brace_style")] = "allman";
+            m_options[QStringLiteral("dfmt_brace_style")] = QStringLiteral("allman");
             break;
         case BraceStyle::Otbs:
-            m_options[QStringLiteral("dfmt_brace_style")] = "otbs";
+            m_options[QStringLiteral("dfmt_brace_style")] = QStringLiteral("otbs");
             break;
         case BraceStyle::Stroustrup:
-            m_options[QStringLiteral("dfmt_brace_style")] = "stroustrup";
+            m_options[QStringLiteral("dfmt_brace_style")] = QStringLiteral("stroustrup");
             break;
     }
 }
@@ -216,16 +216,16 @@ void DFormatter::setTemplateContraintStyle(TemplateContraintStyle style)
 {
     switch(style) {
         case TemplateContraintStyle::AlwaysNewline:
-            m_options[QStringLiteral("dfmt_template_constraint_style")] = "always_newline";
+            m_options[QStringLiteral("dfmt_template_constraint_style")] = QStringLiteral("always_newline");
             break;
         case TemplateContraintStyle::AlwaysNewlineIndent:
-            m_options[QStringLiteral("dfmt_template_constraint_style")] = "always_newline_indent";
+            m_options[QStringLiteral("dfmt_template_constraint_style")] = QStringLiteral("always_newline_indent");
             break;
         case TemplateContraintStyle::ConditionaleNewline:
-            m_options[QStringLiteral("dfmt_template_constraint_style")] = "conditional_newline";
+            m_options[QStringLiteral("dfmt_template_constraint_style")] = QStringLiteral("conditional_newline");
             break;
         case TemplateContraintStyle::ConditionalNewlineIndent:
-            m_options[QStringLiteral("dfmt_template_constraint_style")] = "conditional_newline_indent";
+            m_options[QStringLiteral("dfmt_template_constraint_style")] = QStringLiteral("conditional_newline_indent");
             break;
     }
 }
@@ -252,7 +252,7 @@ void DFormatter::saveSettings() {
 
     // TODO: only save this when there are changes
     // save them to the project root
-    QFile settings("/tmp/.editorconfig");
+    QFile settings(QStringLiteral("/tmp/.editorconfig"));
     if (settings.open(QIODevice::WriteOnly | QIODevice::Text)) {
 
         qCDebug(DFMT) << "Saving settings to: " << settings.fileName();

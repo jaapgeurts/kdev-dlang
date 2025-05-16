@@ -23,6 +23,7 @@
 #include <interfaces/icore.h>
 #include <language/backgroundparser/backgroundparser.h>
 #include <interfaces/ilanguagecontroller.h>
+#include <QRegularExpression>
 #include <QProcess>
 #include <QUrl>
 
@@ -90,7 +91,7 @@ QString ParseSession::symbol(qint64 index)
 {
     Q_UNUSED(index);
 	printf("ParseSession::symbol - Not implemented!\n");
-	return "";
+	return QString();
 }
 
 RangeInRevision ParseSession::findRange(INode *from, INode *to)
@@ -610,7 +611,7 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier
 {
     qCDebug(DPARSER) << "Import for: " << package.toString();
 	QStringList files;
-    if (package.toString() == "dpq2::connection")
+    if (package.toString() == QStringLiteral("dpq2::connection"))
         qCDebug(DPARSER) << "INCLUDES:" << m_includePaths;
     // Search all include paths for the package
     for(const QString &pathname : m_includePaths)
@@ -635,13 +636,13 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QualifiedIdentifier
             {
                 QString modulePath;
                 QString moduleNameOrPackage = package.at(package.count()-1).toString();
-                qCDebug(DPARSER) << "Checking file:"<<path.path()<< moduleNameOrPackage+".d";
-                if(path.exists(moduleNameOrPackage+".d"))
-                    modulePath = path.filePath(moduleNameOrPackage+".d");
-                else if(path.exists(moduleNameOrPackage+".di"))
-                    modulePath = path.filePath(moduleNameOrPackage+".di");
+                qCDebug(DPARSER) << "Checking file:"<<path.path()<< moduleNameOrPackage  << ".d";
+                if(path.exists(moduleNameOrPackage+QStringLiteral(".d")))
+                    modulePath = path.filePath(moduleNameOrPackage+QStringLiteral(".d"));
+                else if(path.exists(moduleNameOrPackage+QStringLiteral(".di")))
+                    modulePath = path.filePath(moduleNameOrPackage+QStringLiteral(".di"));
                 else if (path.cd(moduleNameOrPackage)) {
-                    modulePath = path.filePath("package.d");
+                    modulePath = path.filePath(QStringLiteral("package.d"));
                 }
 
                 // If a module or package was found add it to the files.
@@ -722,7 +723,7 @@ bool ParseSession::scheduleForParsing(const IndexedString &url, int priority, To
 		//Remove the document and re-queue it with a greater priority.
 		bgparser->removeDocument(url);
 	}
-	bgparser->addDocument(url, features, priority, 0, ParseJob::FullSequentialProcessing);
+	bgparser->addDocument(url, features, priority, nullptr, ParseJob::FullSequentialProcessing);
 	return true;
 }
 
@@ -755,7 +756,7 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 			priority = BackgroundParser::WorstPriority-2; //All needed files should be scheduled already.
 		else
 			priority = m_priority; //Currently parsejob does not get created in this cases to reduce recursion.
-		QStringList files = path.entryList(QStringList("*.d"), QDir::Files | QDir::NoSymLinks);
+		QStringList files = path.entryList(QStringList(QStringLiteral("*.d")), QDir::Files | QDir::NoSymLinks);
 		bool shouldReparse = false;
 		for(QString filename : files)
 		{
@@ -763,7 +764,7 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 			QFile file(filename);
 			if(!file.exists())
 				continue;
-			if(forExport && filename.endsWith("_test.d"))
+			if(forExport && filename.endsWith(QStringLiteral("_test.d")))
 				continue;
 
 			IndexedString url(filename);
@@ -797,7 +798,7 @@ QString ParseSession::textForNode(INode *node)
     Q_UNUSED(node);
 	//return QString(m_contents.mid(m_lexer->at(node->startToken).begin, m_lexer->at(node->endToken).end - m_lexer->at(node->startToken).begin+1));
 	printf("ParseSession::textForNode - Not implemented!\n");
-	return "";
+	return QString();
 }
 
 void ParseSession::setIncludePaths(const QList<QString> &paths)
@@ -811,16 +812,17 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 	int commentStart = 0;
 	if(token - 1 >= 0)
 		commentStart = 0;//m_lexer->at(token-1).end+1;
-	QString comment = m_contents.mid(commentStart, commentEnd-commentStart);
+	// TODO: assume a utf8 string. Is that correct?
+	QString comment = QString::fromUtf8(m_contents.mid(commentStart, commentEnd-commentStart));
 
 	//in lexer, when we insert semicolons after newline
 	//inserted token's end contains '\n' position
 	//so in order not to lose this newline we prepend it
 	if(commentStart > 0 && m_contents[commentStart-1] == '\n')
-		comment.prepend('\n');
+		comment.prepend(QChar::fromLatin1('\n'));
 
 	//any comment must have at least single '/'
-	if(comment.indexOf('/') == -1)
+	if(comment.indexOf(QChar::fromLatin1('/')) == -1)
 		return QByteArray();
 	int i = 0;
 	int start=-1, end=-1, lineStart=-1, lineEnd=-1;
@@ -829,7 +831,7 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 	bool contigiousComments = false;
 	while(i < comment.length())
 	{
-		if(comment[i] == '\n')
+		if(comment[i] == QChar::fromLatin1('\n'))
 		{
 			contigiousComments = false;
 			currentLine++;
@@ -837,9 +839,9 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 		}
 		else if(comment[i].isSpace())
 			i++;
-		else if(comment[i] == '/')
+		else if(comment[i] == QChar::fromLatin1('/'))
 		{
-			if(i + 1 < comment.length() && comment[i+1] == '/')
+			if(i + 1 < comment.length() && comment[i+1] == QChar::fromLatin1('/'))
 			{
 				if(!contigiousComments)
 				{
@@ -848,7 +850,7 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 					contigiousComments = true;
 				}
 				i += 2;
-				while(i<comment.length() && comment[i] != '\n')
+				while(i<comment.length() && comment[i] != QChar::fromLatin1('\n'))
 					++i;
 				end = i;
 				lineEnd = currentLine;
@@ -864,15 +866,15 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 					contigiousComments = false;
 				}
 			}
-			else if(i + 1 < comment.length() && comment[i+1] == '*')
+			else if(i + 1 < comment.length() && comment[i+1] == QChar::fromLatin1('*'))
 			{
 				start = i+2;
 				lineStart = currentLine;
 				contigiousComments = false;
 				i += 2;
-				while(i+1<comment.length() && !(comment[i] == '*' && comment[i+1] == '/'))
+				while(i+1<comment.length() && !(comment[i] == QChar::fromLatin1('*' )&& comment[i+1] == QChar::fromLatin1('/')))
 				{
-					if(comment[i] == '\n')
+					if(comment[i] == QChar::fromLatin1('\n'))
 						currentLine++;
 					++i;
 				}
@@ -894,7 +896,7 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
 			return QByteArray();
 	}
 	if(start != -1 && end != -1 && lineStart  != -1 && lineEnd != -1 && lineEnd == currentLine - 1)
-		return comment.mid(start, end-start+1).replace(QRegExp("\n\\s*//"), "\n").toUtf8();
+		return comment.mid(start, end-start+1).replace(QRegularExpression(QStringLiteral("\n\\s*//")), QStringLiteral("\n")).toUtf8();
 	return QByteArray();
 }
 

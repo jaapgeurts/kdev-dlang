@@ -31,7 +31,7 @@
 
 typedef QPair<KDevelop::DUContextPointer, KDevelop::RangeInRevision> SimpleUse;
 
-class ParseSession
+class KDEVPLATFORMLANGUAGE_EXPORT ParseSession
 {
 public:
 	ParseSession(const QByteArray &contents, int priority, bool appendWithNewline=true);

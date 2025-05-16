@@ -1,4 +1,4 @@
-add_library(kdevdduchain STATIC
+add_library(kdevdduchain SHARED
 	builders/declarationbuilder.cpp
 	builders/contextbuilder.cpp
 	builders/typebuilder.cpp
@@ -16,12 +16,12 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# TODO: investigate this next line
 generate_export_header(kdevdduchain EXPORT_FILE_NAME dduchainexport.h)
 target_link_libraries(kdevdduchain
 PRIVATE
     dparser
     kdevdparser
-PUBLIC
     KDev::Interfaces
     KDev::Language
     KDev::Shell

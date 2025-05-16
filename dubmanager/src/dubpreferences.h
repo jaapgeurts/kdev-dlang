@@ -10,7 +10,7 @@
 
 #include <project/projectconfigpage.h>
 
-#include "dubparser.h"
+#include "dubsettings.h"
 
 
 namespace Ui
@@ -35,7 +35,7 @@ public:
     /**
      * Default constructor
      */
-    DubPreferences(KDevelop::IPlugin* plugin, DubSettings::Ptr setting, QWidget* parent = nullptr);
+    DubPreferences(KDevelop::IPlugin* plugin, DubSettings::Ptr settings, QWidget* parent = nullptr);
 
     /**
      * Destructor

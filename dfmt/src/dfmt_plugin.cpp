@@ -3,7 +3,8 @@
 #include <QMimeDatabase>
 #include <KPluginFactory>
 
-#include <interfaces/icore.h>#include <interfaces/isourceformattercontroller.h>
+#include <interfaces/icore.h>
+#include <interfaces/isourceformattercontroller.h>
 
 #include <debug.h>
 
@@ -93,8 +94,8 @@ using namespace KDevelop;
 
 K_PLUGIN_FACTORY_WITH_JSON(DFormatterPluginFactory, "kdevdfmt_plugin.json", registerPlugin<DFormatPlugin>(); )
 
-DFormatPlugin::DFormatPlugin(QObject *parent, const QVariantList& args)
-    : KDevelop::IPlugin(QStringLiteral("kdevdfmt"), parent),
+DFormatPlugin::DFormatPlugin(QObject *parent, const KPluginMetaData& metaData, const QVariantList& args)
+    : KDevelop::IPlugin(QStringLiteral("kdevdfmt"), parent, metaData),
     m_formatter(new DFormatter())
 {
     Q_UNUSED(args);
@@ -151,7 +152,7 @@ static SourceFormatterStyle createPredefinedStyle(const QString& name, const QSt
     DFormatter fmt;
     fmt.predefinedStyle( name );
     st.setContent( fmt.saveStyle() );
-    st.setMimeTypes({SourceFormatterStyle::MimeHighlightPair{"text/x-dsrc","D"}});
+    st.setMimeTypes({SourceFormatterStyle::MimeHighlightPair{QStringLiteral("text/x-dsrc"),QStringLiteral("D")}});
     st.setUsePreview(true);
     return st;
 }

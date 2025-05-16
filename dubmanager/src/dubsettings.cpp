@@ -1,98 +1,106 @@
+#include <fstream>
+#include <variant>
+#include <string>
 #include "dubsettings.h"
 
-#include "dubparser.h"
+#include "sdlparser.h"
 
+#include "debug.h"
 #include <QDebug>
 
-DubSettings::DubSettings(const QSharedPointer<SDLNode>& root) :
-  m_root(root)
+DubSettings::DubSettings(const QString& filepath, const QSharedPointer<DubTag>& root) :
+  m_root(root),
+  m_filepath(filepath)
 {
+
 }
 
-int DubSettings::numNodes(const QString& path)
+DubSettings::Ptr DubSettings::loadConfigFile(const QString& filepath)
 {
-    return  findNode(path).count();
-}
-
-int DubSettings::numValues(const QString& path, int nodeIndex)
-{
-    QList<SDLNode*> nodes = findNode(path);
-    if (nodes.isEmpty())
-        return 0;
-    return nodes.at(nodeIndex)->values().count();
-}
-
-// TODO: error handling in case nothing found
-QList<SDLNode*> DubSettings::findNode(const QString& path)
-{
-    QList<SDLNode*> nodes;
-    QStringList sections = path.split(QLatin1Char('/'), Qt::SkipEmptyParts);
-    SDLNode* node = m_root.data();
-    // Find the node first
-    int count = sections.count();
-    for(int i=0;i<count-1; i++ ) {
-        node = node->nodes().at(0).data();
+    std::ifstream input(filepath.toStdString());
+    if (!input) {
+        qCDebug(DUB) << "Can't open config file: " << filepath;
+        return nullptr;
     }
-    for(const QSharedPointer<SDLNode>& n : node->nodes()) {
-        if (n->name() == sections.last())
-            nodes.append(n.data());
-    }
-    return nodes;
+    std::shared_ptr<ConfigNode> root = readSDLProjectFile(input);
+
+    auto rootTag = QSharedPointer<DubTag>::create(root, std::get<std::string>(root->value));
+
+    return QSharedPointer<DubSettings>(new DubSettings(filepath, rootTag));
+
+}
+
+void DubSettings::saveConfigFile()
+{
+    // TODO: save to file
+    std::ofstream output(m_filepath.toStdString());
+    // NOTE: overwrites the file. Should write to temporary,
+    // then swap with original
+     // saveSDLProjectFile(root, output);
 }
 
 template<>
-QString DubSettings::getAttribute<QString>(const QString& path, const QString& attrib, int nodeIndex) {
-    QList<SDLNode*> nodes = findNode(path);
-    return nodes[nodeIndex]->attribs().value(attrib).toString();
-}
-
-
-template<>
-QString DubSettings::getValue<QString>(const QString& path,int nodeIndex, int valueIndex)
+QString DubSettings::getValue<QString>(const QString& name)
 {
-    QList<SDLNode*> nodes = findNode(path);
-    if (nodes.isEmpty())
+    std::vector<std::shared_ptr<DubTag>> tags = m_root->findTag(name.toStdString());
+    if (tags.size() == 0) {
+        // nothing found
+        qCDebug(DUB) << "Can't find tag with name: " << name;
         return QString();
-    return nodes[nodeIndex]->values().at(valueIndex).toString();
-}
-
-template<>
-int DubSettings::getValue<int>(const QString& path,int nodeIndex, int valueIndex)
-{
-    QList<SDLNode*> nodes = findNode(path);
-    return nodes[nodeIndex]->values().at(valueIndex).toInt();
-}
-
-template<>
-bool DubSettings::getValue<bool>(const QString& path,int nodeIndex, int valueIndex)
-{
-    QList<SDLNode*> nodes = findNode(path);
-    return nodes[nodeIndex]->values().at(valueIndex).toBool();
-}
-
-QList<QVariant> DubSettings::getValues(const QString& path)
-{
-    QList<QVariant> list;
-    QList<SDLNode*> nodes = findNode(path);
-
-    for(SDLNode* node : nodes) {
-        list.append(node->values());
     }
-    return list;
-}
 
-void DubSettings::setValues(const QString& path, const QList<QVariant>& values)
-{
-    // TODO: JG
-  //  SDLNode* node = findNode(path);
-  //  node->replaceValues(values);
-
+    return QString::fromStdString(std::get<std::string>(tags[0]->values()[0]));
 }
 
 template<>
-void DubSettings::setValue(const QString& path, QString value) {
-  //  SDLNode* node = findNode(path);
-  //  node->setValue(value);
+int32_t DubSettings::getValue<int32_t>(const QString& name)
+{
+    std::vector<std::shared_ptr<DubTag>> tags = m_root->findTag(name.toStdString());
+    if (tags.size() == 0) {
+        // nothing found
+        qCDebug(DUB) << "Can't find tag with name: " << name;
+        return 0;
+    }
+
+    return std::get<int32_t>(tags[0]->values()[0]);
 }
+
+template<>
+bool DubSettings::getValue<bool>(const QString& name)
+{
+    std::vector<std::shared_ptr<DubTag>> tags = m_root->findTag(name.toStdString());
+    if (tags.size() == 0) {
+        // nothing found
+        qCDebug(DUB) << "Can't find tag with name: " << name;
+        return 0;
+    }
+
+    return std::get<bool>(tags[0]->values()[0]);
+}
+
+// QList<QVariant> DubSettings::getValues(const QString& path)
+// {
+//     QList<QVariant> list;
+//     QList<SDLNode*> nodes = findNode(path);
+//
+//     for(SDLNode* node : nodes) {
+//         list.append(node->values());
+//     }
+//     return list;
+// }
+
+// void DubSettings::setValues(const QString& path, const QList<QVariant>& values)
+// {
+//     // TODO: JG
+//   //  SDLNode* node = findNode(path);
+//   //  node->replaceValues(values);
+//
+// }
+
+// template<>
+// void DubSettings::setValue<QString>(const QString& name, QString value) {
+//   //  SDLNode* node = findNode(path);
+//   //  node->setValue(value);
+// }
 
 

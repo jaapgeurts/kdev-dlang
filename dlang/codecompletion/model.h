@@ -23,8 +23,9 @@
 
 #include "dcompletionexport.h"
 
-
-class DLANGCOMPLETION_EXPORT DCodeCompletionModel : public KDevelop::CodeCompletionModel
+//DLANGCOMPLETION_EXPORT
+// TODO: check generating this
+class Q_DECL_EXPORT DCodeCompletionModel : public KDevelop::CodeCompletionModel
 {
 public:
 	DCodeCompletionModel(QObject *parent);

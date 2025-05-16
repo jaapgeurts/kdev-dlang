@@ -101,7 +101,9 @@ QualifiedIdentifier ContextBuilder::identifierForNode(IToken *node)
 {
 	if(!node || node == (IToken *)0x1)
 		return QualifiedIdentifier();
-	return QualifiedIdentifier(node->getText());
+	// TODO: assume utf8.
+	// TODO: also search for fromLatin1
+	return QualifiedIdentifier(QString::fromUtf8(node->getText()));
 }
 
 QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierChain *node)
@@ -110,7 +112,7 @@ QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierChain *node)
 		return QualifiedIdentifier();
 	QualifiedIdentifier ident;
 	for(size_t i=0; i<node->numIdentifiers(); i++)
-		ident.push(Identifier(node->getIdentifier(i)->getText()));
+		ident.push(Identifier(QString::fromUtf8(node->getIdentifier(i)->getText())));
 	return ident;
 }
 
@@ -120,7 +122,7 @@ QualifiedIdentifier ContextBuilder::identifierForNode(IIdentifierOrTemplateChain
 		return QualifiedIdentifier();
 	QualifiedIdentifier ident;
 	for(size_t i=0; i<node->numIdentifiersOrTemplateInstances(); i++)
-		ident.push(Identifier(node->getIdentifiersOrTemplateInstance(i)->getIdentifier()->getText()));
+		ident.push(Identifier(QString::fromUtf8(node->getIdentifiersOrTemplateInstance(i)->getIdentifier()->getText())));
 	return ident;
 }
 
@@ -130,9 +132,9 @@ QualifiedIdentifier ContextBuilder::identifierForNode ( IIdentifierOrTemplateIns
         return QualifiedIdentifier();
     QualifiedIdentifier ident;
     if (node->getTemplateInstance())
-        ident.push(Identifier(node->getTemplateInstance()->getIdentifier()->getText()));
+        ident.push(Identifier(QString::fromUtf8(node->getTemplateInstance()->getIdentifier()->getText())));
     else
-        ident.push(Identifier(node->getIdentifier()->getText()));
+        ident.push(Identifier(QString::fromUtf8(node->getIdentifier()->getText())));
 
     return ident;
 }
@@ -174,7 +176,9 @@ DUContext *ContextBuilder::newContext(const RangeInRevision &range)
 
 QualifiedIdentifier ContextBuilder::createFullName(IToken *package, IToken *typeName)
 {
-	QualifiedIdentifier id(QString::fromLocal8Bit(package->getText()) + "." + QString::fromLocal8Bit(typeName->getText()));
+	// TODO: search for fromLocal8Bit and replace with the format
+	// research which one to use.
+	QualifiedIdentifier id(QString::fromUtf8(package->getText()) + QStringLiteral(".") + QString::fromUtf8(typeName->getText()));
 	return id;
 }
 
@@ -236,7 +240,7 @@ void ContextBuilder::visitFuncDeclaration(IFunctionDeclaration *node)
 
 void ContextBuilder::visitConstructor(IConstructor *node)
 {
-	openContext(node, editorFindRange(node, node->getFunctionBody()), DUContext::Function, QualifiedIdentifier("this"));
+	openContext(node, editorFindRange(node, node->getFunctionBody()), DUContext::Function, QualifiedIdentifier(QStringLiteral("this")));
 
 	if(node->getParameters())
 	{
@@ -255,7 +259,7 @@ void ContextBuilder::visitConstructor(IConstructor *node)
 
 void ContextBuilder::visitDestructor(IDestructor *node)
 {
-	openContext(node, editorFindRange(node, node->getFunctionBody()), DUContext::Function, QualifiedIdentifier("~this"));
+	openContext(node, editorFindRange(node, node->getFunctionBody()), DUContext::Function, QualifiedIdentifier(QStringLiteral("~this")));
 	if(auto n = node->getFunctionBody())
 		visitBody(n, false);
 	closeContext();
@@ -431,7 +435,7 @@ void ContextBuilder::visitParameter(IParameter *node)
 
 void ContextBuilder::visitEnumDeclaration(IEnumDeclaration *node)
 {
-	openContext(node, editorFindRange(node->getEnumBody(), 0), DUContext::Enum, node->getName());
+	openContext(node, editorFindRange(node->getEnumBody(), nullptr), DUContext::Enum, node->getName());
 	if(auto n = node->getEnumBody())
 		visitEnumBody(n);
 	closeContext();
@@ -729,6 +733,7 @@ void ContextBuilder::visitTemplateParameter(ITemplateParameter* node)
 
 void ContextBuilder::visitTemplateInstance ( ITemplateInstance* node )
 {
+	Q_UNUSED(node);
     // TODO: JG fix this
 //    visitIdentifier(node->getIdentifier());
 

@@ -1,7 +1,7 @@
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/duchain
+    # ${CMAKE_SOURCE_DIR}/duchain
 )
 
 set(completion_SRCS
@@ -14,9 +14,12 @@ set(completion_SRCS
     completiondebug.cpp
 )
 
-add_library(kdevdcompletion STATIC ${completion_SRCS})
+add_library(kdevdcompletion ${completion_SRCS})
 
-target_link_libraries(kdevdcompletion LINK_PRIVATE
+generate_export_header(kdevdcompletion EXPORT_FILE_NAME dcompletionexport.h)
+
+target_link_libraries(kdevdcompletion
+PRIVATE
     KDev::Language
     KDev::Interfaces
     KDev::Project

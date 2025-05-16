@@ -1,12 +1,16 @@
+/* This class handles loading and saving dub files and keeps track of the tree */
+
 #ifndef DUBSETTINGS_H
 #define DUBSETTINGS_H
+
 
 #include <QString>
 #include <QStringList>
 #include <QSharedPointer>
 
-class SDLNode;
-class QVariant;
+#include <memory>
+
+#include "dubsettingitem.h"
 
 class DubSettings {
 
@@ -14,32 +18,27 @@ public:
 
     typedef QSharedPointer<DubSettings> Ptr;
 
-    DubSettings(const QSharedPointer<SDLNode>& root);
-
-    /** Path is specified as A/B/C where A,B,C are nodes and / indicates a child node */
-    int numNodes(const QString& path);
-    int numValues(const QString& path, int nodeIndex);
+    template<typename T>
+    T getValue(const QString& name);
 
     template<typename T>
-    T getAttribute(const QString& path, const QString& attrib, int nodeIndex = 0);
+    void setValue(const QString& name, T value);
 
-    template<typename T>
-    T getValue(const QString& path,int nodeIndex = 0, int valueIndex=0);
+    // QList<QVariant> getValues(const QString& name);
 
-    template<typename T>
-    void setValue(const QString& path, T value);
+    // void setValues(const QString& path, const QList<QVariant>& values);
 
-    QList<QVariant> getValues(const QString& path);
+    static Ptr loadConfigFile(const QString& filename);
 
-    void setValues(const QString& path, const QList<QVariant>& values);
-
-
-    void setRoot(SDLNode* root);
+    void saveConfigFile();
 
 private:
-    QSharedPointer<SDLNode> m_root;
 
-    QList<SDLNode*> findNode(const QString& path);
+    DubSettings(const QString& filepath,const QSharedPointer<DubTag>& root);
+
+    const QSharedPointer<DubTag> m_root;
+    const QString m_filepath;
+
 };
 
 #endif

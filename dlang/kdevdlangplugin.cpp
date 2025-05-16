@@ -45,7 +45,7 @@ K_PLUGIN_FACTORY_WITH_JSON(DPluginFactory, "kdevdlang.json", registerPlugin<DPlu
 using namespace KDevelop;
 
 
-DPlugin::DPlugin(QObject *parent, const QVariantList &) : KDevelop::IPlugin("kdevdlangplugin", parent), ILanguageSupport()
+DPlugin::DPlugin(QObject *parent, const KPluginMetaData& metaData, const QVariantList &) : KDevelop::IPlugin(QStringLiteral("kdevdlangplugin"), parent, metaData), ILanguageSupport()
 {
 //	KDEV_USE_EXTENSION_INTERFACE(ILanguageSupport)
 
@@ -76,14 +76,14 @@ DPlugin::~DPlugin()
 
 QString DPlugin::name() const
 {
-	return "D";
+	return QStringLiteral("D");
 }
 
 ParseJob *DPlugin::createParseJob(const IndexedString &url)
 {
 	qCDebug(DPLUGIN) << "Creating dlang parse job\n";
     // TODO: only parse files in source directories (not in build directories)
-    if (url.str().contains("build",Qt::CaseSensitivity::CaseInsensitive))
+    if (url.str().contains(QStringLiteral("build"),Qt::CaseSensitivity::CaseInsensitive))
         return nullptr;
 
     // Queue jobs so that one is executed at a time

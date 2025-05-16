@@ -163,7 +163,7 @@ public:
 
 	void setParseSession(ParseSession *session);
 
-	virtual KDevelop::TopDUContext *newTopContext(const KDevelop::RangeInRevision &range, KDevelop::ParsingEnvironmentFile *file=0) override;
+	virtual KDevelop::TopDUContext *newTopContext(const KDevelop::RangeInRevision &range, KDevelop::ParsingEnvironmentFile *file=nullptr) override;
 
 	virtual KDevelop::DUContext *newContext(const KDevelop::RangeInRevision &range) override;
 

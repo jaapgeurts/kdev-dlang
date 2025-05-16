@@ -21,7 +21,7 @@ class DScannerPlugin : public KDevelop::IPlugin
 
 public:
     // KPluginFactory-based plugin wants constructor with this signature
-    DScannerPlugin(QObject* parent, const QVariantList& args);
+    DScannerPlugin(QObject* parent,const KPluginMetaData& metaData, const QVariantList& args);
     virtual ~DScannerPlugin() override;
 
     void killDScanner();

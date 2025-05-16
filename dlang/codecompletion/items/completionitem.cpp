@@ -26,8 +26,7 @@
 #include "context.h"
 
 CompletionItem::CompletionItem(KDevelop::DeclarationPointer decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext> context, int inheritanceDepth) :
-    NormalDeclarationCompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
-    m_prefix("")
+    NormalDeclarationCompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0)
 {
     Q_UNUSED(context);
     Q_UNUSED(inheritanceDepth);
@@ -36,7 +35,7 @@ CompletionItem::CompletionItem(KDevelop::DeclarationPointer decl, QExplicitlySha
 		return;
 
 	if(decl->kind() == KDevelop::Declaration::Import || decl->kind() == KDevelop::Declaration::NamespaceAlias)
-		m_prefix = "module";
+		m_prefix = QStringLiteral("module");
 }
 
 QVariant CompletionItem::data(const QModelIndex &index, int role, const KDevelop::CodeCompletionModel *model) const

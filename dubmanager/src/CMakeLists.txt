@@ -2,10 +2,13 @@ set(kdevdubmanager_SRCS
     dcompilerfilterstrategy.cpp
     dubmanager.cpp
     dubsettings.cpp
-    dubparser.cpp
+    # dubconfig.cpp
+    # dubparser.cpp
     dubbuilder.cpp
+    dubsettingitem.cpp
     dubpreferences.cpp
     dubjob.cpp
+    sdlparser.cpp
 )
 
 ecm_qt_declare_logging_category(kdevdubmanager_SRCS
@@ -22,6 +25,7 @@ set(dubpreferences_UI
 ki18n_wrap_ui(kdevdubmanager_SRCS ${dubpreferences_UI} )
 
 
+
 kdevplatform_add_plugin(kdevdubmanager
     JSON kdevdubmanager.json
     SOURCES ${kdevdubmanager_SRCS}
@@ -30,7 +34,6 @@ kdevplatform_add_plugin(kdevdubmanager
 
 target_link_libraries(kdevdubmanager
 # Ideally this is linked to the project itself, not the file
-    sdlang
     KDev::Interfaces
     KDev::Project
     KDev::Util

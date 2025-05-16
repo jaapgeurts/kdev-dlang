@@ -3,7 +3,7 @@ project(dscanner)
 add_subdirectory(src)
 
 # kdebugsettings file
-if (ECM_VERSION VERSION_GREATER "5.58.0")
+if (ECM_VERSION VERSION_GREATER "6.0.0")
     install(FILES dscanner.categories DESTINATION ${KDE_INSTALL_LOGGINGCATEGORIESDIR})
 else()
     install(FILES dscanner.categories DESTINATION ${KDE_INSTALL_CONFDIR})

@@ -6,7 +6,6 @@
 #include <project/projectconfigpage.h>
 
 #include "dubbuilder.h"
-#include "dubparser.h"
 #include "dubsettings.h"
 
 using namespace KDevelop;
@@ -20,7 +19,7 @@ public:
 
 
     // KPluginFactory-based plugin wants constructor with this signature
-    explicit DUBProjectManager(QObject* parent, const QVariantList& args);
+    explicit DUBProjectManager(QObject* parent,const KPluginMetaData& metaData, const QVariantList& args);
 
      ~DUBProjectManager() override;
 
@@ -89,7 +88,6 @@ private Q_SLOTS:
 private:
     IProjectBuilder* m_builder;
     DubSettings::Ptr m_dubSettings;
-    DubParser m_Parser;
 
 
     Path::List getToolchainPaths(IProject* project) const;

@@ -45,14 +45,14 @@ FilteredItem DCompilerFilterStrategy::errorInLine(const QString & line)
     if (match.hasMatch()) {
         Path path(d->m_buildDir, match.captured(1));
         item.url = path.toUrl();
-        item.lineNo = match.capturedRef(2).toInt()-1;
-        if (!match.capturedRef().isNull())
-            item.columnNo = match.capturedRef(3).toInt()-1;
-        if (match.capturedRef(4) == QStringLiteral("Error"))
+        item.lineNo = match.captured(2).toInt()-1;
+        if (!match.captured().isNull())
+            item.columnNo = match.captured(3).toInt()-1;
+        if (match.captured(4) == QStringLiteral("Error"))
             item.type = FilteredItem::ErrorItem;
-        else if (match.capturedRef(4) == QStringLiteral("Warning"))
+        else if (match.captured(4) == QStringLiteral("Warning"))
             item.type = FilteredItem::WarningItem;
-        else if (match.capturedRef(4) == QStringLiteral("Deprecation"))
+        else if (match.captured(4) == QStringLiteral("Deprecation"))
             item.type = FilteredItem::InformationItem;
         else
             item.type = FilteredItem::InformationItem;

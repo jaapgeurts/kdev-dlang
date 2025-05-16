@@ -1,32 +1,30 @@
-TagTree         <- Line*
-Line            <- (TagList / Anon / Comment / BlankLine)
-TagList         <- Tag (TAGSEP Spacing TagList?)? Spacing LineComment? ( EOL / EOF )?
-Tag             <- TagName Spacing (Value Spacing)*  (Attribute Spacing)*  (Children Spacing)*
+TagTree         <- ElementLine* Element?
+ElementLine     <- Element EOL
+Element         <- (TagList / Value+ / Spacing)
+TagList         <- Tag (TAGSEP Spacing TagList?)?
+Tag             <- TagName Value* Attribute* Nested?
 
-Children        <- '{' Spacing (Line Spacing)* '}'
+Nested          <- Spacing '{'  ElementLine* Spacing '}' Spacing
 
-TagName         <- (Namespace ':')? Identifier
+TagName         <- Spacing (Namespace ':')? Identifier Spacing
 Namespace       <- Identifier
 
-Attribute       <- (Namespace ':')? Key Spacing '=' Spacing  Value
+Attribute       <- Key '=' Value
 
-Key             <- Identifier
+Key             <- Spacing (Namespace ':')? Identifier Spacing
 
-Anon            <- Value Spacing LineComment?
-Value           <- StringEscaped / StringRaw / DateTime / Number / Boolean / Null / Binary
+Value           <- Spacing (StringEscaped / StringRaw / Date / Time / Number / Boolean / Null / Binary) Spacing
 
-StringEscaped   <-  '"' < (! '"' Char )* > '"'
+StringEscaped   <-  '"' < ( '\\' . / !'"' . )* > '"'
 StringRaw       <-  '`' < (! '`' . )* > '`'
-Char            <- ('\\' . ) / (!'\\' .)
 Number          <-  Decimal / Float32 / Float64  / Int64 / Int32
 Int32           <- < [0-9]+ >
-Int64           <- < [0-9]+ > 'L'
+Int64           <- < [0-9]+ > [Ll]
 Float32         <- < [0-9]+ '.' [0-9]+ > 'f'
 Float64         <- < [0-9]+ '.' [0-9]+ > 'd'?
 Decimal         <- < [0-9]+ '.' [0-9]+ > 'BD'
 Boolean         <- 'true' / 'false' / 'on' / 'off'
 Null            <- 'null'
-DateTime        <- Date (Spacing Time)? / Time
 Date            <- < '-'? [0-9]{4} '/' [0-9]{2} '/' [0-9]{2} >
 Time            <- < '-'? ([0-9]+'d' ':')? ([0-9]{2} ':')+ [0-9]{2} ('.' [0-9]{3} ('-' TimeZone)? )? >
 TimeZone        <- < [a-zA-Z0-9/_:+-]+ >
@@ -37,16 +35,14 @@ Identifier      <- < [a-zA-Z_] [a-zA-Z0-9_.$-]* >
 
 Comment         <- BlockComment / LineComment
 
-LineComment     <- < ("//" / "--" / "#") (!EOL !EOF .)* > (EOL / EOF)
+LineComment     <- ("//" / "--" / "#") (!EOL !EOF .)*
 BlockComment    <- "/*" < (!"*/" .)* > "*/"
 
 LineCont        <- '\\' '\n'
 
-BlankLine       <- WS / EOL
-
-Spacing         <- (  BlockComment / WS / LineCont )*
+Spacing         <- < ( WS / Comment / LineCont )* >
 TAGSEP          <- ';'
-~WS             <- [ \t]
+WS              <- [ \t]+
 
 EOL             <- '\n' / '\r\n' / '\r'
 EOF             <- !.

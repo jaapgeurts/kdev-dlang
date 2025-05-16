@@ -73,7 +73,7 @@ DParseJob::DParseJob(const KDevelop::IndexedString &url, KDevelop::ILanguageSupp
         IProject* project = projects.at(i);
         qCDebug(DPLUGIN) << "Project: " << project->name();
         QSet<IndexedString> files = project->fileSet();
-        foreach(const IndexedString& val, files) {
+        for(const IndexedString& val : files) {
             qCDebug(DPLUGIN) << "\t" << val;
         }
     }
@@ -239,7 +239,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 const QString genSpaces(int multiplier) {
     QString str;
     for(int i=0;i<multiplier;i++) {
-        str += "   ";
+        str += QStringLiteral("   ");
     }
     return str;
 }

@@ -25,7 +25,9 @@
 
 #include "debug.h"
 
-class KDevelop::IFilterStrategy;
+namespace KDevelop {
+    class IFilterStrategy;
+}
 
 /**
  * @todo write docs

@@ -36,10 +36,10 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
 	if(!type)
 		return;
 
-	DUContext *argsContext = 0;
+	DUContext *argsContext = nullptr;
 	if(function)
 		argsContext = function->internalContext();
-	m_arguments = "(";
+	m_arguments = QStringLiteral("(");
 	if(argsContext)
 	{
 		DUChainReadLocker lock;
@@ -54,7 +54,7 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
 				m_currentArgEnd = m_arguments.length();
 			count++;
 			if(count < args.size())
-				m_arguments += ", ";
+				m_arguments += QStringLiteral(", ");
 		}
 	}
 	else if(type->arguments().size() != 0)
@@ -71,11 +71,11 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
 				m_currentArgEnd = m_arguments.length();
 			count++;
 			if(count < args.size())
-				m_arguments += ", ";
+				m_arguments += QStringLiteral(", ");
 		}
 	}
-	m_arguments += ")";
-	if(m_prefix == "")
+	m_arguments += QStringLiteral(")");
+	if(m_prefix.isEmpty())
 	{
 		DUChainReadLocker lock;
 		if(type && type->returnType())
@@ -86,9 +86,9 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
 void FunctionCompletionItem::executed(KTextEditor::View *view, const KTextEditor::Range &word)
 {
 	KTextEditor::Document *document = view->document();
-	QString suffix = "()";
+	QString suffix = QStringLiteral("()");
 	KTextEditor::Range checkSuffix(word.end().line(), word.end().column(), word.end().line(), document->lineLength(word.end().line()));
-	if(document->text(checkSuffix).startsWith('('))
+	if(document->text(checkSuffix).startsWith(QChar::fromLatin1('(')))
 		suffix.clear();
 	document->replaceText(word, declaration()->identifier().toString() + suffix);
 	AbstractType::Ptr type = declaration()->abstractType();

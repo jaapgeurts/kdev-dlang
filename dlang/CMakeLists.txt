@@ -5,8 +5,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 include(ECMAddTests)
 include(GenerateExportHeader)
 
-find_package(Qt5 REQUIRED Core Widgets Test)
-find_package(KF5 REQUIRED COMPONENTS ItemModels ThreadWeaver TextEditor I18n)
+find_package(Qt6 REQUIRED Core Widgets Test)
+find_package(KF6 REQUIRED COMPONENTS ItemModels ThreadWeaver TextEditor I18n)
 
 find_package(KDevelop REQUIRED)
 
@@ -30,13 +30,13 @@ kdevplatform_add_plugin(kdevdlangplugin JSON kdevdlang.json SOURCES
 
 # fix linkage to local shared module
 target_link_libraries(kdevdlangplugin
+PRIVATE
     KDev::Interfaces
     KDev::Language
-    KF5::ThreadWeaver
-    KF5::TextEditor
+    KF6::ThreadWeaver
+    KF6::TextEditor
     kdevdparser
     kdevdduchain
     kdevdcompletion
     druntime-ldc-shared
-#    dparser
 )
