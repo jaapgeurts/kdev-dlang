@@ -211,15 +211,19 @@ void DeclarationBuilder::visitTemplateParameter(ITemplateParameter* node)
         closeDeclaration();
     }
     if (auto n = node->getTemplateAliasParameter()) {
+		Q_UNUSED(n);
         qCDebug(DUCHAIN) << "Unhandled template alias parameter";
     }
     if (auto n = node->getTemplateThisParameter()) {
+		Q_UNUSED(n);
         qCDebug(DUCHAIN) << "Unhandled template this parameter";
     }
     if (auto n = node->getTemplateTupleParameter()) {
+		Q_UNUSED(n);
         qCDebug(DUCHAIN) << "Unhandled template tuple parameter";
     }
     if (auto n = node->getTemplateValueParameter()) {
+		Q_UNUSED(n);
         qCDebug(DUCHAIN) << "Unhandled template value parameter";
     }
 }

@@ -863,11 +863,14 @@ void ContextBuilder::visitFunctionCallExpression(IFunctionCallExpression *node)
 
 void ContextBuilder::visitArguments(IArguments *node)
 {
-	auto list = node->getArgumentList();
+	auto list = node->getNamedArgumentList();
 	if(!list)
 		return;
+
 	for(size_t i=0; i<list->numItems(); i++) {
-		visitExpressionNode(list->getItem(i));
+		auto item = list->getItem(i);
+		visitToken(item->getName());
+		visitExpressionNode(item->getAssignExpression());
     }
 }
 
@@ -948,8 +951,8 @@ void ContextBuilder::visitDoStatement(IDoStatement *node)
 
 void ContextBuilder::visitSwitchStatement(ISwitchStatement *node)
 {
-	if(auto n = node->getExpression())
-		visitExpression(n);
+	if(auto n = node->getCondition())
+		visitExpression(n->getExpression());
 	if(auto n = node->getStatement())
 		visitStatement(n);
 }
@@ -1055,8 +1058,8 @@ void ContextBuilder::visitFinally(IFinally *node)
 void ContextBuilder::visitScopeGuardStatement(IScopeGuardStatement *node)
 {
 	//TODO: Open context.
-	if(auto n = node->getStatementNoCaseNoDefault())
-		visitStatementNoCaseNoDefault(n);
+	if(auto n = node->getDeclarationOrStatement())
+		visitDeclarationOrStatement(n);
 }
 
 void ContextBuilder::visitWithStatement(IWithStatement *node)
@@ -1094,8 +1097,12 @@ void ContextBuilder::visitAssertArguments(IAssertArguments *node)
 {
     if(auto n = node->getAssertion())
 		visitExpressionNode(n);
-	if(auto n = node->getMessage())
-		visitExpressionNode(n);
+
+	size_t len = node->numMessageParts();
+	for (size_t i=0;i<len;++i) {
+		if(auto n = node->getMessagePart(i))
+			visitExpressionNode(n);
+	}
 }
 
 void ContextBuilder::visitAsmStatement(IAsmStatement *node)

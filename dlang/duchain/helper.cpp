@@ -163,7 +163,7 @@ DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext *co
 Declaration* searchUp(DUContext* context, const QualifiedIdentifier& identifier,
                                          const CursorInRevision& position = CursorInRevision::invalid()) {
 
-    Declaration* decl;
+    // Declaration* decl;
     if (context == nullptr)
         return nullptr;
 

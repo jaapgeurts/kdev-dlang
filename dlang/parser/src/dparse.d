@@ -54,6 +54,7 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const AutoDeclaration autoDeclaration) { file.writefln("%sAutoDeclaration", indentationLevel()); if(traverse) { indentation++; autoDeclaration.accept(this); indentation--; } }
     /** */ override void visit(const BlockStatement blockStatement) { file.writefln("%sBlockStatement", indentationLevel()); if(traverse) { indentation++; blockStatement.accept(this); indentation--; } }
 // FIXME:
+// TODO: body statement not implemented
 //    /** */ override void visit(const BodyStatement bodyStatement) { file.writefln("%sBodyStatement", indentationLevel()); if(traverse) { indentation++; bodyStatement.accept(this); indentation--; } }
     /** */ override void visit(const BreakStatement breakStatement) { file.writefln("%sBreakStatement", indentationLevel()); if(traverse) { indentation++; breakStatement.accept(this); indentation--; } }
     /** */ override void visit(const BaseClass baseClass) { file.writefln("%sBaseClass", indentationLevel()); if(traverse) { indentation++; baseClass.accept(this); indentation--; } }
@@ -105,6 +106,7 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const GotoStatement gotoStatement) { file.writefln("%sGotoStatement", indentationLevel()); if(traverse) { indentation++; gotoStatement.accept(this); indentation--; } }
     /** */ override void visit(const IdentifierChain identifierChain) { file.writefln("%sIdentifierChain", indentationLevel()); if(traverse) { indentation++; identifierChain.accept(this); indentation--; } }
 // FIXME:
+// TODO: IdentifierList is not implemented
 //    /** */ override void visit(const IdentifierList identifierList) { file.writefln("%sIdentifierList", indentationLevel()); if(traverse) { indentation++; identifierList.accept(this); indentation--; } }
     /** */ override void visit(const IdentifierOrTemplateChain identifierOrTemplateChain) { file.writefln("%sIdentifierOrTemplateChain", indentationLevel()); if(traverse) { indentation++; identifierOrTemplateChain.accept(this); indentation--; } }
     /** */ override void visit(const IdentifierOrTemplateInstance identifierOrTemplateInstance) { file.writefln("%sIdentifierOrTemplateInstance", indentationLevel()); if(traverse) { indentation++; identifierOrTemplateInstance.accept(this); indentation--; } }
@@ -126,6 +128,7 @@ class ASTPrinter : ASTVisitor
     /** */ override void visit(const KeyValuePairs keyValuePairs) { file.writefln("%sKeyValuePairs", indentationLevel()); if(traverse) { indentation++; keyValuePairs.accept(this); indentation--; } }
     /** */ override void visit(const LabeledStatement labeledStatement) { file.writefln("%sLabeledStatement", indentationLevel()); if(traverse) { indentation++; labeledStatement.accept(this); indentation--; } }
 // FIXME:
+// TODO: lambda experssion not implemented
 //    /** */ override void visit(const LambdaExpression lambdaExpression) { file.writefln("%sLambdaExpression", indentationLevel()); if(traverse) { indentation++; lambdaExpression.accept(this); indentation--; } }
     /** */ override void visit(const LastCatch lastCatch) { file.writefln("%sLastCatch", indentationLevel()); if(traverse) { indentation++; lastCatch.accept(this); indentation--; } }
     /** */ override void visit(const LinkageAttribute linkageAttribute) { file.writefln("%sLinkageAttribute", indentationLevel()); if(traverse) { indentation++; linkageAttribute.accept(this); indentation--; } }

@@ -231,6 +231,7 @@ int DUBProjectManager::perProjectConfigPages() const
 
 ConfigPage* DUBProjectManager::perProjectConfigPage(int number, const ProjectConfigOptions& options, QWidget* parent)
 {
+    Q_UNUSED(options);
     qCDebug(DUB) << "perProjectConfigPage()";
     if (number == 0) {
         ConfigPage* page = new DubPreferences(this, m_dubSettings , parent);
@@ -244,6 +245,7 @@ ConfigPage* DUBProjectManager::perProjectConfigPage(int number, const ProjectCon
 
 Path::List DUBProjectManager::getToolchainPaths(IProject* project) const
 {
+    Q_UNUSED(project);
     // TODO: JG these should be configurable
     static QString searchPaths[] = {
         QLatin1String("/usr/include/dlang/dmd"),
@@ -283,6 +285,7 @@ Path::List DUBProjectManager::getProjectPaths(IProject* project) const
 
 Path::List DUBProjectManager::getDependenciesPaths(IProject* project) const
 {
+    Q_UNUSED(project);
     Path::List folders;
     // TODO: figure out what to return here.
     // QString home = qEnvironmentVariable("HOME");

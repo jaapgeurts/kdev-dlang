@@ -143,7 +143,8 @@ void main(string[] args) {
     // First pass
     mod.accept(new pass1Visitor());
 
-    // Add ExpressionNode
+    // Add ExpressionNode because it's abstract
+    // abstract classes are not normally included
     d = new Declaration();
     ClassDeclaration cd = makeClassDeclaration("ExpressionNode");
     foreach (expr; allexpressionclasses) {
@@ -151,6 +152,15 @@ void main(string[] args) {
     }
     d.classDeclaration = cd;
     mod.declarations ~= d;
+
+    // Add InterpolatedStringPart because it's abstract
+    // abstract classes are not normally included
+    d = new Declaration();
+    cd = makeClassDeclaration("InterpolatedStringPart");
+    d.classDeclaration = cd;
+    mod.declarations ~= d;
+
+
 
     // Output header
     writeHeader();
@@ -516,6 +526,7 @@ class pass1Visitor : ASTVisitor {
         if (cd.name.text == "ASTVisitor")
             return;
 
+
         if (cd.templateParameters !is null) {
             // store templated classes for different use
             templatedClasses[cd.name.text] = cast(ClassDeclaration) cd;
@@ -600,6 +611,7 @@ class WrapperGenVisitor : ASTVisitor {
         }
 
         //stderr.writeln("=>"  , templateArgs,"<=");
+
 
         if (genType == GenType.GenInterfaces) {
             if (outFormat == OutputFormat.DModule) {
@@ -752,7 +764,7 @@ class WrapperGenVisitor : ASTVisitor {
     }
 
     override void visit(const Unittest ut) {
-        // skip unittests
+        // TODO: skip unittests
         return;
     }
 
@@ -1128,9 +1140,11 @@ void old(Module mod, string[] args) {
         cv.type = "ImportDeclaration";
         cv.name = "importDeclaration";
         classes[newClassType] ~= cv;
+
         cv.type = "InterfaceDeclaration";
         cv.name = "interfaceDeclaration";
         classes[newClassType] ~= cv;
+
         cv.type = "Invariant";
         cv.name = "invariant_";
         classes[newClassType] ~= cv;
