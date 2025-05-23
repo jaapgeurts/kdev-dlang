@@ -27,7 +27,7 @@
 #include <language/duchain/declaration.h>
 
 
-class DLANGCOMPLETION_EXPORT DCodeCompletionContext : public KDevelop::CodeCompletionContext
+class KDEVDCOMPLETION_EXPORT DCodeCompletionContext : public KDevelop::CodeCompletionContext
 {
 public:
 	DCodeCompletionContext(const KDevelop::DUContextPointer &context, const QString &text,

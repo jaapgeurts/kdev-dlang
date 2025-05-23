@@ -1,4 +1,4 @@
-set(kdevdubmanager_SRCS
+set(kdevddubmanager_SRCS
     dcompilerfilterstrategy.cpp
     dubmanager.cpp
     dubsettings.cpp
@@ -11,7 +11,7 @@ set(kdevdubmanager_SRCS
     sdlparser.cpp
 )
 
-ecm_qt_declare_logging_category(kdevdubmanager_SRCS
+ecm_qt_declare_logging_category(kdevddubmanager_SRCS
     HEADER debug.h
     IDENTIFIER DUB
     CATEGORY_NAME "kdev.dlang.dubmanager"
@@ -22,17 +22,16 @@ set(dubpreferences_UI
     dubpreferences.ui
 )
 
-ki18n_wrap_ui(kdevdubmanager_SRCS ${dubpreferences_UI} )
+ki18n_wrap_ui(kdevddubmanager_SRCS ${dubpreferences_UI} )
 
 
 
-kdevplatform_add_plugin(kdevdubmanager
-    JSON kdevdubmanager.json
-    SOURCES ${kdevdubmanager_SRCS}
+kdevplatform_add_plugin(kdevddubmanager
+    JSON kdevddubmanager.json
+    SOURCES ${kdevddubmanager_SRCS}
 )
 
-
-target_link_libraries(kdevdubmanager
+target_link_libraries(kdevddubmanager
 # Ideally this is linked to the project itself, not the file
     KDev::Interfaces
     KDev::Project

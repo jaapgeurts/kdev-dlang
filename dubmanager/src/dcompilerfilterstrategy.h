@@ -14,6 +14,7 @@ class DCompilerFilterStrategyPrivate;
 /**
  * @todo write docs
  */
+// this class filters output from the compiler for the build output window
 class DCompilerFilterStrategy : public KDevelop::IFilterStrategy
 {
 public:

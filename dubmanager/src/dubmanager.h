@@ -39,8 +39,14 @@ public:
     bool isValid( const Path& path, const bool isFolder, IProject* project ) const override;
     //END AbstractFileManager
 
-    //BEGIN IBuildSystemManager
-    //TODO
+    // BEGIN IProjectFileManager
+
+    QList<ProjectFolderItem*> parse(ProjectFolderItem *dom) override;
+
+    // END IProjectFileManager
+
+    // BEGIN IBuildSystemManager
+    // TODO
 
 
     IProjectBuilder*  builder() const override;

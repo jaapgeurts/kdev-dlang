@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "dubsettingitem.h"
+#include "debug.h"
 
 //////////////////////
 // DubSettingItem
@@ -30,6 +31,15 @@ std::vector<std::shared_ptr<DubTag>> DubTag::findTag(const std::string& name) {
     return result;
 }
 
+// Finding the value means, descending to the leaf node and returning the value
+Value findValue(const std::shared_ptr<ConfigNode>& root) {
+    if (root->children.size() == 0)
+        return root->value;
+
+    return findValue(root->children[0]);
+}
+
+
 void DubTag::findTagRec(const std::shared_ptr<ConfigNode>& root, const std::string& name, std::vector<std::shared_ptr<DubTag>>& tagList) {
     using namespace std;
 
@@ -38,7 +48,32 @@ void DubTag::findTagRec(const std::shared_ptr<ConfigNode>& root, const std::stri
         // find the identifier tag.
         auto id = findIdentifierRec(root->children[0]);
         if (id && id == name) {
-            tagList.push_back(make_shared<DubTag>(root,*id));
+            auto tag = make_shared<DubTag>(root,*id);
+            // get this tag's values
+            qCDebug(DUB) << "searching value";
+            for (size_t i=1;i<root->children.size();++i) {
+                qCDebug(DUB) << "adding value";
+                // TODO: accessing the first child to skip spacing is fragile.
+                // Make a recursive function that pulls out the value from a subtree.
+                auto& child = root->children[i]->children[1];
+                switch(child->type) {
+                    case  NodeType::Num32:
+                    case  NodeType::Num64:
+                    case  NodeType::Float32:
+                    case  NodeType::Float64:
+                    case  NodeType::Bool:
+                    case  NodeType::String:
+                    case  NodeType::RawString:
+                    case  NodeType::DateTime:
+                    case  NodeType::Null:
+                            tag->values().push_back(findValue(child));
+                            break;
+                    default:
+                        qCDebug(DUB) << "not the right type: " << static_cast<int>(child->type);
+                        break;
+                }
+            }
+            tagList.push_back(tag);
         }
         return;
     }

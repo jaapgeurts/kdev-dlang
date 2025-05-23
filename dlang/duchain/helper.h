@@ -26,7 +26,6 @@
 
 using namespace KDevelop;
 
-// TODO: JG clean up this unit
 
 class KDEVDDUCHAIN_EXPORT Helper
 {

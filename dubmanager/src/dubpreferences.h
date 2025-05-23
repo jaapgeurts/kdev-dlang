@@ -27,10 +27,6 @@ class DubPreferences : public KDevelop::ConfigPage
 
 public:
 
-    enum class DubType {
-        Sdlang,
-        Json
-    };
 
     /**
      * Default constructor
@@ -41,10 +37,6 @@ public:
      * Destructor
      */
     ~DubPreferences();
-
-    void init();
-
-    void updateWidgets();
 
     /**
      * @todo write docs
@@ -93,7 +85,6 @@ private:
 
 
     DubSettings::Ptr m_dubSettings;
-    DubType m_dubType;
 
 };
 

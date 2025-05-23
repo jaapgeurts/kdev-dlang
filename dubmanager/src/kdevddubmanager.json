@@ -2,7 +2,7 @@
     "KPlugin": {
         "Category": "Project Management",
         "Description": "DUB Project Manager",
-        "Id": "KDevDUBManager",
+        "Id": "kdevddubmanager",
         "Name": "DUB Project Manager",
         "Authors": [
             { "Name": "Jaap Geurts",
@@ -18,10 +18,12 @@
     "X-KDevelop-Category": "Project",
     "X-KDevelop-Interfaces": [
         "org.kdevelop.IBuildSystemManager",
-        "org.kdevelop.IProjectFileManager"
+        "org.kdevelop.IProjectFileManager",
+        "org.kdevelop.IProjectBuilder"
     ],
     "X-KDevelop-IRequired": [
         "org.kdevelop.IOutputView"
+
     ],
     "X-KDevelop-Mode": "GUI",
     "X-KDevelop-FileManager": "D",

@@ -12,12 +12,13 @@ add_library(kdevdduchain SHARED
 	duchaindebug.cpp
 )
 
+generate_export_header(kdevdduchain EXPORT_FILE_NAME dduchainexport.h)
+
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# TODO: investigate this next line
-generate_export_header(kdevdduchain EXPORT_FILE_NAME dduchainexport.h)
+
 target_link_libraries(kdevdduchain
 PRIVATE
     dparser

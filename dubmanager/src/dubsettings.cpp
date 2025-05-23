@@ -49,6 +49,22 @@ QString DubSettings::getValue<QString>(const QString& name)
         return QString();
     }
 
+
+
+    qCDebug(DUB) << "Printing values for: " << tags[0]->name();
+    if (tags[0]->values().size() == 0 ) {
+        qCDebug(DUB) << "No values for tag: " << tags[0]->name();
+    }
+    for(const auto& val : tags[0]->values()) {
+        if (auto p = std::get_if<int64_t>(&val)) {
+            qCDebug(DUB) << "Values:: " << p;
+        } else if (auto p = std::get_if<int32_t>(&val)) {
+            qCDebug(DUB) << "Values:: " << p;
+        } else if (auto p = std::get_if<std::string>(&val)) {
+            qCDebug(DUB) << "Values:: " << p;
+        }
+    }
+
     return QString::fromStdString(std::get<std::string>(tags[0]->values()[0]));
 }
 

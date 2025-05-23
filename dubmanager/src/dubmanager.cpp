@@ -19,7 +19,7 @@
 #include "dubbuilder.h"
 
 
-K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "kdevdubmanager.json", registerPlugin<DUBProjectManager>(); )
+K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "kdevddubmanager.json", registerPlugin<DUBProjectManager>(); )
 
 using namespace KDevelop;
 
@@ -114,17 +114,60 @@ IProjectFileManager::Features DUBProjectManager::features() const
 {
     qCDebug(DUB) << "features()";
 
-    return IProjectFileManager::Features::enum_type::Folders | IProjectFileManager::Features::enum_type::Files;
+    return IProjectFileManager::Features::enum_type::Folders
+         | IProjectFileManager::Features::enum_type::Files
+         | IProjectFileManager::Features::enum_type::Targets;
 }
 
+/**
+* Filter interface making it possible to hide files and folders from a project.
+*
+* The default implementation will query all IProjectFilter plugins and ask them
+* whether a given url should be included or not.
+*/
 bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject* project ) const
 {
     Q_UNUSED(isFolder);
     Q_UNUSED(project);
 
 
-//    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
-    return path.lastPathSegment()[0] != QChar::fromLatin1('.');
+    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
+
+    // Do not show any hidden files.
+    QString filename = path.lastPathSegment();
+    if (filename[0] == QChar::fromLatin1('.')) {
+       return false;
+    }
+
+    if (isFolder)
+        return true;
+
+    // only show the following files
+    QList<QString> allowedExtensions = {
+        QStringLiteral("d"),
+        // QStringLiteral("md"),
+        // QStringLiteral("txt"),
+        QStringLiteral("json"),
+        QStringLiteral("sdl"),
+    };
+    int dotIndex = filename.lastIndexOf(QChar::fromLatin1('.'));
+    if (dotIndex == -1 || dotIndex == filename.length() - 1) {
+        // no extension
+        return false;
+    }
+    QString extension = filename.mid(dotIndex + 1);
+    for(const QString& ext : allowedExtensions) {
+        if (ext == extension)
+            return true;
+    }
+    return false;
+
+}
+
+QList<ProjectFolderItem*> DUBProjectManager::parse(ProjectFolderItem *dom) {
+    qCDebug(DUB) << "parse(ProjectFolderItem *dom)";
+
+    return QList<ProjectFolderItem*>();
 }
 
 //END AbstractFileManager
@@ -135,6 +178,7 @@ IProjectBuilder*  DUBProjectManager::builder() const
 {
     qCDebug(DUB) << "builder()";
 
+    // for now the plugin is loaded at startup of the build manager
     // Dynamically get the dub builder through the plugin system
 //     IPlugin* i = core()->pluginController()->pluginForExtension( QStringLiteral("org.kdevelop.IProjectBuilder"), QStringLiteral("DUBBuilder"));
 //     Q_ASSERT(i);
@@ -144,6 +188,9 @@ IProjectBuilder*  DUBProjectManager::builder() const
 
 }
 
+/**
+* Get the toplevel build directory for the project
+*/
 Path DUBProjectManager::buildDirectory(ProjectBaseItem* item) const
 {
     qCDebug(DUB) << "buildDirectory(ProjectBaseItem*)";
@@ -160,7 +207,7 @@ Path::List DUBProjectManager::includeDirectories(ProjectBaseItem* projectBaseIte
     // for now just include the .dub packages from the home folder.
     Path::List folders;
     folders << getToolchainPaths(projectBaseItem->project());
-    // TODO: JG read function and scan project folders
+    // TODO: read function and scan project folders
     folders << getProjectPaths(projectBaseItem->project());
     folders << getDependenciesPaths(projectBaseItem->project());
     return folders;

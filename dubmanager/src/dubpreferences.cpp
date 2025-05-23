@@ -19,71 +19,12 @@ DubPreferences::DubPreferences(IPlugin* plugin, DubSettings::Ptr settings, QWidg
     m_ui->setupUi(this);
 
 
-    init();
 
-    updateWidgets();
 }
 
 DubPreferences::~DubPreferences()
 {
 }
-
-void DubPreferences::init()
-{
-
-}
-
-void DubPreferences::updateWidgets()
-{
-    // Global tab
-    m_ui->leGlobalName->setText(m_dubSettings->getValue<QString>(QStringLiteral("name")));
-    m_ui->leGlobalDescription->document()->setPlainText(m_dubSettings->getValue<QString>(QStringLiteral("description")));
-
-    m_ui->cmbGlobalLicense->setCurrentText(m_dubSettings->getValue<QString>(QStringLiteral("license")));
-    m_ui->leGlobalCopyright->setText(m_dubSettings->getValue<QString>(QStringLiteral("copyright")));
-    m_ui->leGlobalHomepage->setText(m_dubSettings->getValue<QString>(QStringLiteral("homepage")));
-
-    m_ui->lwGlobalAuthors->clear();
-    // TODO: get multiple values
-    // for(const QVariant& author : m_dubSettings->getValues("authors")) {
-    //     m_ui->lwGlobalAuthors->addItem(author.toString());
-    // }
-    // set all items editable
-    for(int i =0 ;i < m_ui->lwGlobalAuthors->count(); i++) {
-        QListWidgetItem* item = m_ui->lwGlobalAuthors->item(i);
-        item->setFlags(item->flags() | Qt::ItemIsEditable);
-    }
-
-    // Build tab
-    m_ui->leBuildTargetName->setText(m_dubSettings->getValue<QString>(QStringLiteral("targetName")));
-    m_ui->cmbBuildTargetType->setCurrentText(m_dubSettings->getValue<QString>(QStringLiteral("targetType")));
-
-    // const QList<QVariant>& values = m_dubSettings->getValues("buildOptions");
-    // if (values.contains("debugMode"))
-    //     m_ui->rbBuildDebug->setChecked(true);
-    // else if (values.contains("releaseMode"))
-    //     m_ui->rbBuildRelease->setChecked(true);
-
-    int index = m_ui->cmbBuildTargetType->findText(m_dubSettings->getValue<QString>(QStringLiteral("targetType")),Qt::MatchFixedString);
-    m_ui->cmbBuildTargetType->setCurrentIndex(index);
-
-    // dependencies
-    // int count = m_dubSettings->numNodes("dependency");
-    // for (int i=0;i<count;i++ ) {
-    //     QString dep = m_dubSettings->getValue<QString>(QStringLiteral("dependency", i));
-    //     QString item = dep + " " + m_dubSettings->getAttribute<QString>("dependency", "version", i);
-    //     m_ui->lwBuildDependencies->addItem(item);
-    // }
-    //
-    // // excluded files
-    // count = m_dubSettings->numValues("excludedSourceFiles",0);
-    // for(int i=0; i<count;i++) {
-    //     QString fileName = m_dubSettings->getValue<QString>("excludedSourceFiles", 0, i);
-    //     m_ui->lwBuildExcludedFiles->addItem(fileName);
-    // }
-}
-
-
 
 
 void DubPreferences::apply()
