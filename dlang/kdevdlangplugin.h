@@ -39,6 +39,8 @@ class ParseJob;
 }
 
 class DPlugin : public KDevelop::IPlugin, public KDevelop::ILanguageSupport
+// Implement IBuddyDocumentFinder. See clangsupport.h for details
+// , public KDevelop::IBuddyDocumentFinder
 {
 	Q_OBJECT
 	Q_INTERFACES(KDevelop::ILanguageSupport)

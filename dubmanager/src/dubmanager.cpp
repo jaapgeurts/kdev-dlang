@@ -16,6 +16,7 @@
 
 #include <dubpreferences.h>
 
+#include "toolchainwidget.h"
 #include "dubbuilder.h"
 
 
@@ -268,6 +269,31 @@ void DUBProjectManager::slotFolderAdded( KDevelop::ProjectFolderItem* folder )
 void DUBProjectManager::slotDirty(const QString& path)
 {
     Q_UNUSED(path);
+}
+
+
+/**
+* Get the number of available config pages for global settings.
+* @return number of global config pages. The default implementation returns zero.
+* @see configPage()
+*/
+int DUBProjectManager::configPages() const {
+    return 1;
+}
+
+/**
+* Get the global config page with the \p number, config pages from 0 to
+* configPages()-1 are available if configPages() > 0.
+*
+* @param number index of config page
+* @param parent parent widget for config page
+* @return newly created config page or NULL, if the number is out of bounds, default implementation returns NULL.
+* This config page should inherit from ProjectConfigPage, but it is not a strict requirement.
+* The default implementation returns @c nullptr.
+* @see perProjectConfigPages(), ProjectConfigPage
+*/
+ConfigPage * DUBProjectManager::configPage(int number, QWidget * parent) {
+     return number == 0 ? new ToolChainWidget(parent) : nullptr;
 }
 
 int DUBProjectManager::perProjectConfigPages() const

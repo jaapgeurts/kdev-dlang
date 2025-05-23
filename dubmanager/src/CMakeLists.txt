@@ -7,6 +7,7 @@ set(kdevddubmanager_SRCS
     dubbuilder.cpp
     dubsettingitem.cpp
     dubpreferences.cpp
+    toolchainwidget.cpp
     dubjob.cpp
     sdlparser.cpp
 )
@@ -20,10 +21,10 @@ ecm_qt_declare_logging_category(kdevddubmanager_SRCS
 
 set(dubpreferences_UI
     dubpreferences.ui
+    toolchainwidget.ui
 )
 
 ki18n_wrap_ui(kdevddubmanager_SRCS ${dubpreferences_UI} )
-
 
 
 kdevplatform_add_plugin(kdevddubmanager
@@ -33,8 +34,14 @@ kdevplatform_add_plugin(kdevddubmanager
 
 target_link_libraries(kdevddubmanager
 # Ideally this is linked to the project itself, not the file
+
     KDev::Interfaces
     KDev::Project
     KDev::Util
+
+    # KURL file requestor
+    KF6::KIOCore
+    KF6::KIOFileWidgets
+    KF6::KIOWidgets
     #KDev::OutputView
 )

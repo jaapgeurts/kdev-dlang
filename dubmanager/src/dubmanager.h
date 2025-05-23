@@ -23,12 +23,6 @@ public:
 
      ~DUBProjectManager() override;
 
-     // BEGIN IPlugin
-
-//      int configPages() const override;
-//      ConfigPage * configPage(int number, QWidget * parent) override;
-
-     // END IPlugin
 
      //
     //BEGIN AbstractFileManager
@@ -82,6 +76,12 @@ public:
     Path compiler(ProjectTargetItem* item) const override;
 
 
+     // BEGIN IPlugin
+
+    int configPages() const override;
+    ConfigPage * configPage(int number, QWidget * parent) override;
+
+     // END IPlugin
     int perProjectConfigPages() const override;
     ConfigPage * perProjectConfigPage(int number, const ProjectConfigOptions & options, QWidget * parent) override;
 
