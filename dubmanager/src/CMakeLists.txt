@@ -1,4 +1,10 @@
+
 set(kdevddubmanager_SRCS
+    toolchain/dmdtoolchain.cpp
+    toolchain/gdctoolchain.cpp
+    toolchain/ldc2toolchain.cpp
+    toolchain/toolchainwidget.cpp
+
     dcompilerfilterstrategy.cpp
     dubmanager.cpp
     dubsettings.cpp
@@ -7,7 +13,6 @@ set(kdevddubmanager_SRCS
     dubbuilder.cpp
     dubsettingitem.cpp
     dubpreferences.cpp
-    toolchainwidget.cpp
     dubjob.cpp
     sdlparser.cpp
 )
@@ -19,12 +24,9 @@ ecm_qt_declare_logging_category(kdevddubmanager_SRCS
     DEFAULT_SEVERITY Debug
 )
 
-set(dubpreferences_UI
-    dubpreferences.ui
-    toolchainwidget.ui
-)
 
-ki18n_wrap_ui(kdevddubmanager_SRCS ${dubpreferences_UI} )
+ki18n_wrap_ui(kdevddubmanager_SRCS dubpreferences.ui )
+ki18n_wrap_ui(kdevddubmanager_SRCS toolchain/toolchainwidget.ui)
 
 
 kdevplatform_add_plugin(kdevddubmanager

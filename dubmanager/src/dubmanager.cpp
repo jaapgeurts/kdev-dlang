@@ -1,13 +1,12 @@
 #include "dubmanager.h"
 
-#include <debug.h>
 
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
 
 #include <KPluginFactory>
 
-#include <interfaces/icore.h>
-#include <interfaces/iproject.h>
 #include <interfaces/iplugincontroller.h>
 #include <interfaces/configpage.h>
 
@@ -16,9 +15,10 @@
 
 #include <dubpreferences.h>
 
-#include "toolchainwidget.h"
+#include "toolchain/toolchainwidget.h"
 #include "dubbuilder.h"
 
+#include "debug.h"
 
 K_PLUGIN_FACTORY_WITH_JSON(DUBSupportFactory, "kdevddubmanager.json", registerPlugin<DUBProjectManager>(); )
 
@@ -28,12 +28,14 @@ using namespace KDevelop;
 DUBProjectManager::DUBProjectManager(QObject *parent, const KPluginMetaData& metaData, const QVariantList& args)
     : AbstractFileManagerPlugin(QStringLiteral("kdevdubmanager"), parent, metaData),
     IBuildSystemManager(),
+    // TODO: builder should be loaded on demand. (relieve constructor)
     m_builder(new DUBBuilder()),
     m_dubSettings(nullptr)
 {
     Q_UNUSED(args);
 
-    qCDebug(DUB) << "DUBProjectManager(QObject *, const QVariantList&)";
+    qCDebug(DUB) << "DUBProjectManager (QObject *, const QVariantList&)";
+
 }
 
 DUBProjectManager::~DUBProjectManager() {

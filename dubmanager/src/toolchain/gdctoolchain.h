@@ -1,0 +1,34 @@
+// <one line to give the program's name and a brief idea of what it does.>
+// SPDX-FileCopyrightText: 2025 Jaap Geurts <jaapg@gmx.net>
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#ifndef GDCTOOLCHAIN_H
+#define GDCTOOLCHAIN_H
+
+#include "toolchain.h"
+
+/**
+ * @todo write docs
+ */
+class GDCToolchain :  Toolchain
+{
+public:
+    /**
+     * Default constructor
+     */
+    GDCToolchain();
+
+    /**
+     * Destructor
+     */
+    ~GDCToolchain();
+
+    /** returns true if this toolchain was found. False otherwise */
+    bool probeInstallation() override;
+
+    /** Returns a list of directories of import locations for this toolchain */
+    KDevelop::Path::List includes() override;
+
+};
+
+#endif // GDCTOOLCHAIN_H
