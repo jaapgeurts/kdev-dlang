@@ -79,6 +79,7 @@ QString DPlugin::name() const
 	return QStringLiteral("D");
 }
 
+/** @return the parse job that is used by background parser to parse given @p url.*/
 ParseJob *DPlugin::createParseJob(const IndexedString &url)
 {
 	qCDebug(DPLUGIN) << "Creating dlang parse job\n";

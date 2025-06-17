@@ -31,6 +31,7 @@
 
 typedef KDevelop::AbstractTypeBuilder<INode, IToken, ContextBuilder> TypeBuilderBase;
 
+// This class inherits from ContextBuilder
 class KDEVDDUCHAIN_EXPORT TypeBuilder : public TypeBuilderBase
 {
 public:

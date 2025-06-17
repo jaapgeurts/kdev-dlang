@@ -10,7 +10,7 @@
 /**
  * @todo write docs
  */
-class GDCToolchain :  Toolchain
+class GDCToolchain : public Toolchain
 {
 public:
     /**
@@ -22,6 +22,8 @@ public:
      * Destructor
      */
     ~GDCToolchain();
+
+    QString name() override;
 
     /** returns true if this toolchain was found. False otherwise */
     bool probeInstallation() override;

@@ -27,3 +27,6 @@ PRIVATE
     kdevdparser
     kdevdduchain
 )
+
+# install(TARGETS kdevdcompletion DESTINATION ${KDE_INSTALL_PLUGINDIR}/kdevplatform/${KDEV_PLUGIN_VERSION})
+install(TARGETS kdevdcompletion DESTINATION ${CMAKE_INSTALL_LIBDIR})

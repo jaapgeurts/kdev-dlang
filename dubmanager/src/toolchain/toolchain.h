@@ -5,6 +5,8 @@
 #ifndef TOOLCHAIN_H
 #define TOOLCHAIN_H
 
+#include <QString>
+
 #include <util/path.h>
 
 /**
@@ -15,6 +17,9 @@ class Toolchain
 {
 public:
 
+    virtual ~Toolchain() = default;
+
+    virtual QString name() = 0;
     /** returns true if this toolchain was found. False otherwise */
     virtual bool probeInstallation() = 0;
 

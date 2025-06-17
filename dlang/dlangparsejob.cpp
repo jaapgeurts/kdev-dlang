@@ -58,30 +58,38 @@ using namespace KDevelop;
 void dumpDUChain(DUContext*);
 
 //HACK. How do we remember dependency folders between parsejobs?
-// because a dependency module doesn't belong to a project
+// because a dependent module doesn't belong to a project
 // how do we set the include folders for public imports?
 static QSet<QString> cachedIncludePaths;
 
 DParseJob::DParseJob(const KDevelop::IndexedString &url, KDevelop::ILanguageSupport *languageSupport) : ParseJob(url, languageSupport)
 {
     qCDebug(DPLUGIN) << "Parsejob: " << url;
+    // Get all files from the project and parse them.
+
     // fetch the project dependencies so we can figure out include dirs
     // find the project for this url
     IProjectController* controller = ICore::self()->projectController();
-    QList<IProject*> projects = controller->projects();
-    for(int i=0; i<projects.count();i++) {
-        IProject* project = projects.at(i);
-        qCDebug(DPLUGIN) << "Project: " << project->name();
-        QSet<IndexedString> files = project->fileSet();
-        for(const IndexedString& val : files) {
-            qCDebug(DPLUGIN) << "\t" << val;
-        }
-    }
+    // QList<IProject*> projects = controller->projects();
+    // for(int i=0; i<projects.count();i++) {
+    //     IProject* project = projects.at(i);
+    //     qCDebug(DPLUGIN) << "Project: " << project->name();
+    //     QSet<IndexedString> files = project->fileSet();
+    //     for(const IndexedString& val : files) {
+    //         qCDebug(DPLUGIN) << "\t" << val;
+    //     }
+    // }
+
+    // get all paths that are to be scanned according to what the build system reports.
+    // For example, add folders that contain std.io files.
     IProject* project = controller->findProjectForUrl(url.toUrl());
     if (project != nullptr) {
+        qCDebug(DPLUGIN) << "Project: " << project->name();
         // add includes from the project
         IBuildSystemManager* buildManager = project->buildSystemManager();
         Path::List folders = buildManager->includeDirectories(project->projectItem());
+
+        qCDebug(DPLUGIN) << "\tFolder count: " << folders.size();
         // Add the current document directory
         folders << Path(url.toUrl().adjusted(QUrl::RemoveFilename).path());
         for(const Path& path : folders) {
@@ -98,7 +106,7 @@ DParseJob::DParseJob(const KDevelop::IndexedString &url, KDevelop::ILanguageSupp
             m_includeDirs.append(path);
     }
 
-    qCDebug(DPLUGIN) << m_includeDirs;
+    qCDebug(DPLUGIN) << "IncludeDirs: " << m_includeDirs;
 }
 
 void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
@@ -115,11 +123,14 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	if(p) // there are problems
 		return abortJob();
 
+    // remove trailing zero's
+    // TODO: why even do this?
 	QByteArray code = contents().contents;
  	while(code.endsWith('\0'))
 		code.chop(1);
     code.append('\0');
 
+    // Create a parse session.
 	ParseSession session(code, parsePriority());
 	session.setCurrentDocument(document());
 	session.setFeatures(minimumFeatures());
@@ -127,6 +138,8 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	if(abortRequested() || ICore::self()->shuttingDown())
 		return;
 
+    // Context is a container for the scope for name results
+    // It further implements SymbolTable lookups and locking for the chain.
 	ReferencedTopDUContext context;
 	{
 		DUChainReadLocker lock;
@@ -153,6 +166,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 	qCDebug(DPLUGIN) << "Job priority: " << parsePriority();
 
     // The actual parsing is done in the session
+    // session.startParsing is defined in D code. See parser/src/dparse.d
     bool parseSuccess = session.startParsing();
 
 	// When switching between files(even if they are not modified) KDevelop
@@ -173,20 +187,24 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 
 	if(parseSuccess)
 	{
+        // parsing was succesful. Now build the chain for uses and declarations
 		QReadLocker parseLock(languageSupport()->parseLock());
 
 		if(abortRequested())
 			return abortJob();
 
+        // Declarations are built here.
         DeclarationBuilder builder(&session, forExport);
 		context = builder.build(document(), session.ast(), context);
 
+        // Uses are built here.
 		if(!forExport && (newFeatures & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsContextsAndUses)
 		{
 			UseBuilder useBuilder(&session);
 			useBuilder.buildUses(session.ast());
 		}
-		//TODO: jg What is this? This notifies other opened files of changes.
+		//TODO: jg What is this?
+		//ORIG: Why? This notifies other opened files of changes.
 		//session.reparseImporters(context);
 	}
 	if(!context)
@@ -210,7 +228,7 @@ void DParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
     DUChain::self()->emitUpdateReady(document(), duChain());
 
     // Dumps DU Chain to output
-    dumpDUChain(context);
+    // dumpDUChain(context);
 
 	// BEGIN JG
 // 	uint count;

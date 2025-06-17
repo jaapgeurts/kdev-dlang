@@ -28,3 +28,5 @@ PRIVATE
     KDev::Shell
     KDev::Project
  )
+# install(TARGETS kdevdduchain DESTINATION ${KDE_INSTALL_PLUGINDIR}/kdevplatform/${KDEV_PLUGIN_VERSION})
+install(TARGETS kdevdduchain DESTINATION ${CMAKE_INSTALL_LIBDIR})

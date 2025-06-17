@@ -1,4 +1,4 @@
-project(kdevdlangplugin)
+project(kdevdlang)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 
@@ -21,7 +21,7 @@ add_subdirectory(parser)
 add_subdirectory(duchain)
 add_subdirectory(codecompletion)
 
-kdevplatform_add_plugin(kdevdlangplugin JSON kdevdlang.json SOURCES
+kdevplatform_add_plugin(kdevdlang JSON kdevdlang.json SOURCES
     kdevdlangplugin.cpp
     dlangparsejob.cpp
     dhighlighting.cpp
@@ -29,7 +29,7 @@ kdevplatform_add_plugin(kdevdlangplugin JSON kdevdlang.json SOURCES
 )
 
 # fix linkage to local shared module
-target_link_libraries(kdevdlangplugin
+target_link_libraries(kdevdlang
 PRIVATE
     KDev::Interfaces
     KDev::Language

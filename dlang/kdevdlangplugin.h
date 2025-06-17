@@ -52,6 +52,7 @@ public:
 
     virtual QString name() const override;
 
+    /** @return the parse job that is used by background parser to parse given @p url.*/
 	virtual KDevelop::ParseJob *createParseJob(const KDevelop::IndexedString &url) override;
 
     KDevelop::ICodeHighlighting* codeHighlighting() const override;

@@ -29,9 +29,6 @@ set(d_parser_lib_SRC
 
 # add_library(kdevdparser STATIC ${d_parser_lib_SRC})
 add_library(kdevdparser SHARED ${d_parser_lib_SRC})
-#add_library(dparserlib SHARED IMPORTED)
-#set_target_properties(dparserlib PROPERTIES IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libdparser.so")
-# this doesn't seem to be working
 
 # TODO: investigate the next line
 # generate_export_header(kdevdparser EXPORT_FILE_NAME kdevdparserexport.h)
@@ -40,4 +37,7 @@ target_link_libraries(kdevdparser
     PRIVATE KDev::Language
 )
 
+# install(TARGETS kdevdparser DESTINATION ${KDE_INSTALL_PLUGINDIR}/kdevplatform/${KDEV_PLUGIN_VERSION})
+install(TARGETS kdevdparser DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libdparser.so DESTINATION ${KDE_INSTALL_PLUGINDIR}/kdevplatform/${KDEV_PLUGIN_VERSION})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libdparser.so DESTINATION lib64)

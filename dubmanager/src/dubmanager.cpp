@@ -16,6 +16,10 @@
 #include <dubpreferences.h>
 
 #include "toolchain/toolchainwidget.h"
+#include "toolchain/ldc2toolchain.h"
+#include "toolchain/gdctoolchain.h"
+#include "toolchain/dmdtoolchain.h"
+
 #include "dubbuilder.h"
 
 #include "debug.h"
@@ -35,6 +39,27 @@ DUBProjectManager::DUBProjectManager(QObject *parent, const KPluginMetaData& met
     Q_UNUSED(args);
 
     qCDebug(DUB) << "DUBProjectManager (QObject *, const QVariantList&)";
+
+    // test each toolchain and add to the model.
+
+    QSharedPointer<LDC2Toolchain> ldc2 = QSharedPointer<LDC2Toolchain>::create();
+    if (ldc2->probeInstallation()) {
+        qCDebug(DUB) << "Found LDC2";
+        m_ToolChainList << ldc2;
+    }
+
+    QSharedPointer<GDCToolchain> gdc = QSharedPointer<GDCToolchain>::create();
+    if (gdc->probeInstallation()) {
+        qCDebug(DUB) << "Found GDC";
+        m_ToolChainList << gdc;
+    }
+
+    QSharedPointer<DMDToolchain> dmd = QSharedPointer<DMDToolchain>::create();
+    if (dmd->probeInstallation()) {
+        qCDebug(DUB) << "Found DMD";
+        m_ToolChainList << dmd;
+    }
+
 
 }
 
@@ -134,7 +159,7 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
     Q_UNUSED(project);
 
 
-    qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
+    // qCDebug(DUB) << "isValid( const Path& , const bool , IProject*)";
 
     // Do not show any hidden files.
     QString filename = path.lastPathSegment();
@@ -169,6 +194,8 @@ bool DUBProjectManager::isValid( const Path& path, const bool isFolder, IProject
 
 QList<ProjectFolderItem*> DUBProjectManager::parse(ProjectFolderItem *dom) {
     qCDebug(DUB) << "parse(ProjectFolderItem *dom)";
+
+    Q_UNUSED(dom);
 
     return QList<ProjectFolderItem*>();
 }
@@ -205,7 +232,7 @@ Path DUBProjectManager::buildDirectory(ProjectBaseItem* item) const
 
 Path::List DUBProjectManager::includeDirectories(ProjectBaseItem* projectBaseItem) const
 {
-
+    qCDebug(DUB) << "DUBProjectManager::includeDirectories(ProjectBaseItem* projectBaseItem)";
     // TODO: include all project folders
     // for now just include the .dub packages from the home folder.
     Path::List folders;
@@ -295,7 +322,12 @@ int DUBProjectManager::configPages() const {
 * @see perProjectConfigPages(), ProjectConfigPage
 */
 ConfigPage * DUBProjectManager::configPage(int number, QWidget * parent) {
-     return number == 0 ? new ToolChainWidget(parent) : nullptr;
+     if (number == 0) {
+         auto form = new ToolChainWidget(parent);
+         form->setToolChains(m_ToolChainList);
+         return form;
+     }
+     return nullptr;
 }
 
 int DUBProjectManager::perProjectConfigPages() const
@@ -321,20 +353,21 @@ ConfigPage* DUBProjectManager::perProjectConfigPage(int number, const ProjectCon
 Path::List DUBProjectManager::getToolchainPaths(IProject* project) const
 {
     Q_UNUSED(project);
-    // TODO: JG these should be configurable
+    // TODO: JG these should be configurable and depend on the detected build system
     static QString searchPaths[] = {
-        QLatin1String("/usr/include/dlang/dmd"),
-        QLatin1String("/usr/include/dlang/ldc"),
-        QLatin1String("/usr/include/dlang/gcd"),
-        QLatin1String("/usr/include/d/dmd"),
-        QLatin1String("/usr/include/d")
+        // QLatin1String("/usr/include/dlang/ldc"),
+        QStringLiteral("/usr/lib64/ldc/x86_64-suse-linux/include/d/"),
+        QStringLiteral("/usr/include/dlang/dmd"),
+        // QLatin1String("/usr/include/dlang/gcd"),
+        QStringLiteral("/usr/lib64/gcc/x86_64-suse-linux/14/include/d/"),
+        QStringLiteral("/usr/include/d/dmd"),
+        QStringLiteral("/usr/include/d")
     };
 
 	Path::List folders;
     for(const QString& path : searchPaths) {
         if (QFileInfo::exists(path)) {
             folders << Path(path);
-            return folders;
         }
     }
     return folders;

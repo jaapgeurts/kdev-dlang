@@ -1,4 +1,4 @@
-set(dscanner_plugin_SRCS
+set(kdevdscanner_SRCS
     dscanner_plugin.cpp
     job.cpp
     parameters.cpp
@@ -9,7 +9,7 @@ set(dscanner_plugin_SRCS
     config/projectconfigpage.cpp
 )
 
-ecm_qt_declare_logging_category(dscanner_plugin_SRCS
+ecm_qt_declare_logging_category(kdevdscanner_SRCS
     HEADER debug.h
     IDENTIFIER DSCANNER
     CATEGORY_NAME "kdevelop.plugins.dscanner"
@@ -17,24 +17,24 @@ ecm_qt_declare_logging_category(dscanner_plugin_SRCS
 
 find_package(KF6KIO)
 
-kconfig_add_kcfg_files(dscanner_plugin_SRCS
+kconfig_add_kcfg_files(kdevdscanner_SRCS
     config/globalsettings.kcfgc
     config/projectsettings.kcfgc
 )
 
-ki18n_wrap_ui(dscanner_plugin_SRCS
+ki18n_wrap_ui(kdevdscanner_SRCS
     config/globalconfigpage.ui
     config/projectconfigpage.ui
 )
-qt6_add_resources(dscanner_plugin_SRCS
+qt6_add_resources(kdevdscanner_SRCS
     kdevdscanner.qrc
 )
 
-kdevplatform_add_plugin(dscanner_plugin
-    JSON kdevdscanner_plugin.json
-    SOURCES ${dscanner_plugin_SRCS}
+kdevplatform_add_plugin(kdevdscanner
+    JSON kdevdscanner.json
+    SOURCES ${kdevdscanner_SRCS}
 )
-target_link_libraries(dscanner_plugin
+target_link_libraries(kdevdscanner
 #    KDev::Interfaces
     KF6::KIOCore
     KF6::KIOFileWidgets

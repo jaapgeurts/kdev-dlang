@@ -32,12 +32,16 @@ LDC2Toolchain::~LDC2Toolchain()
 
 }
 
+QString LDC2Toolchain::name() {
+    return QStringLiteral("LDC2");
+}
+
+
 /** returns true if this toolchain was found. False otherwise */
 bool LDC2Toolchain::probeInstallation() {
 
     QStringList compiler = { QStringLiteral("ldc2"),QStringLiteral("-v"), QStringLiteral("-c"), QStringLiteral("empty.d") };
 
-    QString path;
     QString p = QStandardPaths::findExecutable(compiler[0]);
     qCDebug(DUB) << "Probing compiler: " << compiler[0];
     if (!p.isEmpty()) {
@@ -57,9 +61,12 @@ bool LDC2Toolchain::probeInstallation() {
             return false;
         }
 
-        if (proc.exitCode() != 0) {
-            qCWarning(DUB) <<  "error while fetching includes for the compiler:" << p;
-        }
+        // we run the compiler with an error condition so that it produced the output
+        // if (proc.exitCode() != 0) {
+        //     qCWarning(DUB) <<  "error while fetching includes for the compiler:" << p;
+        //     return false;
+        // }
+        // parse the import path.
         QString output = QString::fromUtf8(proc.readAll());
         QString line;
         QTextStream stream(&output);
@@ -67,9 +74,10 @@ bool LDC2Toolchain::probeInstallation() {
             qCDebug(DUB) << "OUT: " << line;
 
         }
+        return true;
     }
 
-    return true;
+    return false;
 
 }
 

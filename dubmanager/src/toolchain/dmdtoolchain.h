@@ -10,7 +10,7 @@
 /**
  * @todo write docs
  */
-class DMDToolchain :  Toolchain
+class DMDToolchain : public Toolchain
 {
 public:
     /**
@@ -22,6 +22,8 @@ public:
      * Destructor
      */
     ~DMDToolchain();
+
+    QString name() override;
 
     /** returns true if this toolchain was found. False otherwise */
     bool probeInstallation() override;

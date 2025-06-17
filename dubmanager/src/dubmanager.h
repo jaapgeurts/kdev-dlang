@@ -8,6 +8,8 @@
 #include "dubbuilder.h"
 #include "dubsettings.h"
 
+#include "toolchain/toolchain.h"
+
 using namespace KDevelop;
 
 class DUBProjectManager : public AbstractFileManagerPlugin, public IBuildSystemManager
@@ -106,6 +108,7 @@ private:
 //     ProjectFolderItem* projectRootItem( IProject* project, const Path& path );
 //     ProjectFolderItem* buildFolderItem( IProject* project, const Path& path, ProjectBaseItem* parent );
 
+    QList<QSharedPointer<Toolchain>> m_ToolChainList;
 
 };
 

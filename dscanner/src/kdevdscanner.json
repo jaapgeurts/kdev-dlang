@@ -2,7 +2,6 @@
     "KPlugin": {
         "Category": "Analyzers",
         "Description": "A plugin for analyzing D language source code",
-        "Id": "kdevdscanner",
         "Name": "DScanner",
         "Authors": [
             { "Name": "Jaap Geurts",

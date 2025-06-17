@@ -12,6 +12,8 @@
 
 #include <interfaces/configpage.h>
 
+#include "toolchainmodel.h"
+
 namespace Ui
 {
 class ToolChainWidget;
@@ -37,6 +39,9 @@ public:
     void reset() override;
     void defaults() override;
 
+
+    void setToolChains(const QList<QSharedPointer<Toolchain>>& toolchains);
+
 private Q_SLOTS:
     void deleteCompiler();
     void addCompiler(const QString& factoryName);
@@ -51,6 +56,7 @@ private:
 
     QScopedPointer<Ui::ToolChainWidget> m_ui;
     QMenu *m_addMenu;
+    ToolchainModel* m_ToolChainModel;
 };
 
 #endif

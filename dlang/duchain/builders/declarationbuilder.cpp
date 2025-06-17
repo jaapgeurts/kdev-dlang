@@ -46,7 +46,11 @@
 using namespace KDevelop;
 
 
-DeclarationBuilder::DeclarationBuilder(ParseSession *session, bool forExport) : m_export(forExport), inClassScope(false), m_preBuilding(false), m_ownPriority(0)
+DeclarationBuilder::DeclarationBuilder(ParseSession *session, bool forExport) :
+	m_export(forExport),
+	inClassScope(false),
+	m_preBuilding(false),
+	m_ownPriority(0)
 {
 	setParseSession(session);
 }
@@ -55,6 +59,7 @@ ReferencedTopDUContext DeclarationBuilder::build(const IndexedString &url, INode
 {
     ReferencedTopDUContext updateContext2 = updateContext;
 	qCDebug(DUCHAIN) << "DeclarationBuilder start";
+	// TODO: not sure what the purpose of this is.
 	if(!m_preBuilding)
 	{
 		qCDebug(DUCHAIN) << "Running prebuilder";

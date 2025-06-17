@@ -29,8 +29,12 @@
 #include "typebuilder.h"
 #include "parser/dparser.h"
 
+/**
+ * A class which iterates the AST to extract definitions of types.
+ */
 typedef KDevelop::AbstractDeclarationBuilder<INode, IToken, TypeBuilder> DeclarationBuilderBase;
 
+// This class inherits from TypeBuilder
 class KDEVDDUCHAIN_EXPORT DeclarationBuilder : public DeclarationBuilderBase
 {
 public:
@@ -43,6 +47,19 @@ public:
     };
 
 	DeclarationBuilder(ParseSession *session, bool forExport);
+
+	 /**
+     * Entry point for building a definition-use chain with this builder.
+     *
+     * This function determines whether we are updating a chain, or creating a new one.  If we are
+     * creating a new chain, a new TopDUContext is created and registered with DUChain.
+     *
+     * \param url Url of the document being parsed.
+     * \param node AST node to start building from.
+     * \param updateContext TopDUContext to update if a duchain was previously created for this url, otherwise pass a null pointer.
+     *
+     * \returns the newly created or updated TopDUContext pointer.
+     */
 
 	virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString &url, INode *node, const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
 

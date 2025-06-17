@@ -32,12 +32,15 @@ GDCToolchain::~GDCToolchain()
 
 }
 
+QString GDCToolchain::name() {
+    return QStringLiteral("GDC");
+}
+
 /** returns true if this toolchain was found. False otherwise */
 bool GDCToolchain::probeInstallation() {
 
     QStringList compiler =  { QStringLiteral("gdc"), QStringLiteral("-print-search-dirs") };
 
-    QString path;
     QString p = QStandardPaths::findExecutable(compiler[0]);
     qCDebug(DUB) << "Probing compiler: " << compiler[0];
     if (!p.isEmpty()) {
@@ -59,6 +62,7 @@ bool GDCToolchain::probeInstallation() {
 
         if (proc.exitCode() != 0) {
             qCWarning(DUB) <<  "error while fetching includes for the compiler:" << p;
+            return false;
         }
         QString output = QString::fromUtf8(proc.readAll());
         QString line;
@@ -67,9 +71,10 @@ bool GDCToolchain::probeInstallation() {
             qCDebug(DUB) << "OUT: " << line;
 
         }
+        return true;
     }
 
-    return true;
+    return false;
 
 }
 

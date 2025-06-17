@@ -108,7 +108,7 @@ void UseBuilder::visitTemplateParameter(ITemplateParameter* node)
     DUContext *context = nullptr;
 	{
 		DUChainReadLocker lock;
-		context = currentContext()->findContextIncluding(editorFindRange(node, 0));
+		context = currentContext()->findContextIncluding(editorFindRange(node, nullptr));
 	}
 	if(!context)
 	{

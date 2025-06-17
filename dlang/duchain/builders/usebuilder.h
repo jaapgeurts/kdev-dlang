@@ -29,6 +29,7 @@
 
 typedef KDevelop::AbstractUseBuilder<INode, IToken, ContextBuilder> UseBuilderBase;
 
+// This class inherits from ContextBuilder, through the UseBuilderBase typedef
 class KDEVDDUCHAIN_EXPORT UseBuilder : public UseBuilderBase
 {
 public:

@@ -4,6 +4,7 @@ set(kdevddubmanager_SRCS
     toolchain/gdctoolchain.cpp
     toolchain/ldc2toolchain.cpp
     toolchain/toolchainwidget.cpp
+    toolchain/toolchainmodel.cpp
 
     dcompilerfilterstrategy.cpp
     dubmanager.cpp

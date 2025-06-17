@@ -11,18 +11,22 @@
 #include <QKeySequence>
 #include <QMenu>
 
+#include <QStringListModel>
 
 #include "ui_toolchainwidget.h"
 #include "debug.h"
 
 using namespace KDevelop;
 
+
 ToolChainWidget::ToolChainWidget(QWidget* parent)
     : ConfigPage(nullptr, nullptr, parent)
+    , m_ToolChainModel(new ToolchainModel(this))
     , m_ui(new Ui::ToolChainWidget)
 {
     m_ui->setupUi(this);
-    m_ui->compilers->header()->setSectionResizeMode(QHeaderView::Stretch);
+
+    m_ui->compilers->setModel(m_ToolChainModel);
 
     m_addMenu = new QMenu(m_ui->addButton);
 
@@ -50,7 +54,11 @@ ToolChainWidget::~ToolChainWidget()
 {
 }
 
+void ToolChainWidget::setToolChains(const QList<QSharedPointer<Toolchain>>& toolchains) {
 
+    m_ToolChainModel->setToolChains(toolchains);
+
+}
 
 void ToolChainWidget::deleteCompiler()
 {

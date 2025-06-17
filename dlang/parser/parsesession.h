@@ -21,6 +21,7 @@
 #include <language/editor/rangeinrevision.h>
 #include <language/editor/documentrange.h>
 #include <language/duchain/topducontext.h>
+#include <language/duchain/identifier.h>
 #include <language/duchain/problem.h>
 
 #include <serialization/indexedstring.h>
@@ -57,13 +58,14 @@ public:
 
 	KDevelop::IndexedString url();
 
+
 	QList<KDevelop::ReferencedTopDUContext> contextForImport(KDevelop::QualifiedIdentifier package);
 
-	QList<KDevelop::ReferencedTopDUContext> contextForThisPackage(KDevelop::IndexedString package);
+	// QList<KDevelop::ReferencedTopDUContext> contextForThisPackage(KDevelop::IndexedString package);
 
-	bool scheduleForParsing(const KDevelop::IndexedString &url, int priority, KDevelop::TopDUContext::Features features);
+	bool scheduleForParsing(const KDevelop::IndexedString &url, int priority);
 
-	void reparseImporters(KDevelop::DUContext *context);
+	// void reparseImporters(KDevelop::DUContext *context);
 
 	void setFeatures(KDevelop::TopDUContext::Features features);
 
@@ -113,6 +115,10 @@ public:
 	}
 
 private:
+
+	QString findModuleFilePathsForImport(KDevelop::QualifiedIdentifier moduleOrPackage);
+
+
 	QByteArray m_contents;
 
     INode* m_ast;
@@ -122,7 +128,7 @@ private:
 	KDevelop::IndexedString m_document;
 	KDevelop::TopDUContext::Features m_features;
     QList<KDevelop::ProblemPointer> m_problems;
-	bool forExport;
+	bool mForExport;
 	QList<QString> m_includePaths;
 	QHash<QString, QString> *m_canonicalImports;
 	QMap<long, QString> m_lines;

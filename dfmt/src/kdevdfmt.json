@@ -2,7 +2,6 @@
     "KPlugin": {
         "Category": "Utilities",
         "Description": "A Plugin for formatting D language source code",
-        "Id": "kdevdfmt",
         "Name": "DLang Source Code Formatter",
         "Authors": [
             { "Name": "Jaap Geurts",

@@ -340,6 +340,7 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
         ParseResult parseResult = new ParseResult();
 
 		auto source = cast(ubyte[])fromStringz(sourceData);
+		// These are libdparse functions and parse the provided module.
 		auto tokens = getTokensForParser(source, config, parseResult.getStringCache());
 		auto mod = parseModule(tokens, config.fileName, parseResult.getAllocator(), &parseResult.addMessage, &errCnt, &wrnCnt);
 
@@ -347,6 +348,7 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
 
         //new ASTPrinter(file, true).visit(mod);
 
+        // Return the parse tree
 		CModule astRoot = new CModule(mod);
         parseResult.setAst(astRoot);
 
@@ -358,5 +360,5 @@ extern(C) IParseResult parseSourceFile(const char* sourceFile, const char * sour
 		raise(SIGABRT);
 		//return null;
 	}
-	assert(0);
+	assert(false);
 }

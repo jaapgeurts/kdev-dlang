@@ -28,7 +28,7 @@
 
 using namespace KDevelop;
 
-K_PLUGIN_FACTORY_WITH_JSON(DScannerFactory, "kdevdscanner_plugin.json", registerPlugin<dscannercheck::DScannerPlugin>(); )
+K_PLUGIN_FACTORY_WITH_JSON(DScannerFactory, "kdevdscanner.json", registerPlugin<dscannercheck::DScannerPlugin>(); )
 
 // TODO: remove namespace
 namespace dscannercheck {

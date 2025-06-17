@@ -92,7 +92,7 @@ static const char indentingDSample[] =
 
 using namespace KDevelop;
 
-K_PLUGIN_FACTORY_WITH_JSON(DFormatterPluginFactory, "kdevdfmt_plugin.json", registerPlugin<DFormatPlugin>(); )
+K_PLUGIN_FACTORY_WITH_JSON(DFormatterPluginFactory, "kdevdfmt.json", registerPlugin<DFormatPlugin>(); )
 
 DFormatPlugin::DFormatPlugin(QObject *parent, const KPluginMetaData& metaData, const QVariantList& args)
     : KDevelop::IPlugin(QStringLiteral("kdevdfmt"), parent, metaData),

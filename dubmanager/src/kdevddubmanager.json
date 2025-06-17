@@ -2,7 +2,6 @@
     "KPlugin": {
         "Category": "Project Management",
         "Description": "DUB Project Manager",
-        "Id": "kdevddubmanager",
         "Name": "DUB Project Manager",
         "Authors": [
             { "Name": "Jaap Geurts",

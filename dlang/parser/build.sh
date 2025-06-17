@@ -27,3 +27,5 @@ test $? -eq 0 || exit
 # generate the final lib
 ldc2 -of "${1}/libdparser.so" -g -Ilibdparse/src/ -Ilibdparse/stdx-allocator/source/ -shared src/dparse.d src/astWrapper.d libdparse/libdparse.a libdparse/stdx-allocator/libstdx-allocator.a
 test $? -eq 0 || exit
+
+chmod 755 "${1}/libdparser.so"
