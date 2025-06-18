@@ -2,12 +2,15 @@
 // SPDX-FileCopyrightText: 2025 Jaap Geurts <jaapg@gmx.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include <QIcon>
+
 #include "toolchainmodel.h"
 
 #include "debug.h"
 
 ToolchainModel::ToolchainModel(QObject *parent) :
-    QAbstractItemModel(parent)
+    QAbstractItemModel(parent),
+    m_SelectedToolChain(0)
 {
 }
 
@@ -22,9 +25,14 @@ QVariant ToolchainModel::data(const QModelIndex& index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (role == Qt::DisplayRole) {
-        QString value = m_Toolchains[index.row()]->name();
-        return QVariant(value);
+    switch(role) {
+        case Qt::DisplayRole: {
+            return m_Toolchains[index.row()]->name();
+        }
+        case Qt::DecorationRole: {
+            int idx = index.row();
+            return idx == m_SelectedToolChain ? QIcon::fromTheme(QStringLiteral("checkmark")) : QIcon();
+        }
     }
 
     return QVariant();
@@ -32,11 +40,13 @@ QVariant ToolchainModel::data(const QModelIndex& index, int role) const
 
 int ToolchainModel::columnCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent)
     return 1;
 }
 
 int ToolchainModel::rowCount(const QModelIndex& parent) const
 {
+    Q_UNUSED(parent)
     // qCDebug(DUB) << "ToolchainModel::rowCount(const QModelIndex& parent)";
 
     return m_Toolchains.size();
@@ -44,11 +54,13 @@ int ToolchainModel::rowCount(const QModelIndex& parent) const
 
 QModelIndex ToolchainModel::parent(const QModelIndex& child) const
 {
+    Q_UNUSED(child)
     return QModelIndex();
 }
 
 QModelIndex ToolchainModel::index(int row, int column, const QModelIndex& parent) const
 {
+    Q_UNUSED(parent)
     // qCDebug(DUB) << "ToolchainModel::index(int row, int column, const QModelIndex& parent)";
     return createIndex(row,column,nullptr);
 }
@@ -60,3 +72,14 @@ void ToolchainModel::setToolChains(const QList<QSharedPointer<Toolchain>>& toolc
     m_Toolchains = toolchains;
     endResetModel();
 }
+
+int ToolchainModel::selectedToolChain() {
+    return m_SelectedToolChain;
+}
+
+void ToolchainModel::setSelectedToolChain(int index) {
+    beginResetModel();
+    m_SelectedToolChain = index;
+    endResetModel();
+}
+

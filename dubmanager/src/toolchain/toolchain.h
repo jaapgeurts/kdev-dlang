@@ -24,7 +24,7 @@ public:
     virtual bool probeInstallation() = 0;
 
     /** Returns a list of directories of import locations for this toolchain */
-    virtual KDevelop::Path::List includes() = 0;
+    virtual KDevelop::Path::List includePaths() = 0;
 
 
 };

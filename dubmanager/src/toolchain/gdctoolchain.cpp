@@ -79,6 +79,6 @@ bool GDCToolchain::probeInstallation() {
 }
 
 /** Returns a list of directories of import locations for this toolchain */
-KDevelop::Path::List GDCToolchain::includes() {
+KDevelop::Path::List GDCToolchain::includePaths() {
     return Path::List();
 }

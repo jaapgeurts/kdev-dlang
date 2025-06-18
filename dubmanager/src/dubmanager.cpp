@@ -6,6 +6,8 @@
 #include <QFileInfo>
 
 #include <KPluginFactory>
+#include <KSharedConfig>
+#include <KConfigGroup>
 
 #include <interfaces/iplugincontroller.h>
 #include <interfaces/configpage.h>
@@ -59,6 +61,12 @@ DUBProjectManager::DUBProjectManager(QObject *parent, const KPluginMetaData& met
         qCDebug(DUB) << "Found DMD";
         m_ToolChainList << dmd;
     }
+
+    // read the default toolchain
+    auto cfg = KSharedConfig::openConfig();  // loads ~/.config/kdeveloprc
+    KConfigGroup group(cfg, QStringLiteral("KDevDLang"));
+    m_SelectedToolChain = group.readEntry("mySetting", 0);
+
 
 
 }
@@ -353,24 +361,26 @@ ConfigPage* DUBProjectManager::perProjectConfigPage(int number, const ProjectCon
 Path::List DUBProjectManager::getToolchainPaths(IProject* project) const
 {
     Q_UNUSED(project);
-    // TODO: JG these should be configurable and depend on the detected build system
-    static QString searchPaths[] = {
-        // QLatin1String("/usr/include/dlang/ldc"),
-        QStringLiteral("/usr/lib64/ldc/x86_64-suse-linux/include/d/"),
-        QStringLiteral("/usr/include/dlang/dmd"),
-        // QLatin1String("/usr/include/dlang/gcd"),
-        QStringLiteral("/usr/lib64/gcc/x86_64-suse-linux/14/include/d/"),
-        QStringLiteral("/usr/include/d/dmd"),
-        QStringLiteral("/usr/include/d")
-    };
 
-	Path::List folders;
-    for(const QString& path : searchPaths) {
-        if (QFileInfo::exists(path)) {
-            folders << Path(path);
-        }
-    }
-    return folders;
+    return m_ToolChainList[m_SelectedToolChain]->includePaths();
+
+    // static QString searchPaths[] = {
+    //     // QLatin1String("/usr/include/dlang/ldc"),
+    //     QStringLiteral("/usr/lib64/ldc/x86_64-suse-linux/include/d/"),
+    //     QStringLiteral("/usr/include/dlang/dmd"),
+    //     // QLatin1String("/usr/include/dlang/gcd"),
+    //     QStringLiteral("/usr/lib64/gcc/x86_64-suse-linux/14/include/d/"),
+    //     QStringLiteral("/usr/include/d/dmd"),
+    //     QStringLiteral("/usr/include/d")
+    // };
+
+	// Path::List folders;
+ //    for(const QString& path : searchPaths) {
+ //        if (QFileInfo::exists(path)) {
+ //            folders << Path(path);
+ //        }
+ //    }
+ //    return folders;
 }
 
 Path::List DUBProjectManager::getProjectPaths(IProject* project) const

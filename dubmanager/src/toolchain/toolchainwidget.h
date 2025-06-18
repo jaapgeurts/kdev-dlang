@@ -47,6 +47,7 @@ private Q_SLOTS:
     void addCompiler(const QString& factoryName);
     void compilerSelected(const QModelIndex& index);
     void compilerEdited();
+    void setDefaultToolChain();
 
 Q_SIGNALS:
     void compilerChanged();

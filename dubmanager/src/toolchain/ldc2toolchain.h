@@ -29,7 +29,7 @@ public:
     bool probeInstallation() override;
 
     /** Returns a list of directories of import locations for this toolchain */
-    KDevelop::Path::List includes() override;
+    KDevelop::Path::List includePaths() override;
 
 };
 

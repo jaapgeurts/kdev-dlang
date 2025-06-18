@@ -79,6 +79,6 @@ bool DMDToolchain::probeInstallation() {
 }
 
 /** Returns a list of directories of import locations for this toolchain */
-KDevelop::Path::List DMDToolchain::includes() {
+KDevelop::Path::List DMDToolchain::includePaths() {
     return Path::List();
 }

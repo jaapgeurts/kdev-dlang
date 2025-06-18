@@ -109,7 +109,7 @@ private:
 //     ProjectFolderItem* buildFolderItem( IProject* project, const Path& path, ProjectBaseItem* parent );
 
     QList<QSharedPointer<Toolchain>> m_ToolChainList;
-
+    int m_SelectedToolChain;
 };
 
 #endif // DUBMANAGER_H

@@ -82,6 +82,6 @@ bool LDC2Toolchain::probeInstallation() {
 }
 
 /** Returns a list of directories of import locations for this toolchain */
-KDevelop::Path::List LDC2Toolchain::includes() {
+KDevelop::Path::List LDC2Toolchain::includePaths() {
     return Path::List();
 }

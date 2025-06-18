@@ -21,7 +21,6 @@ public:
         ToolchainData = Qt::UserRole
     };
 
-public:
     /**
      * Default constructor
      */
@@ -77,9 +76,16 @@ public:
 
     void setToolChains(const QList<QSharedPointer<Toolchain>>& toolchains);
 
+    int selectedToolChain();
+
+public Q_SLOTS:
+    void setSelectedToolChain(int index);
+
 private:
 
     QList<QSharedPointer<Toolchain>> m_Toolchains;
+
+    int m_SelectedToolChain;
 };
 
 #endif // TOOLCHAINMODEL_H
